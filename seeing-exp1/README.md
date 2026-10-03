@@ -13,7 +13,8 @@ source .venv/bin/activate
 python smoke_test.py                                   # MuJoCo works
 
 # Keys come from the environment, never from files:
-#   ANTHROPIC_API_KEY  (primary, Opus 5.5)
+#   SEEING_ANTHROPIC_API_KEY  (primary, Opus 5.5; cloud environments strip ANTHROPIC_API_KEY,
+#                              which is reserved for Claude Code's own login)
 #   OPENAI_API_KEY     (second, GPT-5.6)
 python -m scene.author --model opus-5.5                # step 1: writes scene/authored.xml
 python -m render.check                                 # step 2: frames + tone fields in results/step2/

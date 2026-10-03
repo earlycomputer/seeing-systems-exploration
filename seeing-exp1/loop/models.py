@@ -120,7 +120,9 @@ class AnthropicChat(Chat):
     def __init__(self, *a, **kw):
         super().__init__(*a, **kw)
         import anthropic
-        self.client = anthropic.Anthropic()
+        # Cloud environments reserve ANTHROPIC_API_KEY for Claude Code's own login and strip it, so the
+        # experiment's key lives under its own name. Falls back to the SDK's usual lookup when unset.
+        self.client = anthropic.Anthropic(api_key=os.environ.get(ANTHROPIC_KEY_VAR) or None)
         self.messages: list[dict] = []
 
     def _call(self, parts):
@@ -223,8 +225,9 @@ class DryChat(Chat):
                      stop_reason="dry_run", served_model="dry-run", seconds=0.0, raw={})
 
 
+ANTHROPIC_KEY_VAR = "SEEING_ANTHROPIC_API_KEY"
 KEY_VARS = {
-    "anthropic": ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN"),
+    "anthropic": (ANTHROPIC_KEY_VAR, "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN"),
     "google": ("GOOGLE_API_KEY", "GEMINI_API_KEY"),
     "openai": ("OPENAI_API_KEY",),
 }
