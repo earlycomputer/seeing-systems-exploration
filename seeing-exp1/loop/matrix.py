@@ -7,8 +7,9 @@
 Per model: 3 errors x 3 resolutions x 3 seeds = 27 cells, plus the two controls from the handoff:
   A. unmodified scene at every resolution (seed 0): the model should report nothing wrong
   B. the embarrassment cell with the scene text withheld: hoop_low at 64 px, image only (seed 0)
---image-only-arm adds the full 27-cell image-only arm per model. It is a change to the design, so it is
-off until a human says otherwise.
+--image-only-arm adds the same 27 cells with the scene text withheld, plus the unmodified scene image-only
+at every resolution and seed (9 cells), which measures false alarms. Added 2026-10-03 with the human's
+go-ahead, after the first runs showed both models finding the error in the text, not the picture.
 """
 
 from __future__ import annotations
@@ -31,7 +32,7 @@ def cells(model: str, image_only_arm: bool) -> list[tuple[int, str, int, bool]]:
     out += [(res, "none", 0, False) for res in RESOLUTIONS]  # control A
     out += [(64, "hoop_low", 0, True)]  # control B
     if image_only_arm:
-        out += [(res, err, seed, True) for err in ERRORS for res in RESOLUTIONS for seed in SEEDS
+        out += [(res, err, seed, True) for err in [*ERRORS, "none"] for res in RESOLUTIONS for seed in SEEDS
                 if (res, err, seed) != (64, "hoop_low", 0)]
     return out
 

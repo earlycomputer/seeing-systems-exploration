@@ -36,7 +36,7 @@ def frac(runs: list[dict], key) -> str:
 def matrix_table(runs: list[dict], condition: str) -> list[str]:
     by = defaultdict(list)
     for r in runs:
-        if r["condition"] == condition and r["error"] in ERRORS:
+        if r["condition"] == condition and (r["error"] in ERRORS or condition == "image_only"):
             by[(r["model"], r["resolution"], r["error"])].append(r)
     if not by:
         return []
@@ -44,14 +44,16 @@ def matrix_table(runs: list[dict], condition: str) -> list[str]:
     head = "| Model | Resolution | Error | Named correctly (of 3) |" + (" Fixed within 5% (of 3) |" if fixed_col else "")
     lines = [head + " Tokens per run |", "|" + "---|" * (head.count("|"))]
     models = sorted({k[0] for k in by}, key=lambda m: list(MODELS).index(m))
+    errors = list(ERRORS) + (["none"] if condition == "image_only" else [])
     for m in models:
-        for err in ERRORS:
+        for err in errors:
             for res in RESOLUTIONS:
                 rs = by.get((m, res, err), [])
                 if not rs:
                     continue
                 tokens = round(sum(r["tokens"]["total"] for r in rs) / len(rs))
-                row = f"| {MODELS[m].label} | {res} | {ERRORS[err].label} | {frac(rs, lambda r: r['readback']['named_correctly'])} |"
+                label = ERRORS[err].label if err in ERRORS else "Unmodified (correct = reports none)"
+                row = f"| {MODELS[m].label} | {res} | {label} | {frac(rs, lambda r: r['readback']['named_correctly'])} |"
                 if fixed_col:
                     row += f" {frac(rs, lambda r: r['fixed_within_tolerance'])} |"
                 lines.append(row + f" {tokens:,} |")
@@ -78,8 +80,8 @@ def lowest_closing_resolution(runs: list[dict], model: str, condition: str) -> s
 
 def controls(runs: list[dict]) -> list[str]:
     lines = ["| Model | Control | Resolution | Named | Correct | Fixed / unchanged | Tokens |", "|---|---|---|---|---|---|---|"]
-    rows = [r for r in runs if r["error"] == "none" or (r["condition"] == "image_only" and r["resolution"] == 64
-                                                        and r["error"] == "hoop_low" and r["seed"] == 0)]
+    rows = [r for r in runs if (r["error"] == "none" and r["condition"] == "with_text") or (
+        r["condition"] == "image_only" and r["resolution"] == 64 and r["error"] == "hoop_low" and r["seed"] == 0)]
     for r in sorted(rows, key=lambda r: (list(MODELS).index(r["model"]), r["condition"], -r["resolution"])):
         what = "Unmodified scene" if r["error"] == "none" else "Hoop too low, scene text withheld"
         fixed = "n/a" if r["fixed_within_tolerance"] is None else r["fixed_within_tolerance"]
@@ -139,7 +141,9 @@ def main() -> int:
         line = f"- {MODELS[m].label}, with scene text: {lowest_closing_resolution(runs, m, 'with_text')}"
         if any(r["model"] == m and r["condition"] == "image_only" and r["error"] != "none" and
                not (r["resolution"] == 64 and r["error"] == "hoop_low" and r["seed"] == 0) for r in runs):
-            line += f"; image only: {lowest_closing_resolution(runs, m, 'image_only')}"
+            fa = [r for r in runs if r["model"] == m and r["condition"] == "image_only" and r["error"] == "none"]
+            line += (f"; image only: {lowest_closing_resolution(runs, m, 'image_only')} "
+                     f"(false alarms on the unmodified scene: {sum(not r['readback']['named_correctly'] for r in fa)} of {len(fa)})")
         md.append(line)
     if not models:
         md.append("- No runs yet.")
