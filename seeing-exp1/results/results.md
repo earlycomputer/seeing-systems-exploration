@@ -10,21 +10,34 @@ _Not written yet._
 
 Lowest readback resolution at which the model named the wrong object 3 of 3 times for all three errors.
 
-- No runs yet.
+- Opus 5.5, with scene text: incomplete
+- GPT-6.1 Sol, with scene text: incomplete
 
 ## Matrix (scene text given)
 
 Named: the model's `mismatch` equals the object the error was put in. Fixed: after one correction turn, the measured quantity is within 5% of the brief, read from MuJoCo state.
 
-_No runs yet._
+| Model | Resolution | Error | Named correctly (of 3) | Fixed within 5% (of 3) | Tokens per run |
+|---|---|---|---|---|---|
+| Opus 5.5 | 64 | Hoop too low | 1 (of 1) | 1 (of 1) | 11,226 |
+| GPT-6.1 Sol | 64 | Hoop too low | 1 (of 1) | 1 (of 1) | 9,384 |
 
 ## Controls
 
-_No runs yet._
+| Model | Control | Resolution | Named | Correct | Fixed / unchanged | Tokens |
+|---|---|---|---|---|---|---|
+| Opus 5.5 | Hoop too low, scene text withheld | 64 | none | False | n/a | 2,737 |
+| Opus 5.5 | Unmodified scene | 128 | none | True | True | 13,184 |
+| GPT-6.1 Sol | Hoop too low, scene text withheld | 64 | hoop | True | n/a | 2,197 |
 
 ## Spend
 
-Ledger total: $0.00. Runs counted here: 0.
+Ledger total: $0.45. Runs counted here: 5.
 
 ## Runs
 
+- `gpt-6.1__64__hoop_low__s0`: `results/runs/gpt-6.1__64__hoop_low__s0/20261003T220513Z`
+- `gpt-6.1__64__hoop_low__s0__image-only`: `results/runs/gpt-6.1__64__hoop_low__s0__image-only/20261003T220621Z`
+- `opus-5.5__128__none__s0`: `results/runs/opus-5.5__128__none__s0/20261003T220513Z`
+- `opus-5.5__64__hoop_low__s0`: `results/runs/opus-5.5__64__hoop_low__s0/20261003T220513Z`
+- `opus-5.5__64__hoop_low__s0__image-only`: `results/runs/opus-5.5__64__hoop_low__s0__image-only/20261003T220621Z`

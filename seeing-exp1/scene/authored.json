@@ -1,0 +1,385 @@
+{
+  "model": "opus-5.5",
+  "model_id": "claude-opus-5-5",
+  "effort": "high",
+  "brief": "a regulation basketball on a floor, a hoop at 3.05 m, 4 m away, lit from above",
+  "system": "You write MuJoCo MJCF scenes that load on the first try and that a person can read.",
+  "prompt": "Write a MuJoCo MJCF scene for this brief:\n\n<brief>\na regulation basketball on a floor, a hoop at 3.05 m, 4 m away, lit from above\n</brief>\n\nMuJoCo will load and simulate the file, and a separate renderer will draw it from body and geom state\nalone. A person should be able to read the file and see what is where.\n\nA few conventions so the other tools can find things. They fix names and axes, not what you build:\n\n- SI units. z is up. The floor's top surface is at z = 0, and the floor is a plane geom named `floor`.\n- The ball is a body named `ball` with a `<freejoint/>` and exactly one sphere geom, also named `ball`.\n  At t = 0 it rests on the floor with its center at x = 0, y = 0.\n- The hoop is a body named `hoop` whose origin is the center of the rim. Every rim geom is named with the\n  prefix `rim`. The backboard is a geom of the `hoop` body, so it moves with the hoop. The rim center lies\n  on the +x axis from the ball (y = 0).\n- Any support for the hoop is a separate body with a descriptive name.\n- Only primitive geom types: plane, sphere, capsule, cylinder, box, ellipsoid. No meshes, textures, or\n  `<default>` classes, and no `<include>`.\n- Give every body and geom a name, and write each element's attributes on a single line.\n- Set `<option timestep=\"0.002\"/>`.\n\nReply with the complete file in one ```xml code block. A sentence or two before the block is fine.\n",
+  "attempts": [
+    {
+      "sent": "Write a MuJoCo MJCF scene for this brief:\n\n<brief>\na regulation basketball on a floor, a hoop at 3.05 m, 4 m away, lit from above\n</brief>\n\nMuJoCo will load and simulate the file, and a separate renderer will draw it from body and geom state\nalone. A person should be able to read the file and see what is where.\n\nA few conventions so the other tools can find things. They fix names and axes, not what you build:\n\n- SI units. z is up. The floor's top surface is at z = 0, and the floor is a plane geom named `floor`.\n- The ball is a body named `ball` with a `<freejoint/>` and exactly one sphere geom, also named `ball`.\n  At t = 0 it rests on the floor with its center at x = 0, y = 0.\n- The hoop is a body named `hoop` whose origin is the center of the rim. Every rim geom is named with the\n  prefix `rim`. The backboard is a geom of the `hoop` body, so it moves with the hoop. The rim center lies\n  on the +x axis from the ball (y = 0).\n- Any support for the hoop is a separate body with a descriptive name.\n- Only primitive geom types: plane, sphere, capsule, cylinder, box, ellipsoid. No meshes, textures, or\n  `<default>` classes, and no `<include>`.\n- Give every body and geom a name, and write each element's attributes on a single line.\n- Set `<option timestep=\"0.002\"/>`.\n\nReply with the complete file in one ```xml code block. A sentence or two before the block is fine.\n",
+      "reply": "A size-7 ball (0.1194 m radius, 0.62 kg, hollow-shell inertia) rests at the origin. The rim center sits at (4, 0, 3.05). The backboard is FIBA-sized and hangs 0.15 m below the rim, with its face 0.15 m behind the rim's inner edge. A separate pole-and-arm body holds it up, and a directional light shines straight down.\n\n```xml\n<mujoco model=\"basketball_hoop\">\n  <option timestep=\"0.002\"/>\n\n  <visual>\n    <headlight ambient=\"0.15 0.15 0.15\" diffuse=\"0.3 0.3 0.3\" specular=\"0 0 0\"/>\n  </visual>\n\n  <worldbody>\n    <!-- Lighting: main overhead directional light plus a softer fill spot above the hoop -->\n    <light name=\"overhead_sun\" directional=\"true\" pos=\"2 0 10\" dir=\"0 0 -1\" diffuse=\"0.8 0.8 0.8\" specular=\"0.2 0.2 0.2\" castshadow=\"true\"/>\n    <light name=\"overhead_fill\" pos=\"4 0 8\" dir=\"0 0 -1\" diffuse=\"0.3 0.3 0.3\" specular=\"0 0 0\" castshadow=\"false\"/>\n\n    <!-- Floor: top surface at z = 0 -->\n    <geom name=\"floor\" type=\"plane\" pos=\"0 0 0\" size=\"10 10 0.1\" rgba=\"0.72 0.52 0.32 1\" friction=\"0.8 0.005 0.0001\"/>\n\n    <!-- Regulation size-7 basketball: circumference 0.75 m -> radius 0.1194 m, mass ~0.62 kg (hollow shell inertia 2/3 m r^2) -->\n    <body name=\"ball\" pos=\"0 0 0.1194\">\n      <freejoint name=\"ball_free\"/>\n      <inertial pos=\"0 0 0\" mass=\"0.62\" diaginertia=\"0.005893 0.005893 0.005893\"/>\n      <geom name=\"ball\" type=\"sphere\" size=\"0.1194\" rgba=\"0.85 0.40 0.10 1\" friction=\"0.9 0.01 0.001\" solref=\"0.01 0.2\"/>\n    </body>\n\n    <!-- Hoop: origin at rim center, 4 m along +x, rim at 3.05 m. Fixed to the world (no joint). -->\n    <body name=\"hoop\" pos=\"4 0 3.05\">\n      <!-- Rim: 16 capsule segments, inner diameter 0.4572 m (18 in), tube radius 0.008 m, tube-center radius 0.2366 m -->\n      <geom name=\"rim_00\" type=\"capsule\" size=\"0.008\" fromto=\"0.2366 0 0 0.2186 0.0905 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_01\" type=\"capsule\" size=\"0.008\" fromto=\"0.2186 0.0905 0 0.1673 0.1673 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_02\" type=\"capsule\" size=\"0.008\" fromto=\"0.1673 0.1673 0 0.0905 0.2186 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_03\" type=\"capsule\" size=\"0.008\" fromto=\"0.0905 0.2186 0 0 0.2366 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_04\" type=\"capsule\" size=\"0.008\" fromto=\"0 0.2366 0 -0.0905 0.2186 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_05\" type=\"capsule\" size=\"0.008\" fromto=\"-0.0905 0.2186 0 -0.1673 0.1673 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_06\" type=\"capsule\" size=\"0.008\" fromto=\"-0.1673 0.1673 0 -0.2186 0.0905 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_07\" type=\"capsule\" size=\"0.008\" fromto=\"-0.2186 0.0905 0 -0.2366 0 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_08\" type=\"capsule\" size=\"0.008\" fromto=\"-0.2366 0 0 -0.2186 -0.0905 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_09\" type=\"capsule\" size=\"0.008\" fromto=\"-0.2186 -0.0905 0 -0.1673 -0.1673 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_10\" type=\"capsule\" size=\"0.008\" fromto=\"-0.1673 -0.1673 0 -0.0905 -0.2186 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_11\" type=\"capsule\" size=\"0.008\" fromto=\"-0.0905 -0.2186 0 0 -0.2366 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_12\" type=\"capsule\" size=\"0.008\" fromto=\"0 -0.2366 0 0.0905 -0.2186 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_13\" type=\"capsule\" size=\"0.008\" fromto=\"0.0905 -0.2186 0 0.1673 -0.1673 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_14\" type=\"capsule\" size=\"0.008\" fromto=\"0.1673 -0.1673 0 0.2186 -0.0905 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_15\" type=\"capsule\" size=\"0.008\" fromto=\"0.2186 -0.0905 0 0.2366 0 0\" rgba=\"0.9 0.3 0.05 1\"/>\n\n      <!-- Bracket joining the back of the rim to the backboard face -->\n      <geom name=\"hoop_bracket\" type=\"box\" pos=\"0.3105 0 -0.01\" size=\"0.0705 0.05 0.012\" rgba=\"0.9 0.3 0.05 1\"/>\n\n      <!-- Backboard: 1.80 x 1.05 m, 0.03 m thick; front face 0.15 m behind the rim's inner edge (x = 0.381); bottom edge 0.15 m below rim -->\n      <geom name=\"backboard\" type=\"box\" pos=\"0.396 0 0.375\" size=\"0.015 0.9 0.525\" rgba=\"0.92 0.95 0.98 0.85\"/>\n      <!-- Target square painted on the backboard front (thin, visual only) -->\n      <geom name=\"backboard_square\" type=\"box\" pos=\"0.3805 0 0.145\" size=\"0.0005 0.295 0.225\" rgba=\"0.1 0.1 0.1 1\" contype=\"0\" conaffinity=\"0\"/>\n    </body>\n\n    <!-- Support: floor plate, vertical pole behind the backboard, and horizontal arm to the backboard's back face (x = 4.411) -->\n    <body name=\"hoop_support\" pos=\"5.2 0 0\">\n      <geom name=\"support_base\" type=\"box\" pos=\"0 0 0.025\" size=\"0.4 0.4 0.025\" rgba=\"0.2 0.2 0.25 1\"/>\n      <geom name=\"support_pole\" type=\"box\" pos=\"0 0 1.7\" size=\"0.1 0.1 1.7\" rgba=\"0.25 0.25 0.3 1\"/>\n      <geom name=\"support_arm\" type=\"box\" pos=\"-0.4445 0 3.3\" size=\"0.3445 0.06 0.06\" rgba=\"0.25 0.25 0.3 1\"/>\n    </body>\n  </worldbody>\n</mujoco>\n```",
+      "thinking": "I'm calculating regulation size-7 basketball dimensions (radius ~0.119 m, mass ~0.624 kg) and placing the hoop with rim height 3.05 m, 4 m horizontally from the ball.\n\nFor the rim itself, I'm computing a ring of capsules around the inner rim radius (0.2286 m + tube radius 0.008 m), working out the 16 evenly-spaced angular positions and their x,y coordinates to place each capsule segment forming the circular hoop.\n\nNow I'm figuring out the backboard dimensions (72x42 in, converted to meters) and its placement relative to the rim\u2014positioning its front face 6 inches behind the rim's inner edge, in the hoop's local coordinate frame.\n\nBackboard half-sizes come to 0.015, 0.9, 0.525. I'm adding a small bracket box connecting the rim's back edge to the backboard face, naming it simply \"bracket\" to avoid confusion with rim-prefixed collision detection, sized around 0.07 x 0.04 x 0.01 half-extents. I'll skip modeling the net and decide whether the hoop body should be static.\n\nSince the hoop has no joint, it's effectively welded to the world. I'm now setting up a separate support pole body positioned behind the backboard, with the pole roughly 0.1x0.1 half-extents reaching up to about 3.4m, and an arm connecting it to the backboard's back face around x=4.41 \u2014 both static bodies shouldn't generate spurious collisions with each other.\n\nBase plate size set small for the pole footing. For lighting I'll add a directional light overhead pointing down. For the ball, I'm considering whether to tune solref values to give the basketball a slight bounce, keeping the timeconst above twice the timestep to stay numerically stable, though a simple default contact would also work fine.\n\nI'm computing the hollow-sphere inertia explicitly using I = 2/3\u00b7m\u00b7r\u00b2 rather than relying on a shellinertia flag that might not be supported in older MuJoCo versions, giving diagonal inertia values around 0.00589 for a 0.62 kg ball with radius ~0.1194 m, and setting the ball's center height accordingly.\n\nFor the floor, I'll use a large plane with wood-like rgba coloring since textures aren't allowed, and keep lighting simple.\n\n",
+      "usage": {
+        "text": "A size-7 ball (0.1194 m radius, 0.62 kg, hollow-shell inertia) rests at the origin. The rim center sits at (4, 0, 3.05). The backboard is FIBA-sized and hangs 0.15 m below the rim, with its face 0.15 m behind the rim's inner edge. A separate pole-and-arm body holds it up, and a directional light shines straight down.\n\n```xml\n<mujoco model=\"basketball_hoop\">\n  <option timestep=\"0.002\"/>\n\n  <visual>\n    <headlight ambient=\"0.15 0.15 0.15\" diffuse=\"0.3 0.3 0.3\" specular=\"0 0 0\"/>\n  </visual>\n\n  <worldbody>\n    <!-- Lighting: main overhead directional light plus a softer fill spot above the hoop -->\n    <light name=\"overhead_sun\" directional=\"true\" pos=\"2 0 10\" dir=\"0 0 -1\" diffuse=\"0.8 0.8 0.8\" specular=\"0.2 0.2 0.2\" castshadow=\"true\"/>\n    <light name=\"overhead_fill\" pos=\"4 0 8\" dir=\"0 0 -1\" diffuse=\"0.3 0.3 0.3\" specular=\"0 0 0\" castshadow=\"false\"/>\n\n    <!-- Floor: top surface at z = 0 -->\n    <geom name=\"floor\" type=\"plane\" pos=\"0 0 0\" size=\"10 10 0.1\" rgba=\"0.72 0.52 0.32 1\" friction=\"0.8 0.005 0.0001\"/>\n\n    <!-- Regulation size-7 basketball: circumference 0.75 m -> radius 0.1194 m, mass ~0.62 kg (hollow shell inertia 2/3 m r^2) -->\n    <body name=\"ball\" pos=\"0 0 0.1194\">\n      <freejoint name=\"ball_free\"/>\n      <inertial pos=\"0 0 0\" mass=\"0.62\" diaginertia=\"0.005893 0.005893 0.005893\"/>\n      <geom name=\"ball\" type=\"sphere\" size=\"0.1194\" rgba=\"0.85 0.40 0.10 1\" friction=\"0.9 0.01 0.001\" solref=\"0.01 0.2\"/>\n    </body>\n\n    <!-- Hoop: origin at rim center, 4 m along +x, rim at 3.05 m. Fixed to the world (no joint). -->\n    <body name=\"hoop\" pos=\"4 0 3.05\">\n      <!-- Rim: 16 capsule segments, inner diameter 0.4572 m (18 in), tube radius 0.008 m, tube-center radius 0.2366 m -->\n      <geom name=\"rim_00\" type=\"capsule\" size=\"0.008\" fromto=\"0.2366 0 0 0.2186 0.0905 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_01\" type=\"capsule\" size=\"0.008\" fromto=\"0.2186 0.0905 0 0.1673 0.1673 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_02\" type=\"capsule\" size=\"0.008\" fromto=\"0.1673 0.1673 0 0.0905 0.2186 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_03\" type=\"capsule\" size=\"0.008\" fromto=\"0.0905 0.2186 0 0 0.2366 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_04\" type=\"capsule\" size=\"0.008\" fromto=\"0 0.2366 0 -0.0905 0.2186 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_05\" type=\"capsule\" size=\"0.008\" fromto=\"-0.0905 0.2186 0 -0.1673 0.1673 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_06\" type=\"capsule\" size=\"0.008\" fromto=\"-0.1673 0.1673 0 -0.2186 0.0905 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_07\" type=\"capsule\" size=\"0.008\" fromto=\"-0.2186 0.0905 0 -0.2366 0 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_08\" type=\"capsule\" size=\"0.008\" fromto=\"-0.2366 0 0 -0.2186 -0.0905 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_09\" type=\"capsule\" size=\"0.008\" fromto=\"-0.2186 -0.0905 0 -0.1673 -0.1673 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_10\" type=\"capsule\" size=\"0.008\" fromto=\"-0.1673 -0.1673 0 -0.0905 -0.2186 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_11\" type=\"capsule\" size=\"0.008\" fromto=\"-0.0905 -0.2186 0 0 -0.2366 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_12\" type=\"capsule\" size=\"0.008\" fromto=\"0 -0.2366 0 0.0905 -0.2186 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_13\" type=\"capsule\" size=\"0.008\" fromto=\"0.0905 -0.2186 0 0.1673 -0.1673 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_14\" type=\"capsule\" size=\"0.008\" fromto=\"0.1673 -0.1673 0 0.2186 -0.0905 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_15\" type=\"capsule\" size=\"0.008\" fromto=\"0.2186 -0.0905 0 0.2366 0 0\" rgba=\"0.9 0.3 0.05 1\"/>\n\n      <!-- Bracket joining the back of the rim to the backboard face -->\n      <geom name=\"hoop_bracket\" type=\"box\" pos=\"0.3105 0 -0.01\" size=\"0.0705 0.05 0.012\" rgba=\"0.9 0.3 0.05 1\"/>\n\n      <!-- Backboard: 1.80 x 1.05 m, 0.03 m thick; front face 0.15 m behind the rim's inner edge (x = 0.381); bottom edge 0.15 m below rim -->\n      <geom name=\"backboard\" type=\"box\" pos=\"0.396 0 0.375\" size=\"0.015 0.9 0.525\" rgba=\"0.92 0.95 0.98 0.85\"/>\n      <!-- Target square painted on the backboard front (thin, visual only) -->\n      <geom name=\"backboard_square\" type=\"box\" pos=\"0.3805 0 0.145\" size=\"0.0005 0.295 0.225\" rgba=\"0.1 0.1 0.1 1\" contype=\"0\" conaffinity=\"0\"/>\n    </body>\n\n    <!-- Support: floor plate, vertical pole behind the backboard, and horizontal arm to the backboard's back face (x = 4.411) -->\n    <body name=\"hoop_support\" pos=\"5.2 0 0\">\n      <geom name=\"support_base\" type=\"box\" pos=\"0 0 0.025\" size=\"0.4 0.4 0.025\" rgba=\"0.2 0.2 0.25 1\"/>\n      <geom name=\"support_pole\" type=\"box\" pos=\"0 0 1.7\" size=\"0.1 0.1 1.7\" rgba=\"0.25 0.25 0.3 1\"/>\n      <geom name=\"support_arm\" type=\"box\" pos=\"-0.4445 0 3.3\" size=\"0.3445 0.06 0.06\" rgba=\"0.25 0.25 0.3 1\"/>\n    </body>\n  </worldbody>\n</mujoco>\n```",
+        "thinking": "I'm calculating regulation size-7 basketball dimensions (radius ~0.119 m, mass ~0.624 kg) and placing the hoop with rim height 3.05 m, 4 m horizontally from the ball.\n\nFor the rim itself, I'm computing a ring of capsules around the inner rim radius (0.2286 m + tube radius 0.008 m), working out the 16 evenly-spaced angular positions and their x,y coordinates to place each capsule segment forming the circular hoop.\n\nNow I'm figuring out the backboard dimensions (72x42 in, converted to meters) and its placement relative to the rim\u2014positioning its front face 6 inches behind the rim's inner edge, in the hoop's local coordinate frame.\n\nBackboard half-sizes come to 0.015, 0.9, 0.525. I'm adding a small bracket box connecting the rim's back edge to the backboard face, naming it simply \"bracket\" to avoid confusion with rim-prefixed collision detection, sized around 0.07 x 0.04 x 0.01 half-extents. I'll skip modeling the net and decide whether the hoop body should be static.\n\nSince the hoop has no joint, it's effectively welded to the world. I'm now setting up a separate support pole body positioned behind the backboard, with the pole roughly 0.1x0.1 half-extents reaching up to about 3.4m, and an arm connecting it to the backboard's back face around x=4.41 \u2014 both static bodies shouldn't generate spurious collisions with each other.\n\nBase plate size set small for the pole footing. For lighting I'll add a directional light overhead pointing down. For the ball, I'm considering whether to tune solref values to give the basketball a slight bounce, keeping the timeconst above twice the timestep to stay numerically stable, though a simple default contact would also work fine.\n\nI'm computing the hollow-sphere inertia explicitly using I = 2/3\u00b7m\u00b7r\u00b2 rather than relying on a shellinertia flag that might not be supported in older MuJoCo versions, giving diagonal inertia values around 0.00589 for a 0.62 kg ball with radius ~0.1194 m, and setting the ball's center height accordingly.\n\nFor the floor, I'll use a large plane with wood-like rgba coloring since textures aren't allowed, and keep lighting simple.\n\n",
+        "input_tokens": 552,
+        "output_tokens": 5111,
+        "cost_usd": 0.104428,
+        "stop_reason": "end_turn",
+        "served_model": "claude-opus-5-5",
+        "seconds": 48.88
+      }
+    }
+  ],
+  "started_at": "2026-10-03T22:04:01Z",
+  "load_log": [],
+  "measurements": {
+    "hoop_height": 3.0499999999999994,
+    "ball_hoop_distance": 3.9999999999999996,
+    "ball_radius": 0.1194,
+    "rim_center": [
+      4.0,
+      -0.0,
+      3.05
+    ],
+    "ball_xpos": [
+      0.0,
+      0.0,
+      0.1194
+    ]
+  },
+  "trajectory": [
+    {
+      "t": 0.0,
+      "ball": [
+        0.0,
+        0.0,
+        0.1194
+      ]
+    },
+    {
+      "t": 0.05,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 0.1,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 0.15,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 0.2,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 0.25,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 0.3,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 0.35,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 0.4,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 0.45,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 0.5,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 0.55,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 0.6,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 0.65,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 0.7,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 0.75,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 0.8,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 0.85,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 0.9,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 0.95,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 1.0,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 1.05,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 1.1,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 1.15,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 1.2,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 1.25,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 1.3,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 1.35,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 1.4,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 1.45,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 1.5,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 1.55,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 1.6,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 1.65,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 1.7,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 1.75,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 1.8,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 1.85,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 1.9,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 1.95,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    },
+    {
+      "t": 2.0,
+      "ball": [
+        0.0,
+        0.0,
+        0.1193
+      ]
+    }
+  ],
+  "acceptance": {
+    "loaded_without_hand_edits": true,
+    "attempts": 1,
+    "hoop_height": 3.0499999999999994,
+    "hoop_height_is_3.05": true,
+    "all_targets_within_tolerance": {
+      "hoop_height": true,
+      "ball_hoop_distance": true,
+      "ball_radius": true
+    }
+  },
+  "accepted": true,
+  "finished_at": "2026-10-03T22:04:50Z"
+}
