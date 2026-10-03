@@ -41,7 +41,9 @@ MODELS = {
     # Unreachable from the cloud environment (api.openai.com denied). Same caveat on id and price.
     "gpt-5.6": ModelSpec("gpt-5.6", "GPT-5.6", "openai", "gpt-5.6-sol", 5.0, 30.0,
                          "third-party listings, 2026-10-03, unverified"),
+    # Scripted stand-ins for testing the pipeline. "dry-run" always gets it right; "dry-run-echo" never does.
     "dry-run": ModelSpec("dry-run", "Dry run", "dry", "dry-run", 0.0, 0.0, "no calls are made"),
+    "dry-run-echo": ModelSpec("dry-run-echo", "Dry run (echo)", "dry", "dry-run-echo", 0.0, 0.0, "no calls are made"),
 }
 
 
