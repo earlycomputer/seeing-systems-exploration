@@ -1,8 +1,7 @@
 """One conversation with one model: append-only, every call's tokens and estimated cost logged.
 
-The three vendor adapters share one interface so the loop never branches on provider. Only the
-Anthropic and Google adapters can be reached from the current cloud environment; api.openai.com is
-blocked by its network policy, so the OpenAI adapter is written but has never run.
+The three vendor adapters share one interface so the loop never branches on provider. The matrix uses
+Opus 5.5 and GPT-5.6; the Gemini adapter is kept as the alternative second model the handoff allows.
 
 Refusal fallbacks are deliberately off: a row labelled with a model must be served by that model, and a
 refusal is data. `Reply.served_model` records what actually answered.
@@ -34,13 +33,13 @@ class ModelSpec:
 MODELS = {
     "opus-5.5": ModelSpec("opus-5.5", "Opus 5.5", "anthropic", "claude-opus-5-5", 4.0, 20.0,
                           "Anthropic price table as of 2026-09-25"),
-    # Second model. Id and price from third-party listings on 2026-10-03; Google's own docs are blocked
-    # from the cloud box, so check https://ai.google.dev/gemini-api/docs/models before a real run.
-    "gemini-3.1-pro": ModelSpec("gemini-3.1-pro", "Gemini 3.1 Pro", "google", "gemini-3.1-pro-preview", 2.0, 12.0,
-                                "third-party listings, 2026-10-03, unverified"),
-    # Unreachable from the cloud environment (api.openai.com denied). Same caveat on id and price.
+    # Second model. Id and price from third-party listings on 2026-10-03, not yet checked against OpenAI's
+    # models endpoint; the first real run checks the id.
     "gpt-5.6": ModelSpec("gpt-5.6", "GPT-5.6", "openai", "gpt-5.6-sol", 5.0, 30.0,
                          "third-party listings, 2026-10-03, unverified"),
+    # Alternative second model; same caveat on id and price. Not in the matrix by default.
+    "gemini-3.1-pro": ModelSpec("gemini-3.1-pro", "Gemini 3.1 Pro", "google", "gemini-3.1-pro-preview", 2.0, 12.0,
+                                "third-party listings, 2026-10-03, unverified"),
     # Scripted stand-ins for testing the pipeline. "dry-run" always gets it right; "dry-run-echo" never does.
     "dry-run": ModelSpec("dry-run", "Dry run", "dry", "dry-run", 0.0, 0.0, "no calls are made"),
     "dry-run-echo": ModelSpec("dry-run-echo", "Dry run (echo)", "dry", "dry-run-echo", 0.0, 0.0, "no calls are made"),

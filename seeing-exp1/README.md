@@ -14,7 +14,7 @@ python smoke_test.py                                   # MuJoCo works
 
 # Keys come from the environment, never from files:
 #   ANTHROPIC_API_KEY  (primary, Opus 5.5)
-#   GOOGLE_API_KEY     (second, Gemini 3.1 Pro)
+#   OPENAI_API_KEY     (second, GPT-5.6)
 python -m scene.author --model opus-5.5                # step 1: writes scene/authored.xml
 python -m render.check                                 # step 2: frames + tone fields in results/step2/
 python -m loop.run --model opus-5.5 --res 128 --error none            # step 3: should report nothing wrong
@@ -56,12 +56,13 @@ STATUS.md   end-of-day status
 
 The handoff leaves these to the agent; each is logged here so it shows its origin.
 
-- **Second model: Gemini 3.1 Pro** (`gemini-3.1-pro-preview`). The cloud environment's network policy blocks
-  `api.openai.com`, so GPT-5.6 cannot be called from it. The OpenAI adapter is written but has never run.
-  Model ids and prices came from third-party listings on 2026-10-03 because the vendors' doc sites are also
-  blocked here; check them before the first real run (`loop/models.py`).
+- **Second model: GPT-5.6** (`gpt-5.6-sol`, the flagship tier). The handoff allows GPT-5.6 or Gemini 3.1 Pro.
+  The first session used Gemini because the network policy blocked `api.openai.com`; once the host was
+  allowed on 2026-10-03, GPT-5.6 replaced it. The Gemini adapter stays as the alternative.
+  Model ids and prices came from third-party listings on 2026-10-03 because the vendors' doc sites are
+  blocked from the cloud box; the first real call checks each id (`loop/models.py`).
 - **Model settings.** Effort `high` for both models. Opus 5.5 uses adaptive thinking with summarized thinking
-  logged; Gemini uses thinking level HIGH with thoughts included. Anthropic refusal fallbacks are off, so a
+  logged; GPT-5.6 uses reasoning effort high with reasoning summaries logged. Anthropic refusal fallbacks are off, so a
   row labelled Opus 5.5 is always served by Opus 5.5 and a refusal is recorded as data.
 - **Authoring conventions** (`scene/author_prompt.md`): names (`ball`, `hoop`, `rim*`, `floor`), axes
   (z up, floor at z = 0, ball at the origin, hoop along +x), primitives only, one element per line.
