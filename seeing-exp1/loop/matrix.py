@@ -1,7 +1,7 @@
 """Step 5: run every cell of the measurement matrix, plus the controls, skipping cells already done.
 
     python -m loop.matrix --plan                          # list the cells and a rough cost; no calls
-    python -m loop.matrix                                 # Opus 5.5 and GPT-5.6, 4 at a time
+    python -m loop.matrix                                 # Opus 5.5 and GPT-6.1 Sol, 4 at a time
     python -m loop.matrix --models dry-run --jobs 8       # plumbing test
 
 Per model: 3 errors x 3 resolutions x 3 seeds = 27 cells, plus the two controls from the handoff:
@@ -43,7 +43,7 @@ def done(model: str, cell: tuple) -> bool:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--models", nargs="+", default=["opus-5.5", "gpt-5.6"], choices=sorted(MODELS))
+    ap.add_argument("--models", nargs="+", default=["opus-5.5", "gpt-6.1"], choices=sorted(MODELS))
     ap.add_argument("--jobs", type=int, default=4)
     ap.add_argument("--effort", default="high")
     ap.add_argument("--image-only-arm", action="store_true")

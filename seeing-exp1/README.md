@@ -15,7 +15,7 @@ python smoke_test.py                                   # MuJoCo works
 # Keys come from the environment, never from files:
 #   SEEING_ANTHROPIC_API_KEY  (primary, Opus 5.5; cloud environments strip ANTHROPIC_API_KEY,
 #                              which is reserved for Claude Code's own login)
-#   OPENAI_API_KEY     (second, GPT-5.6)
+#   OPENAI_API_KEY     (second, GPT-6.1 Sol)
 python -m scene.author --model opus-5.5                # step 1: writes scene/authored.xml
 python -m render.check                                 # step 2: frames + tone fields in results/step2/
 python -m loop.run --model opus-5.5 --res 128 --error none            # step 3: should report nothing wrong
@@ -57,13 +57,14 @@ STATUS.md   end-of-day status
 
 The handoff leaves these to the agent; each is logged here so it shows its origin.
 
-- **Second model: GPT-5.6** (`gpt-5.6-sol`, the flagship tier). The handoff allows GPT-5.6 or Gemini 3.1 Pro.
-  The first session used Gemini because the network policy blocked `api.openai.com`; once the host was
-  allowed on 2026-10-03, GPT-5.6 replaced it. The Gemini adapter stays as the alternative.
+- **Second model: GPT-6.1 Sol** (`gpt-6.1-sol`), chosen by a human on 2026-10-03 over the handoff's
+  GPT-5.6 because it is OpenAI's newest flagship. Before that, the first session had used Gemini 3.1 Pro
+  while the network policy blocked `api.openai.com`. GPT-5.6 and Gemini stay available as `--models`
+  choices.
   Model ids and prices came from third-party listings on 2026-10-03 because the vendors' doc sites are
   blocked from the cloud box; the first real call checks each id (`loop/models.py`).
 - **Model settings.** Effort `high` for both models. Opus 5.5 uses adaptive thinking with summarized thinking
-  logged; GPT-5.6 uses reasoning effort high with reasoning summaries logged. Anthropic refusal fallbacks are off, so a
+  logged; GPT-6.1 Sol uses reasoning effort high with reasoning summaries logged. Anthropic refusal fallbacks are off, so a
   row labelled Opus 5.5 is always served by Opus 5.5 and a refusal is recorded as data.
 - **Authoring conventions** (`scene/author_prompt.md`): names (`ball`, `hoop`, `rim*`, `floor`), axes
   (z up, floor at z = 0, ball at the origin, hoop along +x), primitives only, one element per line.

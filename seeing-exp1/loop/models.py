@@ -1,7 +1,8 @@
 """One conversation with one model: append-only, every call's tokens and estimated cost logged.
 
 The three vendor adapters share one interface so the loop never branches on provider. The matrix uses
-Opus 5.5 and GPT-5.6; the Gemini adapter is kept as the alternative second model the handoff allows.
+Opus 5.5 and GPT-6.1 Sol (chosen 2026-10-03 over the handoff's GPT-5.6 as the newest OpenAI flagship);
+GPT-5.6 and Gemini 3.1 Pro stay available.
 
 Refusal fallbacks are deliberately off: a row labelled with a model must be served by that model, and a
 refusal is data. `Reply.served_model` records what actually answered.
@@ -33,8 +34,10 @@ class ModelSpec:
 MODELS = {
     "opus-5.5": ModelSpec("opus-5.5", "Opus 5.5", "anthropic", "claude-opus-5-5", 4.0, 20.0,
                           "Anthropic price table as of 2026-09-25"),
-    # Second model. Id and price from third-party listings on 2026-10-03, not yet checked against OpenAI's
-    # models endpoint; the first real run checks the id.
+    # Second model. Id confirmed on OpenAI's models endpoint 2026-10-03; price from third-party listings.
+    "gpt-6.1": ModelSpec("gpt-6.1", "GPT-6.1 Sol", "openai", "gpt-6.1-sol", 2.0, 10.0,
+                         "third-party listings, 2026-10-03, unverified"),
+    # The handoff's original second model. Id confirmed on OpenAI's models endpoint 2026-10-03.
     "gpt-5.6": ModelSpec("gpt-5.6", "GPT-5.6", "openai", "gpt-5.6-sol", 5.0, 30.0,
                          "third-party listings, 2026-10-03, unverified"),
     # Alternative second model; same caveat on id and price. Not in the matrix by default.
