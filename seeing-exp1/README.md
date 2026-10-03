@@ -12,7 +12,7 @@ python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 source .venv/bin/activate
 python smoke_test.py                                   # MuJoCo works
 
-# Keys come from the environment, never from files:
+# Keys come from the environment, never from files (cloud environments: Environment variables):
 #   SEEING_ANTHROPIC_API_KEY  (primary, Opus 5.5; cloud environments strip ANTHROPIC_API_KEY,
 #                              which is reserved for Claude Code's own login)
 #   OPENAI_API_KEY     (second, GPT-6.1 Sol)
@@ -47,11 +47,11 @@ STATUS.md   end-of-day status
 | Step | Acceptance | State |
 |---|---|---|
 | 0 Environment | Smoke test passes | Passed |
-| 1 Authoring | Model's file loads without hand edits; hoop rim z = 3.05 m | Built, dry-run passes; **needs ANTHROPIC_API_KEY** |
-| 2 Dot renderer | Ball moves between frames, its dots keep their arrangement; a person can name every object | Passed on the hand-written fixture; rerun on the authored scene |
-| 3 Readback | Unmodified scene at 128 px: model reports no discrepancy | Built, dry-run passes; **needs keys** |
-| 4 Correction | Measured quantity within 5% after one correction turn, by MuJoCo state | Built, dry-run passes both ways; **needs keys** |
-| 5 Matrix | results.md filled by script | Built, 62-cell dry run fills it; **needs keys** |
+| 1 Authoring | Model's file loads without hand edits; hoop rim z = 3.05 m | Passed (Opus 5.5, first attempt) |
+| 2 Dot renderer | Ball moves between frames, its dots keep their arrangement; a person can name every object | Passed on the authored scene |
+| 3 Readback | Unmodified scene at 128 px: model reports no discrepancy | Passed |
+| 4 Correction | Measured quantity within 5% after one correction turn, by MuJoCo state | Passed |
+| 5 Matrix | results.md filled by script | Done: 132 runs incl. the image-only arm; see results/results.md |
 
 ## Decisions made without a human
 

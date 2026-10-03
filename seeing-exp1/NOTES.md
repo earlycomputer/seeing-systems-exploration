@@ -4,11 +4,11 @@
 
 Ideas that came up while building experiment 1. Not in code; each needs a human before it becomes work.
 
-- **The scene text may be doing all the work.** With the text included, every deliberate error can be read
-  straight from the text: the hoop body says `pos="4 0 2.55"` against a brief that says 3.05 m. The
-  with-text matrix may read near-perfect at every resolution, and that would say nothing about seeing.
-  Control B covers one cell; `loop.matrix --image-only-arm` runs the full 27 cells per model without the
-  text (a few dollars more per model). Off until a human decides, because it changes the design.
+- **Relational errors need a relational readback.** "Ball displaced" changes a distance between two objects.
+  From a picture alone you cannot tell which one moved, and GPT-6.1 Sol blamed the hoop in 3 of the 5 runs
+  where it saw the gap. A readback (or a verdict format) that can say "these two are 2.5 m apart, not 4"
+  would score what the model actually saw.
+- **A text-only control** (scene text, no image) would complete the picture: image only, text only, both.
 - **Readback as a body list or a latent** instead of an image (the handoff's optional extension). Only if the
   loop closes at 64 px or better inside the time box, and only after asking.
 - **A plausibility critic** that scores the render before the LLM sees it (from the program doc). Out of scope.
@@ -33,3 +33,23 @@ From the hand-written fixture, before any model has looked (see results/step2/):
   an artifact of sampling a finite patch of an infinite plane.
 - Back-face culling and the splatted depth test were in from the start, so this renderer has never been
   compared with one that lets the far side of an object show through.
+
+## What the models did with the picture
+
+From the 132 real runs (results/runs, results/failures.md):
+
+- With the scene text, both models read the error straight from the text and never claimed to have found
+  it in the picture alone. The with-text matrix measures reading, not seeing.
+- GPT-6.1 Sol reads the picture like a person would: it estimates the rim at 2.4 to 2.5 m (true 2.55 m)
+  and the ball at about twice regulation size. At 32 px it says nothing rather than guessing.
+- Opus 5.5 reasons from the camera numbers: it back-projects pixel coordinates into metres ("at its
+  back-projected depth of about 8.9 m, the ball appears about 11 px wide"). This works at 128 px for size
+  and occasionally for height, but at 64 and 32 px the arithmetic goes wrong and produces false alarms
+  (the support pole "ends mid-frame", the hoop is "2 m from the ball").
+- At 32 px the ball is one or two gray pixels, and Opus twice reported it missing. One of those runs was
+  scored correct because the error was in the ball, but for the wrong reason.
+- Opus's scene added a floor plate, a bracket and a painted target square: a 1 mm box lying on the
+  backboard's face. The renderer draws no colour, but the square's dots sit on top of the backboard's, so
+  the patch is twice as dense and reads darker at 128 px (checked by eye). Opus described a "dark target
+  square" there. Density changed because two surfaces overlap, which is true but was never designed as
+  information: a law-3 question for experiment 2, where density is meant to carry confidence.

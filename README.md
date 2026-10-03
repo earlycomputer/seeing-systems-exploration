@@ -11,4 +11,4 @@ The program lives in two docs:
 
 | # | Name | Directory | State |
 |---|------|-----------|-------|
-| 1 | Round trip | [`seeing-exp1/`](seeing-exp1/) | Harness built; waiting on API keys to run the matrix |
+| 1 | Round trip | [`seeing-exp1/`](seeing-exp1/) | Matrix done; [results](seeing-exp1/results/results.md) |
