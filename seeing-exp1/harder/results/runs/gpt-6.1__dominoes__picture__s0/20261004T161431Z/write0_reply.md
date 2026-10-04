@@ -1,0 +1,74 @@
+The first domino starts tilted 20° toward the others. Gravity initiates the fall; no actuators or external forces are used.
+
+```xml
+<mujoco model="ten_domino_chain">
+  <compiler angle="degree"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100" tolerance="1e-10"/>
+  <size nconmax="200" njmax="1000"/>
+  <statistic center="0.4 0 0.12" extent="1.1"/>
+
+  <worldbody>
+    <light name="overhead" pos="0.4 -0.5 2" dir="0 0 -1" diffuse="0.8 0.8 0.8"/>
+    <geom name="floor" type="plane" pos="0 0 0" size="2 1 0.1" friction="0.9 0.005 0.0001" solref="0.005 1" solimp="0.95 0.99 0.001" rgba="0.75 0.77 0.8 1"/>
+
+    <!-- Half-sizes: thickness 0.012 m, width 0.05 m, height 0.12 m. -->
+    <!-- Domino 1's height places its lowest edge exactly on the floor. -->
+    <body name="domino1" pos="0 0 0.116867356" quat="0.984807753 0 0.173648178 0">
+      <freejoint name="domino1_free"/>
+      <geom name="domino1_geom" type="box" size="0.012 0.05 0.12" mass="0.2" friction="0.9 0.005 0.0001" solref="0.005 1" solimp="0.95 0.99 0.001" rgba="0.85 0.2 0.15 1"/>
+    </body>
+
+    <body name="domino2" pos="0.09 0 0.12">
+      <freejoint name="domino2_free"/>
+      <geom name="domino2_geom" type="box" size="0.012 0.05 0.12" mass="0.2" friction="0.9 0.005 0.0001" solref="0.005 1" solimp="0.95 0.99 0.001" rgba="0.9 0.4 0.15 1"/>
+    </body>
+
+    <body name="domino3" pos="0.18 0 0.12">
+      <freejoint name="domino3_free"/>
+      <geom name="domino3_geom" type="box" size="0.012 0.05 0.12" mass="0.2" friction="0.9 0.005 0.0001" solref="0.005 1" solimp="0.95 0.99 0.001" rgba="0.9 0.65 0.15 1"/>
+    </body>
+
+    <body name="domino4" pos="0.27 0 0.12">
+      <freejoint name="domino4_free"/>
+      <geom name="domino4_geom" type="box" size="0.012 0.05 0.12" mass="0.2" friction="0.9 0.005 0.0001" solref="0.005 1" solimp="0.95 0.99 0.001" rgba="0.65 0.8 0.2 1"/>
+    </body>
+
+    <body name="domino5" pos="0.36 0 0.12">
+      <freejoint name="domino5_free"/>
+      <geom name="domino5_geom" type="box" size="0.012 0.05 0.12" mass="0.2" friction="0.9 0.005 0.0001" solref="0.005 1" solimp="0.95 0.99 0.001" rgba="0.2 0.7 0.3 1"/>
+    </body>
+
+    <body name="domino6" pos="0.45 0 0.12">
+      <freejoint name="domino6_free"/>
+      <geom name="domino6_geom" type="box" size="0.012 0.05 0.12" mass="0.2" friction="0.9 0.005 0.0001" solref="0.005 1" solimp="0.95 0.99 0.001" rgba="0.15 0.7 0.65 1"/>
+    </body>
+
+    <body name="domino7" pos="0.54 0 0.12">
+      <freejoint name="domino7_free"/>
+      <geom name="domino7_geom" type="box" size="0.012 0.05 0.12" mass="0.2" friction="0.9 0.005 0.0001" solref="0.005 1" solimp="0.95 0.99 0.001" rgba="0.15 0.5 0.85 1"/>
+    </body>
+
+    <body name="domino8" pos="0.63 0 0.12">
+      <freejoint name="domino8_free"/>
+      <geom name="domino8_geom" type="box" size="0.012 0.05 0.12" mass="0.2" friction="0.9 0.005 0.0001" solref="0.005 1" solimp="0.95 0.99 0.001" rgba="0.3 0.3 0.85 1"/>
+    </body>
+
+    <body name="domino9" pos="0.72 0 0.12">
+      <freejoint name="domino9_free"/>
+      <geom name="domino9_geom" type="box" size="0.012 0.05 0.12" mass="0.2" friction="0.9 0.005 0.0001" solref="0.005 1" solimp="0.95 0.99 0.001" rgba="0.6 0.25 0.8 1"/>
+    </body>
+
+    <body name="domino10" pos="0.81 0 0.12">
+      <freejoint name="domino10_free"/>
+      <geom name="domino10_geom" type="box" size="0.012 0.05 0.12" mass="0.2" friction="0.9 0.005 0.0001" solref="0.005 1" solimp="0.95 0.99 0.001" rgba="0.8 0.25 0.55 1"/>
+    </body>
+  </worldbody>
+</mujoco>
+```
+
+---
+thinking (summarized):
+
+**Calculating rotational physics**
+
+I'm trying to figure out the contact effects from the rotational state. The gravity acceleration around the pivot should be calculated as mg times 0.02949 over I_p. For I_p, I'm using the formula m times the average of (h squared plus t squared over 3 plus h squared plus t squared). This gives approximately 0.019392 meters. So, I calculate that the angular acceleration (θacc) amounts to about 14.93 rad/s², changing from 20 to 26.6.

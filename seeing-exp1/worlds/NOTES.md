@@ -34,3 +34,18 @@
   near the bucket and is still moving after 6 s.
 - **Cost came in at a quarter of the estimate** because most worlds stopped after one round: $8.30, about
   $0.34 a world for Opus and $0.08 for GPT-6.1 Sol.
+
+## Found while building the viewer (2026-10-04)
+
+- **Every door picture covered only the first 0.6 s.** `draw.active_until` decides when a run has come to rest
+  from the speed of each moving body's origin. A door's origin is on its hinge, so it never counts as moving,
+  and the residue falls back to 0 to 0.6 s. All 5 door pictures were drawn that way (`round*_view.json`); every
+  other brief's ran 1.2 to 6.0 s. The tests never read the picture, so no verdict changes. But a door picture
+  could not show the door shutting and staying shut, and Opus said so ("the picture only covers the first
+  0.6 s"). 1c is left as it ran; 1d fixes it before its first run, since a pendulum turns about its origin too.
+- **The viewer re-checks every verdict.** `viewer.py` runs each of the 47 saved files again through
+  `tests.judge` and stops if any check comes out different. All 47 matched.
+- **Watching the worlds run shows what the tests leave out.** All four of GPT-6.1 Sol's shots go through and then
+  roll on, ending 8 to 11 m past the hoop at 6 s; Opus's end 0.2 to 2.2 m past it. "Drops through a hoop" allows
+  both. A failing catapult ball can be seen still rolling at 6 s, in or beside the bucket.
+

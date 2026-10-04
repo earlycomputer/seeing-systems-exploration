@@ -1,0 +1,76 @@
+The pendulum swings down and knocks the ball to the right. The ball rolls toward the cup, but its darkest final position appears to remain just outside the cup, on the entrance ramp.
+
+The revision below lowers that entrance and reduces friction during the strike to preserve more forward motion.
+
+```xml
+<mujoco model="pendulum_ball_cup">
+  <compiler angle="degree" autolimits="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="80" cone="elliptic"/>
+
+  <visual>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.65 0.65 0.65" specular="0.2 0.2 0.2"/>
+  </visual>
+
+  <worldbody>
+    <light name="overhead" pos="0.4 -1.5 3" dir="0 0 -1"/>
+    <camera name="overview" pos="1.7 -2.7 1.7" xyaxes="0.92 0.39 0 -0.19 0.45 0.87"/>
+
+    <geom name="floor" type="plane" size="4 3 0.1" rgba="0.82 0.83 0.85 1" condim="6" friction="0.7 0.005 0.0001" solref="0.008 1"/>
+
+    <body name="support">
+      <geom name="support_left" type="capsule" fromto="-0.07 -0.22 0.02 -0.07 -0.22 0.565" size="0.018" rgba="0.3 0.32 0.35 1" contype="0" conaffinity="0"/>
+      <geom name="support_right" type="capsule" fromto="-0.07 0.22 0.02 -0.07 0.22 0.565" size="0.018" rgba="0.3 0.32 0.35 1" contype="0" conaffinity="0"/>
+      <geom name="support_crossbar" type="capsule" fromto="-0.07 -0.22 0.565 -0.07 0.22 0.565" size="0.018" rgba="0.3 0.32 0.35 1" contype="0" conaffinity="0"/>
+    </body>
+
+    <body name="pendulum" pos="-0.07 0 0.565">
+      <joint name="pendulum_hinge" type="hinge" axis="0 1 0" damping="0.012"/>
+      <geom name="pendulum_rod" type="capsule" fromto="0 0 0 0 0 -0.5" size="0.009" mass="0.025" rgba="0.35 0.37 0.4 1" friction="0.3 0.003 0.0001"/>
+      <geom name="pendulum_bob" type="sphere" pos="0 0 -0.5" size="0.06" mass="0.25" rgba="0.85 0.25 0.12 1" priority="1" condim="3" friction="0.05 0.001 0.0001" solref="0.006 1"/>
+    </body>
+
+    <body name="ball" pos="0 0 0.04">
+      <freejoint name="ball_free"/>
+      <geom name="ball" type="sphere" size="0.04" mass="0.1" rgba="0.95 0.75 0.12 1" condim="6" friction="0.7 0.005 0.0001" solref="0.006 1"/>
+    </body>
+
+    <!-- Cup centre is 1 m from the ball's starting position.
+         Its front lip is only 3 mm high, with a shallow entry ramp. -->
+    <body name="cup" pos="1 0 0">
+      <geom name="cup_bottom" type="cylinder" pos="0 0 0.001" size="0.158 0.001" rgba="0.15 0.45 0.75 1" condim="6" friction="0.7 0.005 0.0001" solref="0.012 1"/>
+      <geom name="cup_entry_ramp" type="box" pos="-0.205 0 0" euler="0 -1.4 0" size="0.065 0.065 0.0015" rgba="0.15 0.45 0.75 1" condim="6" friction="0.7 0.005 0.0001" solref="0.012 1"/>
+
+      <geom name="cup_wall_00" type="box" pos="0.15 0 0.062" euler="0 0 90" size="0.032 0.008 0.06" rgba="0.15 0.45 0.75 1" solref="0.012 1"/>
+      <geom name="cup_wall_01" type="box" pos="0.138582 0.057403 0.062" euler="0 0 112.5" size="0.032 0.008 0.06" rgba="0.15 0.45 0.75 1" solref="0.012 1"/>
+      <geom name="cup_wall_02" type="box" pos="0.106066 0.106066 0.062" euler="0 0 135" size="0.032 0.008 0.06" rgba="0.15 0.45 0.75 1" solref="0.012 1"/>
+      <geom name="cup_wall_03" type="box" pos="0.057403 0.138582 0.062" euler="0 0 157.5" size="0.032 0.008 0.06" rgba="0.15 0.45 0.75 1" solref="0.012 1"/>
+      <geom name="cup_wall_04" type="box" pos="0 0.15 0.062" euler="0 0 180" size="0.032 0.008 0.06" rgba="0.15 0.45 0.75 1" solref="0.012 1"/>
+      <geom name="cup_wall_05" type="box" pos="-0.057403 0.138582 0.062" euler="0 0 202.5" size="0.032 0.008 0.06" rgba="0.15 0.45 0.75 1" solref="0.012 1"/>
+      <geom name="cup_wall_06" type="box" pos="-0.106066 0.106066 0.062" euler="0 0 225" size="0.032 0.008 0.06" rgba="0.15 0.45 0.75 1" solref="0.012 1"/>
+
+      <geom name="cup_front_rim_07" type="box" pos="-0.138582 0.057403 0.0025" euler="0 0 247.5" size="0.032 0.008 0.0005" rgba="0.15 0.45 0.75 1" solref="0.012 1"/>
+      <geom name="cup_front_rim_08" type="box" pos="-0.15 0 0.0025" euler="0 0 270" size="0.032 0.008 0.0005" rgba="0.15 0.45 0.75 1" solref="0.012 1"/>
+      <geom name="cup_front_rim_09" type="box" pos="-0.138582 -0.057403 0.0025" euler="0 0 292.5" size="0.032 0.008 0.0005" rgba="0.15 0.45 0.75 1" solref="0.012 1"/>
+
+      <geom name="cup_wall_10" type="box" pos="-0.106066 -0.106066 0.062" euler="0 0 315" size="0.032 0.008 0.06" rgba="0.15 0.45 0.75 1" solref="0.012 1"/>
+      <geom name="cup_wall_11" type="box" pos="-0.057403 -0.138582 0.062" euler="0 0 337.5" size="0.032 0.008 0.06" rgba="0.15 0.45 0.75 1" solref="0.012 1"/>
+      <geom name="cup_wall_12" type="box" pos="0 -0.15 0.062" euler="0 0 0" size="0.032 0.008 0.06" rgba="0.15 0.45 0.75 1" solref="0.012 1"/>
+      <geom name="cup_wall_13" type="box" pos="0.057403 -0.138582 0.062" euler="0 0 22.5" size="0.032 0.008 0.06" rgba="0.15 0.45 0.75 1" solref="0.012 1"/>
+      <geom name="cup_wall_14" type="box" pos="0.106066 -0.106066 0.062" euler="0 0 45" size="0.032 0.008 0.06" rgba="0.15 0.45 0.75 1" solref="0.012 1"/>
+      <geom name="cup_wall_15" type="box" pos="0.138582 -0.057403 0.062" euler="0 0 67.5" size="0.032 0.008 0.06" rgba="0.15 0.45 0.75 1" solref="0.012 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start" qpos="0.75 0 0 0.04 1 0 0 0" qvel="0 0 0 0 0 0 0"/>
+  </keyframe>
+</mujoco>
+```
+
+```json
+{
+  "what_happens": "The pendulum strikes the ball, which rolls rightward toward the cup but appears to stop outside its front rim on the entrance ramp.",
+  "works": false,
+  "problem": "The ball appears to stall at the raised entrance instead of rolling into the cup."
+}
+```
