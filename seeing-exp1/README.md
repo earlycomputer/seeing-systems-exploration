@@ -84,7 +84,7 @@ The handoff leaves these to the agent; each is logged here so it shows its origi
 - **What "fixed" measures.** Hoop too low: mean z of the `rim*` geoms vs 3.05 m. Ball displaced: horizontal
   distance from ball center to rim center at t = 0 vs 4.0 m. Ball wrong size: sphere radius vs 0.12 m.
   Each within 5%.
-- **"Ball x shifted 1.5 m sideways"** is read literally as +1.5 m along x. In this frame that moves the ball
+- **"Ball x shifted 1.5 m sideways"** is read literally as +1.5 m along x (confirmed by Jono, 2026-10-04). In this frame that moves the ball
   toward the hoop, 4.0 m to 2.5 m. If "sideways" meant across the court (y), the brief's "4 m away" would
   barely change (4.27 m, inside 7%), and the error would hardly be an error.
 - **Controls.** A: the unmodified scene at 128, 64 and 32 px. B: the embarrassment cell exactly as the handoff
