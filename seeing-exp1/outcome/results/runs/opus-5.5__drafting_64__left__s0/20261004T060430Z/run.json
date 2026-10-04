@@ -1,0 +1,213 @@
+{
+  "cell": "opus-5.5__drafting_64__left__s0",
+  "run_dir": "outcome/results/runs/opus-5.5__drafting_64__left__s0/20261004T060430Z",
+  "started_at": "20261004T060430Z",
+  "experiment": "1b",
+  "model": "opus-5.5",
+  "model_label": "Opus 5.5",
+  "model_id": "claude-opus-5-5",
+  "effort": "high",
+  "condition": "drafting_64",
+  "miss": "left",
+  "seed": 0,
+  "dry_run": false,
+  "base": "base.xml",
+  "edit": {
+    "miss": "left",
+    "kind": "aim",
+    "step": 5.0,
+    "line": 61,
+    "before": "<key name=\"shot\" qvel=\"3.21 0 9.3 0 0 0\"/>",
+    "after": "<key name=\"shot\" qvel=\"3.19778 0.27977 9.3 0 0 0\"/>"
+  },
+  "truth": {
+    "made": false,
+    "rim_center": [
+      4.0,
+      -0.0,
+      3.05
+    ],
+    "inner_radius": 0.224,
+    "launch_speed": 9.8384,
+    "launch_elevation_deg": 70.957,
+    "launch_azimuth_deg": 5.0,
+    "apex_z": 4.1085,
+    "landed_at_s": 1.9040000000000015,
+    "landed_xy": [
+      4.824,
+      1.091
+    ],
+    "touched": [
+      "rim_04",
+      "rim_03",
+      "rim_04",
+      "rim_03",
+      "rim_04",
+      "rim_03",
+      "rim_04",
+      "rim_03",
+      "rim_04",
+      "rim_03",
+      "rim_04",
+      "rim_03",
+      "rim_04"
+    ],
+    "load_log": [],
+    "along": -0.0294,
+    "across": 0.3474,
+    "direction": "left",
+    "direction_basis": "ghost path crossing the rim plane",
+    "ghost_off_center": 0.3486,
+    "outcome": "left"
+  },
+  "truth_label": "left",
+  "turns": [
+    {
+      "turn": 1,
+      "verdict": {
+        "description": "The ball rises in a high arc from x\u22480 to a peak near 4 m, then descends at the hoop's x position (\u22483.97 m at rim height), but it has drifted about 0.35 m toward +y. Its centre passes outside the 0.23 m rim radius, so at most it clips the left rim and falls outside the hoop to the shooter's left. The plan view is too coarse at 64 px to show the drift; this comes from integrating the keyframe velocity with the scene's drag.",
+        "goes_in": false,
+        "miss": "left",
+        "evidence": "text",
+        "miss_named": "left"
+      },
+      "usage": {
+        "text": "**What I see:** The side elevation shows a high arc. The ball leaves the floor at x\u22480, peaks a bit above 4 m, and comes down near the hoop at x\u22484 m, 3.05 m high. At 64\u00d764 the plan band is too coarse for me to read the sideways drift or tell whether the ball passes inside the rim. So the picture only confirms that the ball arrives near the hoop.\n\n**What the scene text says:** I integrated the launch by hand.\n\n- **Launch:** start at (0, 0, 0.119), velocity (3.198, 0.280, 9.3) m/s.\n- **Drag:** I used MuJoCo's blunt drag with coefficient 0.25, air density 1.2 and A = \u03c0r\u00b2. That gives k \u2248 0.0217 per metre.\n- **Peak:** about 4.04 m, at t \u2248 1.0 s.\n- **At rim height (z = 3.05):** t \u2248 1.35 s. The ball centre is then at x \u2248 3.97 and y \u2248 0.35.\n\nLengthwise the shot is almost perfectly centred. Sideways, the steady +y velocity of 0.28 m/s has carried the ball about 0.35 m to the shooter's left.\n\n**Does it fit through?** For a clean pass the ball centre must be within 0.2286 \u2212 0.1194 \u2248 0.11 m of the rim centre. Here it is 0.35 m out, beyond the rim tube itself, which sits at 0.237 m. The ball would at most clip the left side of the rim and fall outside it. It misses to the left. Without drag it would also land long, at x \u2248 4.8, but with the scene's air drag the distance along x is right.\n\nThe verdict comes from the text. The picture is consistent with it but cannot resolve the sideways miss.\n\n```json\n{\"description\": \"The ball rises in a high arc from x\u22480 to a peak near 4 m, then descends at the hoop's x position (\u22483.97 m at rim height), but it has drifted about 0.35 m toward +y. Its centre passes outside the 0.23 m rim radius, so at most it clips the left rim and falls outside the hoop to the shooter's left. The plan view is too coarse at 64 px to show the drift; this comes from integrating the keyframe velocity with the scene's drag.\", \"goes_in\": false, \"miss\": \"left\", \"evidence\": \"text\"}\n```",
+        "thinking": "I'm setting up the ball's trajectory with initial position and velocity, factoring in air resistance using an ellipsoid drag model. First I'm checking the no-drag case: computing the time to travel 4 meters horizontally, then using that to find the ball's height at that point under gravity alone as a baseline.\n\nWithout drag, solving for when z drops to 3.05m gives roughly t=1.497s, landing around x=4.79, y=0.42 \u2014 well beyond the target. Now I'm estimating the actual drag force magnitude using MuJoCo's blunt drag coefficient (0.25), air density, and the ball's cross-sectional area to see how much that slows the velocity and pulls the landing point back toward 4m.\n\nI should check the vertical drift too\u2014the sideways motion of 0.28 m/s over the flight time could push the ball off-target given the rim clearance is only about 0.109 m. I'm trying to figure out, pixel-wise, where the arc actually lands in the image to see if it reaches the hoop's horizontal position at x=4.\n\nI'm trying to trace where the trajectory dots land relative to the hoop in the thumbnail, though it's hard to pin down exactly. Now I'm digging into MuJoCo's drag force formula for the ellipsoid model, trying to recall whether the blunt drag equation includes a 1/2 factor or not.\n\nWorking through the math, I estimate the default C_D_blunt of 0.5 is calibrated against a sphere's realistic drag coefficient near 0.47, suggesting an effective drag constant around 0.25, which gives roughly k = 0.022 per meter for this case. I'm also considering whether added mass effects apply in the ellipsoid model alongside viscous resistance, Kutta lift, and Magnus forces, though added mass for a sphere shouldn't contribute additional force here.\n\nNow I'm numerically integrating the trajectory step by step using a midpoint method with a rough timestep, starting from an initial velocity of about 9.84 m/s and computing the drag and gravity accelerations at each half-step to track how vx, vy, vz evolve over time.\n\nContinuing to t=0.5: position reaches roughly x=1.53, z=3.36, y=0.134, with velocity dropping to |v|\u22484.88, giving updated drag-adjusted accelerations around ax=-0.31, az=-10.22. I push through the midpoint calculation for the next half-step, getting |v|\u22483.91 and accelerations near ax=-0.25, az=-10.03, ay=-0.022, before moving on to evaluate t=0.75.\n\nContinuing the integration, I'm updating position and velocity through t=1.25, tracking drag deceleration as speed drops and vz flips negative from gravity's pull overtaking the upward motion.\n\nNow I'm solving for the exact time step needed so z reaches the target 3.05, setting up a quadratic in dt using the current velocity and acceleration, solving it to get dt\u22480.1038, then advancing x with that interval.\n\nContinuing, I get x\u22483.97 and y\u22480.347, so the ball lands nearly centered along x but offset in y. Checking clearance against the rim: the rim tube center sits at radius 0.2366 with tube radius 0.008, while the ball (radius ~0.119, plus 0.008 margin) is centered 0.347 out \u2014 comparing that gap to the combined radii suggests the ball may just clip the rim near the edge rather than passing cleanly through.\n\nSince 0.347 is well beyond the clean threshold of ~0.109, this is clearly a left miss, even accounting for numerical error \u2014 the x-position looks fine, but the y-offset drifts the ball outward. I can't tell much more from the thumbnail image itself, so I'll rely mainly on the text evidence rather than the picture.\n\n",
+        "input_tokens": 3430,
+        "output_tokens": 4676,
+        "cost_usd": 0.10724,
+        "stop_reason": "end_turn",
+        "served_model": "claude-opus-5-5",
+        "seconds": 49.82
+      }
+    },
+    {
+      "turn": 2,
+      "correction": {
+        "loaded": true,
+        "judged": {
+          "made": true,
+          "rim_center": [
+            4.0,
+            -0.0,
+            3.05
+          ],
+          "inner_radius": 0.224,
+          "launch_speed": 9.8344,
+          "launch_elevation_deg": 71.025,
+          "launch_azimuth_deg": 0.0,
+          "apex_z": 4.1087,
+          "landed_at_s": 1.8360000000000014,
+          "landed_xy": [
+            4.923,
+            0.0
+          ],
+          "touched": [
+            "support_pole",
+            "support_base"
+          ],
+          "load_log": [],
+          "along": -0.0288,
+          "across": 0.0,
+          "direction": "short",
+          "direction_basis": "ghost path crossing the rim plane",
+          "ghost_off_center": 0.0288,
+          "outcome": "made"
+        },
+        "other_changes": "",
+        "start_moved_m": 0.0,
+        "qvel": [
+          3.19778,
+          0.0,
+          9.3,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "made": true,
+        "made_valid": true
+      },
+      "usage": {
+        "text": "The miss is entirely sideways: along x the drag-adjusted arc already reaches rim height at x \u2248 3.97 m, almost exactly at the rim centre. The fix is to set the +y launch velocity to zero and leave vx and vz unchanged. Removing a 0.28 m/s component changes the speed by about 0.4%, so the drag and the x\u2013z path are effectively the same. The ball should reach z = 3.05 near x \u2248 3.97, y = 0, inside the 0.11 m clearance, and drop through. This is from my hand integration; I have not re-run the simulation.\n\n```xml\n<mujoco model=\"basketball_hoop\">\n  <option timestep=\"0.002\" density=\"1.2\"/>\n\n  <visual>\n    <headlight ambient=\"0.15 0.15 0.15\" diffuse=\"0.3 0.3 0.3\" specular=\"0 0 0\"/>\n  </visual>\n\n  <worldbody>\n    <!-- Lighting: main overhead directional light plus a softer fill spot above the hoop -->\n    <light name=\"overhead_sun\" directional=\"true\" pos=\"2 0 10\" dir=\"0 0 -1\" diffuse=\"0.8 0.8 0.8\" specular=\"0.2 0.2 0.2\" castshadow=\"true\"/>\n    <light name=\"overhead_fill\" pos=\"4 0 8\" dir=\"0 0 -1\" diffuse=\"0.3 0.3 0.3\" specular=\"0 0 0\" castshadow=\"false\"/>\n\n    <!-- Floor: top surface at z = 0 -->\n    <geom name=\"floor\" type=\"plane\" pos=\"0 0 0\" size=\"10 10 0.1\" rgba=\"0.72 0.52 0.32 1\" friction=\"0.8 0.005 0.0001\"/>\n\n    <!-- Regulation size-7 basketball: circumference 0.75 m -> radius 0.1194 m, mass ~0.62 kg (hollow shell inertia 2/3 m r^2) -->\n    <body name=\"ball\" pos=\"0 0 0.1194\">\n      <freejoint name=\"ball_free\"/>\n      <inertial pos=\"0 0 0\" mass=\"0.62\" diaginertia=\"0.005893 0.005893 0.005893\"/>\n      <geom name=\"ball\" type=\"sphere\" size=\"0.1194\" rgba=\"0.85 0.40 0.10 1\" friction=\"0.9 0.01 0.001\" solref=\"0.01 0.2\" fluidshape=\"ellipsoid\" fluidcoef=\"0.25 0.25 1.5 1.0 1.0\"/>\n    </body>\n\n    <!-- Hoop: origin at rim center, 4 m along +x, rim at 3.05 m. Fixed to the world (no joint). -->\n    <body name=\"hoop\" pos=\"4 0 3.05\">\n      <!-- Rim: 16 capsule segments, inner diameter 0.4572 m (18 in), tube radius 0.008 m, tube-center radius 0.2366 m -->\n      <geom name=\"rim_00\" type=\"capsule\" size=\"0.008\" fromto=\"0.2366 0 0 0.2186 0.0905 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_01\" type=\"capsule\" size=\"0.008\" fromto=\"0.2186 0.0905 0 0.1673 0.1673 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_02\" type=\"capsule\" size=\"0.008\" fromto=\"0.1673 0.1673 0 0.0905 0.2186 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_03\" type=\"capsule\" size=\"0.008\" fromto=\"0.0905 0.2186 0 0 0.2366 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_04\" type=\"capsule\" size=\"0.008\" fromto=\"0 0.2366 0 -0.0905 0.2186 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_05\" type=\"capsule\" size=\"0.008\" fromto=\"-0.0905 0.2186 0 -0.1673 0.1673 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_06\" type=\"capsule\" size=\"0.008\" fromto=\"-0.1673 0.1673 0 -0.2186 0.0905 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_07\" type=\"capsule\" size=\"0.008\" fromto=\"-0.2186 0.0905 0 -0.2366 0 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_08\" type=\"capsule\" size=\"0.008\" fromto=\"-0.2366 0 0 -0.2186 -0.0905 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_09\" type=\"capsule\" size=\"0.008\" fromto=\"-0.2186 -0.0905 0 -0.1673 -0.1673 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_10\" type=\"capsule\" size=\"0.008\" fromto=\"-0.1673 -0.1673 0 -0.0905 -0.2186 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_11\" type=\"capsule\" size=\"0.008\" fromto=\"-0.0905 -0.2186 0 0 -0.2366 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_12\" type=\"capsule\" size=\"0.008\" fromto=\"0 -0.2366 0 0.0905 -0.2186 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_13\" type=\"capsule\" size=\"0.008\" fromto=\"0.0905 -0.2186 0 0.1673 -0.1673 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_14\" type=\"capsule\" size=\"0.008\" fromto=\"0.1673 -0.1673 0 0.2186 -0.0905 0\" rgba=\"0.9 0.3 0.05 1\"/>\n      <geom name=\"rim_15\" type=\"capsule\" size=\"0.008\" fromto=\"0.2186 -0.0905 0 0.2366 0 0\" rgba=\"0.9 0.3 0.05 1\"/>\n\n      <!-- Bracket joining the back of the rim to the backboard face -->\n      <geom name=\"hoop_bracket\" type=\"box\" pos=\"0.3105 0 -0.01\" size=\"0.0705 0.05 0.012\" rgba=\"0.9 0.3 0.05 1\"/>\n\n      <!-- Backboard: 1.80 x 1.05 m, 0.03 m thick; front face 0.15 m behind the rim's inner edge (x = 0.381); bottom edge 0.15 m below rim -->\n      <geom name=\"backboard\" type=\"box\" pos=\"0.396 0 0.375\" size=\"0.015 0.9 0.525\" rgba=\"0.92 0.95 0.98 0.85\"/>\n      <!-- Target square painted on the backboard front (thin, visual only) -->\n      <geom name=\"backboard_square\" type=\"box\" pos=\"0.3805 0 0.145\" size=\"0.0005 0.295 0.225\" rgba=\"0.1 0.1 0.1 1\" contype=\"0\" conaffinity=\"0\"/>\n    </body>\n\n    <!-- Support: floor plate, vertical pole behind the backboard, and horizontal arm to the backboard's back face (x = 4.411) -->\n    <body name=\"hoop_support\" pos=\"5.2 0 0\">\n      <geom name=\"support_base\" type=\"box\" pos=\"0 0 0.025\" size=\"0.4 0.4 0.025\" rgba=\"0.2 0.2 0.25 1\"/>\n      <geom name=\"support_pole\" type=\"box\" pos=\"0 0 1.7\" size=\"0.1 0.1 1.7\" rgba=\"0.25 0.25 0.3 1\"/>\n      <geom name=\"support_arm\" type=\"box\" pos=\"-0.4445 0 3.3\" size=\"0.3445 0.06 0.06\" rgba=\"0.25 0.25 0.3 1\"/>\n    </body>\n  </worldbody>\n\n  <keyframe>\n    <key name=\"shot\" qvel=\"3.19778 0 9.3 0 0 0\"/>\n    <!-- Changed qvel y from 0.27977 to 0. The old sideways velocity carried the ball about 0.35 m to the\n         shooter's left (+y) by the time it fell to rim height, outside the 0.11 m centre clearance, so it\n         missed left. vx and vz are unchanged: with the scene's air drag they already bring the ball to rim\n         height at x ~ 3.97 m, on the rim centre, so with no sideways drift it drops through the hoop. -->\n  </keyframe>\n</mujoco>\n```",
+        "thinking": "I'll just zero out the vertical velocity component and keep x and z as they are, since the effect on overall speed is negligible \u2014 the horizontal position still lands around 3.97 at rim height, which works.\n\n",
+        "input_tokens": 8211,
+        "output_tokens": 3056,
+        "cost_usd": 0.093964,
+        "stop_reason": "end_turn",
+        "served_model": "claude-opus-5-5",
+        "seconds": 23.62
+      }
+    },
+    {
+      "turn": 3,
+      "shown": {
+        "made": true,
+        "rim_center": [
+          4.0,
+          -0.0,
+          3.05
+        ],
+        "inner_radius": 0.224,
+        "launch_speed": 9.8344,
+        "launch_elevation_deg": 71.025,
+        "launch_azimuth_deg": 0.0,
+        "apex_z": 4.1087,
+        "landed_at_s": 1.8360000000000014,
+        "landed_xy": [
+          4.923,
+          0.0
+        ],
+        "touched": [
+          "support_pole",
+          "support_base"
+        ],
+        "load_log": [],
+        "along": -0.0288,
+        "across": 0.0,
+        "direction": "short",
+        "direction_basis": "ghost path crossing the rim plane",
+        "ghost_off_center": 0.0288,
+        "outcome": "made"
+      },
+      "verdict": {
+        "description": "The ball rises in a high arc from x\u22480 to a peak near 4 m and descends at the hoop's x position, continuing below the rim toward the floor under the hoop. With no sideways velocity it stays on y=0, and by integration its centre crosses rim height at x\u22483.97, about 0.03 m from the rim centre, clearing the rim tubes on the way through. The side view is consistent with this; the plan view is too coarse at 64 px to confirm the y position directly.",
+        "goes_in": true,
+        "miss": "none",
+        "evidence": "both",
+        "miss_named": "none"
+      },
+      "correction": null,
+      "usage": {
+        "text": "**What I see:** The side elevation shows the same high arc as before. The ball rises from x\u22480, peaks a little above 4 m, and comes down at the hoop's x position, around 4 m at rim height. The later, darker copies continue below the rim toward the floor beneath the hoop. At 64\u00d764 I cannot resolve the plan band well enough to read y directly, so the picture confirms the arc reaches the hoop but not that the ball is centred sideways.\n\n**What the scene text says:** With the sideways velocity set to zero the ball stays on y = 0. My drag-included hand integration puts it at x \u2248 3.97 when its centre falls to 3.05 m. That is 0.03 m from the rim centre, well inside the 0.11 m clearance.\n\n**Rim clearance:** I checked the ball against the front and back rim tubes along the descent.\n- Entering, with the centre at x \u2248 3.88 and z \u2248 3.18, the nearest tube is 0.17 m away.\n- At rim height the nearest tube is about 0.21 m away.\n- Leaving, with the centre at x \u2248 4.06 and z \u2248 2.92, the back tube is about 0.22 m away.\n\nA tube touches the ball only within 0.127 m, so these margins mean it should drop through without touching the rim. The hand integration is coarse, but the margin is several times larger than its likely error.\n\n```json\n{\"description\": \"The ball rises in a high arc from x\u22480 to a peak near 4 m and descends at the hoop's x position, continuing below the rim toward the floor under the hoop. With no sideways velocity it stays on y=0, and by integration its centre crosses rim height at x\u22483.97, about 0.03 m from the rim centre, clearing the rim tubes on the way through. The side view is consistent with this; the plan view is too coarse at 64 px to confirm the y position directly.\", \"goes_in\": true, \"miss\": \"none\", \"evidence\": \"both\"}\n```",
+        "thinking": "The arc looks close enough at rim height, within clearance despite some coarse integration error. I still need to check that as the ball passes through the rim plane while moving forward, its body doesn't clip the front or back of the rim.\n\nChecking the geometry, the ball's trajectory through the rim plane stays well clear of both front and back tube edges at every stage of entry, so it threads through cleanly. The picture seems consistent with a made shot, though I can't fully resolve the fine detail, so I'll call it as going in but note the uncertainty.\n\n",
+        "input_tokens": 11799,
+        "output_tokens": 1261,
+        "cost_usd": 0.072416,
+        "stop_reason": "end_turn",
+        "served_model": "claude-opus-5-5",
+        "seconds": 17.99
+      }
+    }
+  ],
+  "named": "left",
+  "named_correctly": true,
+  "made_after_one": true,
+  "made_after_two": true,
+  "recheck_correct": true,
+  "tokens": {
+    "input": 23440,
+    "output": 8993,
+    "total": 32433
+  },
+  "cost_usd": 0.27362,
+  "served_models": [
+    "claude-opus-5-5"
+  ],
+  "stop_reasons": [
+    "end_turn",
+    "end_turn",
+    "end_turn"
+  ],
+  "finished_at": "20261004T060602Z"
+}
