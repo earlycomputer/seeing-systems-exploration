@@ -12,3 +12,11 @@ both misses came from a quick no-drag estimate ("1 m above the rim") that it tru
 the same shot it had designed by integrating the drag carefully. The runs found a harness bug (an XML
 comment counted as a scene change), fixed and rescored. The full matrix's other 128 runs would cost about
 $36 at the measured rates (1b about $40 in all, against the design's $25), which is Jono's call.
+
+**2026-10-04, finished.** All 144 runs, 0 failed cells; the other 128 cost $28.29, so 1b came to $32.82
+(with experiment 1, $40.45 of the $100 cap). Rescore changed nothing. GPT-6.1 Sol named the miss and made the
+shot after one correction in 72 of 72, text only included. Opus 5.5 named 63 of 72 and made 60 of 72; it did
+best with text only and numbers and worst with pictures at 128 px. The first embarrassment test passed, but text
+only did as well; the second failed, since the drafting view did no better than the camera. Results:
+`results/results.md`, the ten lines in `results/summary.md`, every run in `results/viewer.html`. The branch
+waits on Jono to merge into `main`.

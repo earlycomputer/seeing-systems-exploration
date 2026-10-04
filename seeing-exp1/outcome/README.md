@@ -29,7 +29,7 @@ changes nothing), which make no calls and write to `.dryrun/outcome/` (gitignore
 settings.py   every constant that changes a result
 shot.py       air, the keyframe, flying the shot, made or missed and which way, the deliberate misses
 draw.py       residue in experiment 1's camera and in the drafting view; the flight as numbers
-author.py     step 1; budget.py the spend cap; run.py one cell; matrix.py; report.py
+author.py     step 1; budget.py the spend cap; run.py one cell; matrix.py; report.py; viewer.py (viewer.html)
 prompts/      every prompt, as sent
 scene/        brief.txt, aired.xml, shot_authored.xml + .json (Opus's reply), base.xml + base.json
 results/      runs/<cell>/<timestamp>/ (every prompt, reply, raw response, image, measurement), spend.jsonl,

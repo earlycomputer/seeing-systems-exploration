@@ -13,5 +13,5 @@ The program lives in these docs:
 | # | Name | Directory | State |
 |---|------|-----------|-------|
 | 1 | Round trip | [`seeing-exp1/`](seeing-exp1/) | Matrix done; [results](seeing-exp1/results/results.md) |
-| 1b | See the outcome | [`seeing-exp1/outcome/`](seeing-exp1/outcome/) | Built; first real runs next ([status](seeing-exp1/outcome/STATUS.md)) |
-| 1c | Five worlds | [`seeing-exp1/worlds/`](seeing-exp1/worlds/) | Built; runs after 1b ([status](seeing-exp1/worlds/STATUS.md)) |
+| 1b | See the outcome | [`seeing-exp1/outcome/`](seeing-exp1/outcome/) | Done: text only was enough for a ballistic shot; GPT-6.1 Sol 72 of 72, Opus 5.5 60 of 72 and worse with pictures ([results](seeing-exp1/outcome/results/results.md), [status](seeing-exp1/outcome/STATUS.md)) |
+| 1c | Five worlds | [`seeing-exp1/worlds/`](seeing-exp1/worlds/) | Running: first 10 worlds ([status](seeing-exp1/worlds/STATUS.md)) |
