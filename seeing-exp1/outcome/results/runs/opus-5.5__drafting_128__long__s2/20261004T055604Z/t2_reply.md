@@ -1,0 +1,86 @@
+```xml
+<mujoco model="basketball_hoop">
+  <option timestep="0.002" density="1.2"/>
+
+  <visual>
+    <headlight ambient="0.15 0.15 0.15" diffuse="0.3 0.3 0.3" specular="0 0 0"/>
+  </visual>
+
+  <worldbody>
+    <!-- Lighting: main overhead directional light plus a softer fill spot above the hoop -->
+    <light name="overhead_sun" directional="true" pos="2 0 10" dir="0 0 -1" diffuse="0.8 0.8 0.8" specular="0.2 0.2 0.2" castshadow="true"/>
+    <light name="overhead_fill" pos="4 0 8" dir="0 0 -1" diffuse="0.3 0.3 0.3" specular="0 0 0" castshadow="false"/>
+
+    <!-- Floor: top surface at z = 0 -->
+    <geom name="floor" type="plane" pos="0 0 0" size="10 10 0.1" rgba="0.72 0.52 0.32 1" friction="0.8 0.005 0.0001"/>
+
+    <!-- Regulation size-7 basketball: circumference 0.75 m -> radius 0.1194 m, mass ~0.62 kg (hollow shell inertia 2/3 m r^2) -->
+    <body name="ball" pos="0 0 0.1194">
+      <freejoint name="ball_free"/>
+      <inertial pos="0 0 0" mass="0.62" diaginertia="0.005893 0.005893 0.005893"/>
+      <geom name="ball" type="sphere" size="0.1194" rgba="0.85 0.40 0.10 1" friction="0.9 0.01 0.001" solref="0.01 0.2" fluidshape="ellipsoid" fluidcoef="0.25 0.25 1.5 1.0 1.0"/>
+    </body>
+
+    <!-- Hoop: origin at rim center, 4 m along +x, rim at 3.05 m. Fixed to the world (no joint). -->
+    <body name="hoop" pos="4 0 3.05">
+      <!-- Rim: 16 capsule segments, inner diameter 0.4572 m (18 in), tube radius 0.008 m, tube-center radius 0.2366 m -->
+      <geom name="rim_00" type="capsule" size="0.008" fromto="0.2366 0 0 0.2186 0.0905 0" rgba="0.9 0.3 0.05 1"/>
+      <geom name="rim_01" type="capsule" size="0.008" fromto="0.2186 0.0905 0 0.1673 0.1673 0" rgba="0.9 0.3 0.05 1"/>
+      <geom name="rim_02" type="capsule" size="0.008" fromto="0.1673 0.1673 0 0.0905 0.2186 0" rgba="0.9 0.3 0.05 1"/>
+      <geom name="rim_03" type="capsule" size="0.008" fromto="0.0905 0.2186 0 0 0.2366 0" rgba="0.9 0.3 0.05 1"/>
+      <geom name="rim_04" type="capsule" size="0.008" fromto="0 0.2366 0 -0.0905 0.2186 0" rgba="0.9 0.3 0.05 1"/>
+      <geom name="rim_05" type="capsule" size="0.008" fromto="-0.0905 0.2186 0 -0.1673 0.1673 0" rgba="0.9 0.3 0.05 1"/>
+      <geom name="rim_06" type="capsule" size="0.008" fromto="-0.1673 0.1673 0 -0.2186 0.0905 0" rgba="0.9 0.3 0.05 1"/>
+      <geom name="rim_07" type="capsule" size="0.008" fromto="-0.2186 0.0905 0 -0.2366 0 0" rgba="0.9 0.3 0.05 1"/>
+      <geom name="rim_08" type="capsule" size="0.008" fromto="-0.2366 0 0 -0.2186 -0.0905 0" rgba="0.9 0.3 0.05 1"/>
+      <geom name="rim_09" type="capsule" size="0.008" fromto="-0.2186 -0.0905 0 -0.1673 -0.1673 0" rgba="0.9 0.3 0.05 1"/>
+      <geom name="rim_10" type="capsule" size="0.008" fromto="-0.1673 -0.1673 0 -0.0905 -0.2186 0" rgba="0.9 0.3 0.05 1"/>
+      <geom name="rim_11" type="capsule" size="0.008" fromto="-0.0905 -0.2186 0 0 -0.2366 0" rgba="0.9 0.3 0.05 1"/>
+      <geom name="rim_12" type="capsule" size="0.008" fromto="0 -0.2366 0 0.0905 -0.2186 0" rgba="0.9 0.3 0.05 1"/>
+      <geom name="rim_13" type="capsule" size="0.008" fromto="0.0905 -0.2186 0 0.1673 -0.1673 0" rgba="0.9 0.3 0.05 1"/>
+      <geom name="rim_14" type="capsule" size="0.008" fromto="0.1673 -0.1673 0 0.2186 -0.0905 0" rgba="0.9 0.3 0.05 1"/>
+      <geom name="rim_15" type="capsule" size="0.008" fromto="0.2186 -0.0905 0 0.2366 0 0" rgba="0.9 0.3 0.05 1"/>
+
+      <!-- Bracket joining the back of the rim to the backboard face -->
+      <geom name="hoop_bracket" type="box" pos="0.3105 0 -0.01" size="0.0705 0.05 0.012" rgba="0.9 0.3 0.05 1"/>
+
+      <!-- Backboard: 1.80 x 1.05 m, 0.03 m thick; front face 0.15 m behind the rim's inner edge (x = 0.381); bottom edge 0.15 m below rim -->
+      <geom name="backboard" type="box" pos="0.396 0 0.375" size="0.015 0.9 0.525" rgba="0.92 0.95 0.98 0.85"/>
+      <!-- Target square painted on the backboard front (thin, visual only) -->
+      <geom name="backboard_square" type="box" pos="0.3805 0 0.145" size="0.0005 0.295 0.225" rgba="0.1 0.1 0.1 1" contype="0" conaffinity="0"/>
+    </body>
+
+    <!-- Support: floor plate, vertical pole behind the backboard, and horizontal arm to the backboard's back face (x = 4.411) -->
+    <body name="hoop_support" pos="5.2 0 0">
+      <geom name="support_base" type="box" pos="0 0 0.025" size="0.4 0.4 0.025" rgba="0.2 0.2 0.25 1"/>
+      <geom name="support_pole" type="box" pos="0 0 1.7" size="0.1 0.1 1.7" rgba="0.25 0.25 0.3 1"/>
+      <geom name="support_arm" type="box" pos="-0.4445 0 3.3" size="0.3445 0.06 0.06" rgba="0.25 0.25 0.3 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="shot" qvel="3.52 0 8.58 0 0 0"/>
+  </keyframe>
+  <!-- Changed shot qvel from "3.5952 0 10.416 0 0 0" to "3.52 0 8.58 0 0 0".
+       The old launch peaked near 5.6 m and passed about 2.5 m over the rim, clearing the backboard and pole and landing past the hoop (a long miss).
+       The new launch was solved without drag for a 1.2 s flight from the rest position (0, 0.1194) to the rim center (4, 3.05): vx = 3.33, vz = 8.33.
+       That flight peaks near 3.65 m and arrives descending at about 46 degrees.
+       I then raised vx about 5% and vz about 0.25 m/s to make up for an estimated air-drag loss (density 1.2, blunt coefficient 0.25).
+       The drag size is estimated, not simulated, so the arrival point is uncertain by roughly 0.1-0.2 m.
+       The ball has about 0.11 m of clearance to the rim on each side. -->
+</mujoco>
+```
+
+---
+thinking (summarized):
+
+I need a trajectory from the start point to the target point that descends slightly, factoring in some drag. I'm testing a launch angle around 55 degrees, working out the required velocity using the projectile motion equation before adjusting for drag effects.
+
+I'm trying to pin down MuJoCo's blunt drag formula for the ellipsoid model — estimating projected area from the ball radius and working out the resulting deceleration, landing somewhere around 0.9-1.7 m/s² depending on which coefficient form is correct.
+
+The previous shot's observed landing distance (about 6.5-7m vs 7.6m predicted without drag) suggests a 10-15% loss, which I'm using to back out a plausible drag coefficient k, then checking how it would affect horizontal velocity decay over the flight time.
+
+Correcting vx upward by about 5.6% to roughly 3.52 to compensate for drag loss, then estimating the vertical displacement loss from drag by integrating the velocity deceleration over the flight time, since the upward and downward phases partially cancel out.
+
+Checking clearance at the rim given the descent angle, the horizontal error tolerance seems acceptable even accounting for vertical error converting into horizontal shift, and backboard/rim bounce could help if slightly off. I'm confirming apex height clears comfortably and the trajectory doesn't clip the backboard before reaching the rim, then settling on initial velocity values to set.
+
