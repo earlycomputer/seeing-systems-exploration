@@ -77,7 +77,10 @@ Each is logged here so it shows its origin; the ones that change the design are 
   the top of its frame.
 - **Numbers**: the ball's center every 0.05 s to the millimetre, with the landing as the last row.
 - **Turns.** Turn 2 asks for a change to the `shot` key's qvel only. A correction counts only if nothing
-  else in the file changed and the ball still starts where it rests. If the turn-2 file cannot run, turn 3
+  else in the file changed and the ball still starts where it rests. XML comments do not count as changes,
+  wherever they sit: the prompt asks for one, and Opus put its comment just after `</keyframe>`. The
+  first batch ran with a check that counted it; `python -m outcome.rescore` re-judged those runs from
+  their saved files and kept the old verdicts under `superseded` in each run.json. If the turn-2 file cannot run, turn 3
   sends MuJoCo's error instead of a readback. If turn 3 gives no file, the turn-2 correction stands.
 - **Seeds** set the dot sampling, so each seed is a slightly different picture and an independent sample.
   For text only and numbers, seeds are plain repeats.

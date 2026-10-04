@@ -25,6 +25,11 @@ Ideas that came up while building experiment 1b. Not in code; each needs a human
   predicted the ball would clear the front and back rim by about 7 cm. MuJoCo put it 1.4 cm from the center.
   That is a strong first data point for "text only": for a ballistic shot, thinking it through may be enough.
 
+- **A harness bug the first batch found.** The check that a correction changed nothing but the keyframe
+  counted an XML comment as a change. The correction prompt asks for a comment "after the key", and Opus
+  put it just after `</keyframe>`, so a correction MuJoCo made (7 mm from the rim's center) was scored as
+  a miss. Fixed by ignoring comments; `outcome/rescore.py` re-judged the saved files.
+
 ## What the pictures show, before any model has looked
 
 From contact sheets of the base and each miss at 512, 128 and 64 px, made during the build (not committed):

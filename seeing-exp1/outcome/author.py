@@ -29,11 +29,15 @@ from outcome.settings import (AIRED_SCENE, BASE_RECORD, BASE_SCENE, DRYRUN_DIR, 
 
 SYSTEM = "You write MuJoCo MJCF scenes that load on the first try and that a person can read."
 KEYFRAME_BLOCK = re.compile(r"[ \t]*<keyframe>.*?</keyframe>[ \t]*\n?", re.S)
+COMMENT = re.compile(r"<!--.*?-->", re.S)
 
 
 def other_changes(aired: str, authored: str) -> str:
-    """The diff between the two files once the keyframe element is taken out; empty when only it was added."""
-    strip = lambda s: [ln.strip() for ln in KEYFRAME_BLOCK.sub("", s).splitlines() if ln.strip()]  # noqa: E731
+    """The diff between the two files once the keyframe element and every XML comment are taken out; empty
+    when nothing MuJoCo reads changed outside the keyframe. Comments are ignored because the correction
+    prompt asks for one, and a model may put it just outside the keyframe element."""
+    strip = lambda s: [ln.strip() for ln in KEYFRAME_BLOCK.sub("", COMMENT.sub("", s)).splitlines()  # noqa: E731
+                       if ln.strip()]
     return "\n".join(difflib.unified_diff(strip(aired), strip(authored), "aired", "authored", lineterm="", n=0))
 
 
