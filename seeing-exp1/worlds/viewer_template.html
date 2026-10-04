@@ -101,6 +101,12 @@ figure.view canvas { display: block; width: 100%; height: 100%; touch-action: no
 figure.view canvas:active { cursor: grabbing; }
 .hud { position: absolute; left: 10px; top: 8px; font: 500 0.85rem var(--mono); color: var(--ink); background: color-mix(in srgb, var(--sheet) 80%, transparent); padding: 2px 8px; pointer-events: none; font-variant-numeric: tabular-nums; }
 .hint { position: absolute; right: 10px; bottom: 8px; font-size: 0.78rem; color: var(--muted); pointer-events: none; }
+svg.draftmarks { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+svg.draftmarks text { font: 11px var(--mono); fill: var(--muted); }
+svg.draftmarks .band { font: 500 12px var(--display); letter-spacing: 0.08em; text-transform: uppercase; fill: var(--muted); }
+svg.draftmarks line { stroke: var(--muted); stroke-width: 1; }
+svg.draftmarks .ground { stroke: var(--ink); stroke-width: 1.5; }
+svg.draftmarks .frame { fill: none; stroke: var(--rule); }
 .nogl { position: absolute; inset: 0; display: grid; place-items: center; padding: 20px; text-align: center; color: var(--muted); }
 .controls { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
 .play { min-width: 5.5em; }
@@ -156,12 +162,14 @@ pre.xml { margin: 8px 0 0; max-height: 360px; overflow: auto; background: var(--
       <figure class="view" id="view">
         <canvas id="canvas" tabindex="0" aria-label="The world running in 3D"></canvas>
         <div class="hud" id="hud">t 0.00 s</div>
-        <div class="hint">drag to turn · scroll or pinch to zoom</div>
+        <svg class="draftmarks" id="marks" aria-hidden="true" style="display: none"></svg>
+        <div class="hint" id="hint">drag to turn · scroll or pinch to zoom</div>
       </figure>
       <div class="controls">
         <button class="play" id="play" type="button">Pause</button>
         <input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Time in the run">
         <div class="seg" role="group" aria-label="Speed" id="speed"></div>
+        <div class="seg" role="group" aria-label="View" id="mode"><button type="button" aria-pressed="true">3D</button><button type="button" aria-pressed="false">Drafting</button></div>
         <button id="trail" type="button" aria-pressed="false">Trail</button>
         <button id="reset" type="button">Reset view</button>
       </div>
@@ -211,6 +219,7 @@ function versionName(v, i) {
 }
 
 function outcome(w) {
+  if (w.passes_first && !w.passes_final) return { cls: "fails", mark: "", text: "worked as first written, broken by a fix" };
   if (w.passes_first) return { cls: "first", mark: "", text: "works as first written" };
   if (w.passes_final) return { cls: "fixed", mark: String(w.passed_at_round), text: `fixed in round ${w.passed_at_round}` };
   return { cls: "fails", mark: "", text: "still fails at the end" };
@@ -288,7 +297,7 @@ sun.shadow.bias = -0.0004;
 scene.add(hemi, sun, sun.target);
 
 let root = null, grids = [], movers = [], ghosts = [], world = null, version = null, anim = null;
-let t = 0, playing = !reduced, speed = 1, trailOn = false, holdUntil = 0, last = performance.now();
+let t = 0, playing = !reduced, speed = 1, trailOn = false, holdUntil = 0, last = performance.now(), mode = "3d";
 const box = { lo: new THREE.Vector3(), hi: new THREE.Vector3() };
 
 function rgb(c) { return new THREE.Color().setRGB(c[0], c[1], c[2], THREE.SRGBColorSpace); }
@@ -323,7 +332,7 @@ function disposeTree(o) {
 
 function build(v) {
   if (root) { scene.remove(root); disposeTree(root); }
-  root = new THREE.Group(); grids = []; movers = []; ghosts = [];
+  root = new THREE.Group(); grids = []; movers = []; ghosts = []; draftKey = "";
   scene.add(root);
   anim = v.anim;
   if (!anim) return;
@@ -437,6 +446,88 @@ function show(time) {
   $("scrub").value = String(Math.round((time / end()) * 1000));
 }
 
+// ---- drafting view: side elevation (looking along +y) over plan (looking down), one scale, as the model's picture
+const side = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 1000), plan = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 1000);
+side.up.set(0, 0, 1); plan.up.set(0, 1, 0);
+let draftKey = "";
+
+function niceStep(span) {
+  const raw = span / 6, p = Math.pow(10, Math.floor(Math.log10(raw)));
+  return [1, 2, 5, 10].map((k) => k * p).find((v) => v >= raw);
+}
+
+function draftLayout(w, h) {
+  const m = 0.25, X0 = box.lo.x - m, X1 = box.hi.x + m, Z0 = Math.min(box.lo.z, 0) - m, Z1 = box.hi.z + m;
+  const Y0 = box.lo.y - m, Y1 = box.hi.y + m, pad = { l: 46, r: 14, t: 50, mid: 40, b: 30 };
+  const s = Math.min((w - pad.l - pad.r) / (X1 - X0), (h - pad.t - pad.mid - pad.b) / (Z1 - Z0 + Y1 - Y0));
+  const bw = (X1 - X0) * s, x = pad.l + (w - pad.l - pad.r - bw) / 2;
+  const sideBand = { x, y: pad.t, w: bw, h: (Z1 - Z0) * s, u0: X0, u1: X1, v0: Z0, v1: Z1 };
+  const planBand = { x, y: pad.t + sideBand.h + pad.mid, w: bw, h: (Y1 - Y0) * s, u0: X0, u1: X1, v0: Y0, v1: Y1 };
+  return { s, sideBand, planBand, X0, X1, Y0, Y1, Z0, Z1 };
+}
+
+function marks(L, w, h) {
+  const step = niceStep(L.X1 - L.X0), out = [];
+  const px = (b, u) => b.x + ((u - b.u0) / (b.u1 - b.u0)) * b.w, py = (b, v) => b.y + b.h - ((v - b.v0) / (b.v1 - b.v0)) * b.h;
+  const fmt = (v) => (Math.abs(v) < 1e-9 ? "0" : String(Math.round(v * 100) / 100));
+  const narrow = w < 520;
+  for (const [b, label, vname] of [[L.sideBand, narrow ? "Side · along +y" : "Side elevation · looking along +y", "z"], [L.planBand, narrow ? "Plan" : "Plan · looking down", "y"]]) {
+    out.push(`<rect class="frame" x="${b.x}" y="${b.y}" width="${b.w}" height="${b.h}"/>`);
+    out.push(`<text class="band" x="${b.x}" y="${b.y - 8}">${label}</text>`);
+    const vs = niceStep(b.v1 - b.v0);
+    for (let v = Math.ceil(b.v0 / vs) * vs; v <= b.v1 + 1e-9; v += vs) {
+      const y = py(b, v);
+      out.push(`<line x1="${b.x - 5}" y1="${y}" x2="${b.x}" y2="${y}"/><text x="${b.x - 8}" y="${y + 4}" text-anchor="end">${fmt(v)}</text>`);
+    }
+    out.push(`<text x="${b.x - 8}" y="${b.y + b.h + 14}" text-anchor="end">${vname} m</text>`);
+  }
+  const b = L.sideBand, gy = py(b, 0);
+  out.push(`<line class="ground" x1="${b.x}" y1="${gy}" x2="${b.x + b.w}" y2="${gy}"/>`);
+  const pb = L.planBand;
+  for (let u = Math.ceil(pb.u0 / step) * step; u <= pb.u1 + 1e-9; u += step) {
+    const x = px(pb, u);
+    out.push(`<line x1="${x}" y1="${pb.y + pb.h}" x2="${x}" y2="${pb.y + pb.h + 5}"/><text x="${x}" y="${pb.y + pb.h + 18}" text-anchor="middle">${fmt(u)}</text>`);
+  }
+  out.push(`<text x="${pb.x + pb.w}" y="${pb.y + pb.h + 18}" text-anchor="start" dx="8">x m</text>`);
+  $("marks").setAttribute("viewBox", `0 0 ${w} ${h}`);
+  $("marks").innerHTML = out.join("");
+}
+
+function renderDraft() {
+  const el = renderer.domElement, w = el.clientWidth, h = el.clientHeight;
+  if (!anim || !w || !h) return;
+  const L = draftLayout(w, h), cx = (L.X0 + L.X1) / 2;
+  const key = [w, h, L.X0, L.X1, L.Y0, L.Y1, L.Z0, L.Z1].join(",");
+  if (key !== draftKey) { marks(L, w, h); draftKey = key; }
+  const hx = (L.X1 - L.X0) / 2, hz = (L.Z1 - L.Z0) / 2, hy = (L.Y1 - L.Y0) / 2, cz = (L.Z0 + L.Z1) / 2, cy = (L.Y0 + L.Y1) / 2;
+  Object.assign(side, { left: -hx, right: hx, top: hz, bottom: -hz, far: L.Y1 - L.Y0 + 200 });
+  side.position.set(cx, L.Y0 - 100, cz); side.lookAt(cx, L.Y1, cz); side.updateProjectionMatrix();
+  Object.assign(plan, { left: -hx, right: hx, top: hy, bottom: -hy, far: L.Z1 - L.Z0 + 200 });
+  plan.position.set(cx, cy, L.Z1 + 100); plan.lookAt(cx, cy, L.Z0); plan.updateProjectionMatrix();
+  renderer.setScissorTest(true);
+  renderer.setViewport(0, 0, w, h); renderer.setScissor(0, 0, w, h);
+  renderer.setClearColor(new THREE.Color(css("--sheet"))); renderer.clear();
+  for (const [b, cam] of [[L.sideBand, side], [L.planBand, plan]]) {
+    const y = h - b.y - b.h;  // WebGL counts up from the bottom
+    renderer.setViewport(b.x, y, b.w, b.h); renderer.setScissor(b.x, y, b.w, b.h);
+    renderer.render(scene, cam);
+  }
+  renderer.setScissorTest(false);
+  renderer.setViewport(0, 0, w, h);
+}
+
+function setMode(m) {
+  mode = m;
+  [...$("mode").children].forEach((b, i) => b.setAttribute("aria-pressed", String((i === 1) === (m === "draft"))));
+  $("marks").style.display = m === "draft" ? "" : "none"; $("hint").hidden = m === "draft"; $("reset").hidden = m === "draft";
+  if (controls) controls.enabled = m === "3d";
+  sun.castShadow = m === "3d";  // in a plan view a shadow reads as another object
+  if (m === "draft" && !trailOn) $("trail").click();  // the drafting view is the model's picture, running: show its residue
+  draftKey = "";
+  caption();
+}
+[...$("mode").children].forEach((b, i) => b.addEventListener("click", () => setMode(i === 1 ? "draft" : "3d")));
+
 function tick(now) {
   const dt = Math.min(0.1, (now - last) / 1000); last = now;
   if (playing && anim) {
@@ -444,8 +535,8 @@ function tick(now) {
     else { t += dt * speed; if (t >= end()) { t = end(); holdUntil = now + 1200; } }
   }
   show(t);
-  if (controls) controls.update();
-  if (renderer) renderer.render(scene, camera);
+  if (renderer && mode === "draft") renderDraft();
+  else if (renderer) { if (controls) controls.update(); renderer.render(scene, camera); }
   requestAnimationFrame(tick);
 }
 
@@ -495,7 +586,7 @@ function panel(w, vi) {
     if (w.arm === "picture") {
       h += `<h3>What it was shown in round ${sh.round}</h3>`;
       h += sh.image ? `<img class="px" src="${sh.image}" alt="The ${DATA.res} px residue picture the model was sent in round ${sh.round}">` +
-        `<p class="caption">The ${DATA.res} px picture it was sent, exactly: this run drawn as residue in the drafting view, side elevation over plan. Turn on Trail to see the same moments in 3D.</p>`
+        `<p class="caption">The ${DATA.res} px picture it was sent, exactly: this run drawn as residue in the drafting view, side elevation over plan. Switch to Drafting to watch this same view at full size, with Trail showing the same moments.</p>`
         : `<p class="textonly">No picture: the file did not run.</p>`;
     } else {
       h += `<h3>What it was shown in round ${sh.round}</h3><p class="textonly">Nothing. Text only: it was asked to check its own file again and say what it expects to happen.</p>`;
@@ -529,10 +620,20 @@ function pick(vi) {
   t = 0; holdUntil = 0;
   panel(world, vi);
   const a = v.anim;
+  caption();
+}
+
+function caption() {
+  if (!world) return;
+  const v = world.versions[version], a = v.anim;
+  const moving = a && a.moving.length ? a.bodies.filter((b) => a.moving.includes(b.b)).map((b) => b.name || `body ${b.b}`).join(", ") : "nothing";
+  const how = mode === "draft"
+    ? "Drawn in the drafting view the model's picture used: side elevation over plan, one scale, in metres. Trail shows the 24 moments its residue was drawn from."
+    : "Grid lines are 1 m apart.";
   $("caption").textContent = !a ? "This file did not run, so there is nothing to show." :
     (a.diverged ? `The simulation blew up: ${a.diverged}. ` : "") +
-    `Played from MuJoCo's own run of this file at ${DATA.fps} frames a second. Moving: ${a.moving.length ? a.bodies.filter((b) => a.moving.includes(b.b)).map((b) => b.name || `body ${b.b}`).join(", ") : "nothing"}. Grid lines are 1 m apart.`;
-  $("canvas").setAttribute("aria-label", `${BRIEF_NAMES[world.brief]} world, ${versionName(v, vi).toLowerCase()}, running in 3D`);
+    `Played from MuJoCo's own run of this file at ${DATA.fps} frames a second. Moving: ${moving}. ${how}`;
+  $("canvas").setAttribute("aria-label", `${BRIEF_NAMES[world.brief]} world, ${versionName(v, version).toLowerCase()}, running ${mode === "draft" ? "in the drafting view" : "in 3D"}`);
 }
 
 function select(id, vi = 0, scroll = false) {
