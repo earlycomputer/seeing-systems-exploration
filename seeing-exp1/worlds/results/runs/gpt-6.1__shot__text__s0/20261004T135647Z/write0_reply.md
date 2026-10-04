@@ -1,0 +1,99 @@
+```xml
+<mujoco model="basketball_launch">
+  <compiler angle="degree"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="RK4"/>
+  <visual>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.65 0.65 0.65" specular="0.2 0.2 0.2"/>
+    <rgba haze="0.85 0.9 0.95 1"/>
+  </visual>
+
+  <worldbody>
+    <light name="court_light" pos="1 -3 8" dir="0.2 0.3 -1" directional="true" diffuse="0.8 0.8 0.8"/>
+    <camera name="overview" pos="7 -10 6" xyaxes="0.894427 0.447214 0 -0.182574 0.365148 0.912871" fovy="45"/>
+
+    <geom name="floor" type="plane" pos="0 0 0" size="8 6 0.1" rgba="0.66 0.48 0.28 1" friction="0.8 0.005 0.0001"/>
+
+    <!-- Regulation-size basketball: diameter 0.24 m, mass 0.624 kg. -->
+    <body name="ball" pos="0 0 0.12">
+      <freejoint/>
+      <geom name="ball" type="sphere" size="0.12" mass="0.624" rgba="0.9 0.28 0.035 1" friction="0.6 0.005 0.0001"/>
+    </body>
+
+    <!-- Rim center is 4 m horizontally from launch and 3.05 m above the floor. -->
+    <body name="hoop" pos="4 0 3.05">
+      <!-- An approximately 0.457 m clear opening, built from 18 mm diameter steel capsules. -->
+      <geom name="rim_00" type="capsule" fromto="0.237600 0 0 0.233035 0.046352 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_01" type="capsule" fromto="0.233035 0.046352 0 0.219514 0.090926 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_02" type="capsule" fromto="0.219514 0.090926 0 0.197557 0.132003 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_03" type="capsule" fromto="0.197557 0.132003 0 0.168009 0.168009 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_04" type="capsule" fromto="0.168009 0.168009 0 0.132003 0.197557 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_05" type="capsule" fromto="0.132003 0.197557 0 0.090926 0.219514 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_06" type="capsule" fromto="0.090926 0.219514 0 0.046352 0.233035 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_07" type="capsule" fromto="0.046352 0.233035 0 0 0.237600 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_08" type="capsule" fromto="0 0.237600 0 -0.046352 0.233035 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_09" type="capsule" fromto="-0.046352 0.233035 0 -0.090926 0.219514 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_10" type="capsule" fromto="-0.090926 0.219514 0 -0.132003 0.197557 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_11" type="capsule" fromto="-0.132003 0.197557 0 -0.168009 0.168009 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_12" type="capsule" fromto="-0.168009 0.168009 0 -0.197557 0.132003 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_13" type="capsule" fromto="-0.197557 0.132003 0 -0.219514 0.090926 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_14" type="capsule" fromto="-0.219514 0.090926 0 -0.233035 0.046352 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_15" type="capsule" fromto="-0.233035 0.046352 0 -0.237600 0 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_16" type="capsule" fromto="-0.237600 0 0 -0.233035 -0.046352 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_17" type="capsule" fromto="-0.233035 -0.046352 0 -0.219514 -0.090926 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_18" type="capsule" fromto="-0.219514 -0.090926 0 -0.197557 -0.132003 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_19" type="capsule" fromto="-0.197557 -0.132003 0 -0.168009 -0.168009 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_20" type="capsule" fromto="-0.168009 -0.168009 0 -0.132003 -0.197557 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_21" type="capsule" fromto="-0.132003 -0.197557 0 -0.090926 -0.219514 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_22" type="capsule" fromto="-0.090926 -0.219514 0 -0.046352 -0.233035 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_23" type="capsule" fromto="-0.046352 -0.233035 0 0 -0.237600 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_24" type="capsule" fromto="0 -0.237600 0 0.046352 -0.233035 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_25" type="capsule" fromto="0.046352 -0.233035 0 0.090926 -0.219514 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_26" type="capsule" fromto="0.090926 -0.219514 0 0.132003 -0.197557 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_27" type="capsule" fromto="0.132003 -0.197557 0 0.168009 -0.168009 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_28" type="capsule" fromto="0.168009 -0.168009 0 0.197557 -0.132003 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_29" type="capsule" fromto="0.197557 -0.132003 0 0.219514 -0.090926 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_30" type="capsule" fromto="0.219514 -0.090926 0 0.233035 -0.046352 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_31" type="capsule" fromto="0.233035 -0.046352 0 0.237600 0 0" size="0.009" rgba="0.95 0.22 0.035 1"/>
+      <geom name="rim_mount" type="box" pos="0.31 0 -0.0135" size="0.075 0.045 0.01" rgba="0.95 0.22 0.035 1"/>
+
+      <body name="backboard" pos="0.3935 0 0.375">
+        <geom name="backboard_pane" type="box" size="0.0125 0.9 0.525" rgba="0.72 0.85 0.92 0.35"/>
+        <geom name="backboard_border_top" type="box" pos="-0.016 0 0.515" size="0.004 0.9 0.01" rgba="0.95 0.95 0.95 1"/>
+        <geom name="backboard_border_bottom" type="box" pos="-0.016 0 -0.515" size="0.004 0.9 0.01" rgba="0.95 0.95 0.95 1"/>
+        <geom name="backboard_border_left" type="box" pos="-0.016 -0.89 0" size="0.004 0.01 0.525" rgba="0.95 0.95 0.95 1"/>
+        <geom name="backboard_border_right" type="box" pos="-0.016 0.89 0" size="0.004 0.01 0.525" rgba="0.95 0.95 0.95 1"/>
+        <geom name="target_top" type="box" pos="-0.016 0 0.084" size="0.004 0.295 0.009" rgba="0.95 0.95 0.95 1"/>
+        <geom name="target_bottom" type="box" pos="-0.016 0 -0.366" size="0.004 0.295 0.009" rgba="0.95 0.95 0.95 1"/>
+        <geom name="target_left" type="box" pos="-0.016 -0.286 -0.141" size="0.004 0.009 0.225" rgba="0.95 0.95 0.95 1"/>
+        <geom name="target_right" type="box" pos="-0.016 0.286 -0.141" size="0.004 0.009 0.225" rgba="0.95 0.95 0.95 1"/>
+      </body>
+    </body>
+
+    <body name="goal_support" pos="4.9 0 0">
+      <geom name="support_left_post" type="box" pos="0 -1.03 1.8" size="0.06 0.06 1.8" rgba="0.16 0.2 0.25 1"/>
+      <geom name="support_right_post" type="box" pos="0 1.03 1.8" size="0.06 0.06 1.8" rgba="0.16 0.2 0.25 1"/>
+      <geom name="support_crossbar" type="box" pos="0 0 3.55" size="0.06 1.09 0.06" rgba="0.16 0.2 0.25 1"/>
+      <geom name="support_left_arm" type="capsule" fromto="0 -0.85 3.55 -0.5 -0.85 3.55" size="0.035" rgba="0.16 0.2 0.25 1"/>
+      <geom name="support_right_arm" type="capsule" fromto="0 0.85 3.55 -0.5 0.85 3.55" size="0.035" rgba="0.16 0.2 0.25 1"/>
+      <geom name="support_left_foot" type="box" pos="0 -1.03 0.05" size="0.5 0.18 0.05" rgba="0.16 0.2 0.25 1"/>
+      <geom name="support_right_foot" type="box" pos="0 1.03 0.05" size="0.5 0.18 0.05" rgba="0.16 0.2 0.25 1"/>
+    </body>
+  </worldbody>
+
+  <!-- Ideal ballistic trajectory reaches (4, 0, 3.05) at t = 1.25 s, descending at 3.78725 m/s. -->
+  <keyframe>
+    <key name="start" qpos="0 0 0.12 1 0 0 0" qvel="3.2 0 8.47525 0 0 0"/>
+  </keyframe>
+</mujoco>
+```
+
+---
+thinking (summarized):
+
+**Exploring floor ball bounce simulation**
+
+I'm thinking about how a floor ball bounce can be simulated, but it seems like there are no controls involved in that process. I wonder how different factors would affect the bounce. Maybe gravity, surface texture, or even the ball's material come into play. It’s interesting trying to visualize how these elements might interact without any direct control. I’m curious about how this could be displayed or modeled!
+
+**Evaluating bounce parameters**
+
+I'm exploring how default contact drop dampening could affect visibility and overall bounce properties. It seems like the shape, size, and mass could be more crucial than the bounce factor. I'm considering using specific references for stability and safety in my calculations, particularly looking at the damping coefficients and their impact on restitution. It’s interesting to see how these elements interact in this physics context, particularly with various damping ratios I’m analyzing.
