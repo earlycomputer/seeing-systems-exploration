@@ -30,6 +30,7 @@ fixtures/     a hand-written world per brief that passes its own test; never sen
 draw.py       the picture readback for any world: residue of whatever moves, framed to fit the run
 prompts/      every prompt, as sent
 run.py        one world;  matrix.py  every world;  report.py  the generated tables;  budget.py  the cap
+sensitivity.py  the catapult under a second reading of "3 m away" (results/sensitivity.md)
 results/      runs/<world>/<timestamp>/ (every prompt, reply, file, image, test result), spend.jsonl
 ```
 
@@ -75,3 +76,8 @@ results/      runs/<world>/<timestamp>/ (every prompt, reply, file, image, test 
 - **Size.** 5 briefs × 2 arms × 2 seeds × 2 models = 40 worlds. Seeds set the dot sampling for the picture
   arm and are plain repeats for text. Rough estimate $33, from 1b's cost per call.
 - **Spend.** 1c has its own ledger; the cap check adds experiments 1 and 1b, so all three stay under $100.
+- **The catapult's distance, read two ways, after the runs.** The test measures "a bucket 3 m away" from
+  where the ball starts. Three catapults fail only on that, with buckets about 3.2 m from the catapult.
+  The pre-registered verdicts stand; `python -m worlds.sensitivity` re-runs each catapult's last file and
+  reports the same test measured from the catapult's centre, beside them. It changes no result in
+  `results.md`.
