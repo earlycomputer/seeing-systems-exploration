@@ -27,7 +27,13 @@ def fixture(b: str) -> str:
     return ((FIXTURES_DIR if BRIEFS[b]["kind"] == "new" else FIXTURES_1C) / f"{b}.xml").read_text()
 
 
-def variants() -> list[tuple[str, str, str, str]]:
+def leaning() -> str:
+    """The dominoes with the first starting tipped 20 degrees and released, instead of spun: a fair reading of the brief."""
+    return fixture("dominoes").replace('qpos="0.00 0 0.08 1 0 0 0 ', 'qpos="0.02 0 0.08 0.9848 0 0.1736 0 ').replace(
+        'qvel="0 0 0 0 4 0 ', 'qvel="0 0 0 0 0 0 ')
+
+
+def variants():
     """(brief, what it is, edited xml, the check that must fail)."""
     d, p = fixture("dominoes"), fixture("pendulum")
     gap = d.replace('<body name="domino6" pos="0.50', '<body name="domino6" pos="0.80')
@@ -36,9 +42,12 @@ def variants() -> list[tuple[str, str, str, str]]:
     gap = gap.replace(" ".join(f"{0.1 * (i - 1):.2f} 0 0.08 1 0 0 0" for i in range(6, 11)),
                       " ".join(f"{0.1 * (i - 1) + 0.3:.2f} 0 0.08 1 0 0 0" for i in range(6, 11)))
     pushed = d.replace('qvel="0 0 0 0 4 0 0 0 0 0 0 0 ', 'qvel="0 0 0 0 4 0 0 0 0 0 4 0 ')
+    second_leaning = d.replace('0.10 0 0.08 1 0 0 0 ', '0.12 0 0.08 0.9848 0 0.1736 0 ')
     return [
         ("dominoes", "a gap after the fifth domino", gap, "every domino ends tilted at least 15 degrees"),
         ("dominoes", "the second domino also set moving", pushed, "only the first domino is set moving"),
+        ("dominoes", "the second domino starts leaning 20 degrees", second_leaning,
+         "ten dominoes on the floor at the start, the other nine upright"),
         ("pendulum", "released too low", p.replace('qpos="1.1 0.1', 'qpos="0.5 0.1'), "ball ends in the cup"),
         ("pendulum", "the cup 1.4 m away", p.replace('<body name="cup" pos="1.1 0 0">', '<body name="cup" pos="1.5 0 0">'),
          "cup's centre 1 m from where the ball starts (0.9 to 1.1 m)"),
@@ -63,6 +72,8 @@ def main() -> int:
         j = tests.judge(BRIEFS[b]["test"], breaks.broken(b))
         fails = [k for k, v in (j.get("checks") or {}).items() if not v]
         check(not j.get("passed") and BREAK_TRIPS[b] in fails, f"broken {b} fails, tripping '{BREAK_TRIPS[b]}' ({fails})")
+    j = tests.judge("dominoes", leaning())
+    check(bool(j.get("passed")), f"dominoes, the first starting tipped 20 degrees and released: passes ({[k for k, v in j['checks'].items() if not v]})")
     for b, what, xml, must in variants():
         j = tests.judge(b, xml)
         fails = [k for k, v in (j.get("checks") or {}).items() if not v]

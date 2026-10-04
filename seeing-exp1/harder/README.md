@@ -30,6 +30,7 @@ settings.py   the seven briefs, the five breaks, the arms, every constant
 tests.py      1c's five tests (unchanged) plus dominoes and pendulum
 breaks.py     writes broken/<brief>.xml from 1c's fixtures and settings.BREAKS
 selftest.py   every test checked both ways, every break checked to fail, the residue fix checked
+rescore.py    re-judges every saved file with the current tests, keeping old verdicts under `superseded`
 fixtures/     hand-written dominoes and pendulum worlds that pass their tests; never sent to a model
 broken/       the five broken worlds, exactly as sent
 run.py        one world;  matrix.py  every world;  report.py  the tables;  budget.py  the cap and 1d's ceiling
@@ -82,3 +83,10 @@ results/      runs/<world>/<timestamp>/ in 1c's layout (every file as XML, world
 - **Size, spend and the first runs.** 7 briefs × 2 arms × 4 seeds × 2 models = 112. The first runs are seed 0
   of every brief and arm (28). If their rate projects 1d over $25, it stops for Jono; `budget.py` also refuses
   any call once 1d has spent $25.
+- **A test flaw the first runs found, fixed and rescored.** The dominoes test required all ten dominoes to
+  start upright. Three of the first four dominoes worlds started the first domino leaning 15 to 20 degrees,
+  a fair reading of "the first is tipped over", and were failed for it. The test now requires only the other
+  nine to start upright (`selftest.py` checks that a leaning first domino passes and a leaning second one fails).
+  `python -m harder.rescore` re-judged every saved file: 3 worlds changed from fail to pass. Each world.json
+  keeps its old verdicts under `superseded`. The tests never reach the models or steer the loop, so the
+  re-judged verdicts are exactly what the fixed test would have given live.

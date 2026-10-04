@@ -50,7 +50,8 @@ def test_dominoes(run: Run) -> dict:
     in_order = all(t_move[k] is not None for k in range(10)) and all(t_move[k] < t_move[k + 1] for k in range(1, 9)) \
         and t_move[0] <= t_move[1]
     checks = {
-        "ten dominoes stand upright on the floor at the start": all(a <= 10 for a in tilt0) and all(z < 0.01 for z in bottoms),
+        # The first may start already tipped ("the first is tipped over"); the other nine must stand upright.
+        "ten dominoes on the floor at the start, the other nine upright": all(a <= 10 for a in tilt0[1:]) and all(z < 0.01 for z in bottoms),
         "only the first domino is set moving": all(v < 1e-6 for v in v0[1:]),
         "they fall in order, each after the one before": in_order,
         "every domino ends tilted at least 15 degrees": all(a >= 15 for a in tilt1),
