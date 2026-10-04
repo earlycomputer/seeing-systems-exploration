@@ -40,3 +40,25 @@ From contact sheets of the base and each miss at 512, 128 and 64 px, made during
   In the plan view it is a small circle.
 - The short miss comes down through rim height 0.86 m in front of the rim and lands under the backboard,
   touching nothing. The long miss goes over the board and lands behind the pole.
+
+## What the full matrix showed (2026-10-04)
+
+- **Text only was at the top.** Both models worked the flight out from the keyframe with drag. The left miss is
+  a y velocity in the text, and edited qvels carry four decimals where the unedited scene keeps "3.21 0 9.3",
+  so the text says whether the shot was changed (not which way). A next outcome test should edit the shot in a
+  way the text cannot give away, or make the outcome depend on contacts.
+- **Opus's quick estimate.** In 7 of its 9 wrong calls (all "long") Opus said the ball is "about 1 m above the
+  rim" at the hoop's distance, a no-drag number, and described the picture as agreeing. Without drag that is
+  roughly right; with drag the shot goes in. It integrated the drag carefully when it wrote the shot and when
+  it had text only, but not when it had a picture to look at.
+- **Pictures at 128 px were worse for Opus than at 64.** At 64 px it often said the picture was too coarse (or,
+  for the left miss, that the camera looks along +y and cannot show it) and worked from the text. At 128 px it
+  read the picture, and every run cited "both".
+- **Opus's corrections from pictures land short.** All 12 failed first corrections fell 0.26 to 0.52 m short,
+  and shown that short shot on turn 3 it said "goes in" 9 times. It over-corrects downward and then does not
+  see the result.
+- **GPT-6.1 Sol cites "both" almost always** (44 of 48 picture runs; "picture" alone 4 times). Its
+  descriptions are short and pictorial ("descends beyond the hoop"), so the picture probably helps it agree
+  with its own calculation, but this design cannot separate the two.
+- **Another session added `viewer.py`** (every shot animated, every run's readback and words) while the
+  matrix ran; merged, regenerated with all 144 runs. It changes no result.
