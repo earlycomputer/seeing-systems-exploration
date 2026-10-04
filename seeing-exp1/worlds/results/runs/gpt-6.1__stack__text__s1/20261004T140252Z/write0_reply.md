@@ -1,0 +1,59 @@
+```xml
+<mujoco model="five_blocks_topple">
+  <compiler angle="radian"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100" cone="elliptic"/>
+  <size njmax="1000" nconmax="200"/>
+
+  <visual>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.65 0.65 0.65" specular="0.2 0.2 0.2"/>
+    <map znear="0.01"/>
+  </visual>
+
+  <worldbody>
+    <light name="main_light" pos="-3 -4 6" dir="0.3 0.4 -1" directional="true"/>
+    <camera name="overview" pos="3 -4 2.4" xyaxes="0.8 0.6 0 -0.216 0.288 0.933"/>
+
+    <geom name="floor" type="plane" pos="0 0 0" size="4 4 0.1" friction="0.7 0.005 0.0001" condim="3" rgba="0.78 0.80 0.82 1"/>
+
+    <body name="block1" pos="0 0 0.1">
+      <freejoint name="block1_free"/>
+      <geom name="block1_geom" type="box" size="0.1 0.1 0.1" mass="1" friction="0.7 0.005 0.0001" condim="3" solref="0.008 1" solimp="0.95 0.99 0.001" rgba="0.85 0.25 0.18 1"/>
+    </body>
+
+    <body name="block2" pos="0 0 0.3">
+      <freejoint name="block2_free"/>
+      <geom name="block2_geom" type="box" size="0.1 0.1 0.1" mass="1" friction="0.7 0.005 0.0001" condim="3" solref="0.008 1" solimp="0.95 0.99 0.001" rgba="0.95 0.52 0.15 1"/>
+    </body>
+
+    <body name="block3" pos="0 0 0.5">
+      <freejoint name="block3_free"/>
+      <geom name="block3_geom" type="box" size="0.1 0.1 0.1" mass="1" friction="0.7 0.005 0.0001" condim="3" solref="0.008 1" solimp="0.95 0.99 0.001" rgba="0.93 0.76 0.20 1"/>
+    </body>
+
+    <body name="block4" pos="0 0 0.7">
+      <freejoint name="block4_free"/>
+      <geom name="block4_geom" type="box" size="0.1 0.1 0.1" mass="1" friction="0.7 0.005 0.0001" condim="3" solref="0.008 1" solimp="0.95 0.99 0.001" rgba="0.25 0.65 0.40 1"/>
+    </body>
+
+    <body name="block5" pos="0 0 0.9">
+      <freejoint name="block5_free"/>
+      <geom name="block5_geom" type="box" size="0.1 0.1 0.1" mass="1" friction="0.7 0.005 0.0001" condim="3" solref="0.008 1" solimp="0.95 0.99 0.001" rgba="0.20 0.45 0.85 1"/>
+    </body>
+
+    <!-- The initial gap gives the stack about 0.3 seconds to stand before impact. -->
+    <!-- The ram contacts only the bottom block and pushes it out from under the stack. -->
+    <body name="pusher" pos="-0.6 0 0.14">
+      <joint name="pusher_slide" type="slide" axis="1 0 0" limited="true" range="0 0.85" damping="0.5" armature="0.02"/>
+      <geom name="pusher_geom" type="box" size="0.09 0.09 0.035" mass="5" friction="0.5 0.005 0.0001" condim="3" solref="0.008 1" solimp="0.95 0.99 0.001" rgba="0.22 0.24 0.28 1"/>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <motor name="push_motor" joint="pusher_slide" gear="1" ctrllimited="true" ctrlrange="0 45"/>
+  </actuator>
+
+  <keyframe>
+    <key name="start" ctrl="45"/>
+  </keyframe>
+</mujoco>
+```

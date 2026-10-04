@@ -1,0 +1,43 @@
+A damped hinge spring swings the initially open door closed and keeps it at the shut angle.
+
+```xml
+<mujoco model="self_closing_door">
+  <compiler angle="radian"/>
+  <option timestep="0.002"/>
+
+  <visual>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.7 0.7 0.7" specular="0.2 0.2 0.2"/>
+  </visual>
+
+  <asset>
+    <material name="floor_material" rgba="0.32 0.35 0.38 1"/>
+    <material name="frame_material" rgba="0.75 0.77 0.80 1"/>
+    <material name="door_material" rgba="0.48 0.24 0.10 1"/>
+    <material name="handle_material" rgba="0.75 0.77 0.80 1" metallic="0.8" roughness="0.25"/>
+  </asset>
+
+  <worldbody>
+    <light name="main_light" pos="1 -3 5" dir="0 0 -1" directional="true"/>
+    <camera name="overview" pos="3.5 -4.5 3.0" xyaxes="0.8 0.6 0 -0.18 0.24 0.954"/>
+
+    <geom name="floor" type="plane" size="5 5 0.1" material="floor_material"/>
+
+    <body name="frame">
+      <geom name="hinge_jamb" type="box" pos="-0.10 0 1.15" size="0.06 0.08 1.15" material="frame_material"/>
+      <geom name="closing_jamb" type="box" pos="1.10 0 1.15" size="0.06 0.08 1.15" material="frame_material"/>
+      <geom name="frame_header" type="box" pos="0.50 0 2.23" size="0.66 0.08 0.07" material="frame_material"/>
+    </body>
+
+    <body name="door" pos="0 0 0.08">
+      <joint name="hinge" type="hinge" pos="0 0 0" axis="0 0 1" limited="true" range="0 1.45" stiffness="90" springref="0" damping="44" armature="0.01" solreflimit="0.008 1"/>
+      <geom name="door_panel" type="box" pos="0.50 0 1.00" size="0.50 0.035 1.00" mass="16" material="door_material"/>
+      <geom name="handle_stem" type="capsule" fromto="0.88 -0.035 1.02 0.88 -0.08 1.02" size="0.012" mass="0.03" material="handle_material"/>
+      <geom name="handle_grip" type="capsule" fromto="0.82 -0.08 1.02 0.94 -0.08 1.02" size="0.015" mass="0.12" material="handle_material"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start" qpos="1.2" qvel="0"/>
+  </keyframe>
+</mujoco>
+```
