@@ -14,3 +14,4 @@ The program lives in these docs:
 |---|------|-----------|-------|
 | 1 | Round trip | [`seeing-exp1/`](seeing-exp1/) | Matrix done; [results](seeing-exp1/results/results.md) |
 | 1b | See the outcome | [`seeing-exp1/outcome/`](seeing-exp1/outcome/) | Built; first real runs next ([status](seeing-exp1/outcome/STATUS.md)) |
+| 1c | Five worlds | [`seeing-exp1/worlds/`](seeing-exp1/worlds/) | Built; runs after 1b ([status](seeing-exp1/worlds/STATUS.md)) |

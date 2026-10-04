@@ -58,5 +58,5 @@ SEEDS = (0, 1)
 # VIEW is "drafting" or "camera"; set from 1b's results before any 1c run (journal, decision log).
 VIEW = "drafting"
 RES = 128
-RESIDUE_COPIES = 16  # copies of each moving body across the active part of the run, older lighter
+RESIDUE_COPIES = 24  # copies of each moving body, evenly spaced in time over the active part of the run, older lighter
 REST_SPEED = 0.05  # m/s: a body slower than this is at rest
