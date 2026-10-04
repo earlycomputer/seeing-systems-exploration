@@ -16,6 +16,7 @@ python -m worlds.matrix --plan                       # what would run, rough cos
 python -m worlds.matrix --first                      # seed 0, picture arm, every brief, both models
 python -m worlds.matrix                              # all 40 worlds, 4 at a time, skips done worlds
 python -m worlds.report                              # results/results.md
+python -m worlds.viewer                              # results/viewer.html: every world running in 3D
 ```
 
 `--model dry-run` writes the hand-written world for each brief and says it works; `--model dry-run-echo`
@@ -31,6 +32,8 @@ draw.py       the picture readback for any world: residue of whatever moves, fra
 prompts/      every prompt, as sent
 run.py        one world;  matrix.py  every world;  report.py  the generated tables;  budget.py  the cap
 sensitivity.py  the catapult under a second reading of "3 m away" (results/sensitivity.md)
+viewer.py     results/viewer.html: each saved file run again in MuJoCo and played in 3D in the browser, with its
+              test, the picture the model was sent and its words (template: viewer_template.html)
 results/      runs/<world>/<timestamp>/ (every prompt, reply, file, image, test result), spend.jsonl
 ```
 
