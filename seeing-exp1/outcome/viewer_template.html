@@ -1,0 +1,440 @@
+<title>See the Outcome</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a drafting sheet. Each flight is drawn as the experiment's own drafting view (side elevation over
+   plan, one scale, metres), data set in a mono hand, ball orange reserved for what a model did. */
+:root {
+  --paper: #f3f5f6;
+  --sheet: #fbfcfc;
+  --ink: #1c2632;
+  --muted: #5a6774;
+  --rule: #d2d9df;
+  --struct: #e2e7eb;
+  --ball: #d9661a;
+  --second: #2c64a8;
+  --miss: #7b8794;
+  --good: #2b8150;
+  --bad: #b8323f;
+  --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #11161b; --sheet: #161c22; --ink: #e2e7ec; --muted: #95a1ad; --rule: #2b343d;
+    --struct: #27313a; --ball: #f0803a; --second: #74a6e6; --miss: #8b97a3; --good: #56b982; --bad: #ee6b79;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #11161b; --sheet: #161c22; --ink: #e2e7ec; --muted: #95a1ad; --rule: #2b343d;
+  --struct: #27313a; --ball: #f0803a; --second: #74a6e6; --miss: #8b97a3; --good: #56b982; --bad: #ee6b79;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font: 15px/1.55 var(--body); }
+.sheet { max-width: 1120px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 64px; display: grid; gap: 44px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 600; letter-spacing: 0.01em; text-wrap: balance; margin: 0; line-height: 1.1; }
+h1 { font-size: clamp(2.4rem, 6vw, 3.6rem); }
+h2 { font-size: 1.75rem; }
+h3 { font-size: 1.3rem; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow, .label { font-family: var(--display); font-weight: 500; text-transform: uppercase; letter-spacing: 0.09em; font-size: 0.82rem; color: var(--muted); }
+.mono, .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+section { display: grid; gap: 14px; }
+.titleblock { display: grid; gap: 12px; border-bottom: 2px solid var(--ink); padding-bottom: 20px; }
+.lede { font-size: 1.05rem; }
+.stamp { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 4px 0 0; }
+.stamp div { display: grid; }
+.stamp dt { font-family: var(--display); text-transform: uppercase; letter-spacing: 0.09em; font-size: 0.75rem; color: var(--muted); }
+.stamp dd { margin: 0; font-family: var(--mono); font-size: 0.95rem; }
+.intro { color: var(--muted); }
+
+/* drafting view */
+figure { margin: 0; background: var(--sheet); border: 1px solid var(--rule); padding: 10px; }
+svg.draft { width: 100%; height: auto; display: block; }
+svg.draft text { font-family: var(--mono); fill: var(--muted); }
+svg.draft .bandlabel { font-family: var(--display); letter-spacing: 0.08em; font-size: 13px; text-transform: uppercase; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--rule); background: var(--sheet); }
+.seg button { border: 0; border-right: 1px solid var(--rule); }
+.seg button:last-child { border-right: 0; }
+button { font: 500 0.9rem var(--body); color: var(--ink); background: var(--sheet); border: 1px solid var(--rule); padding: 6px 12px; cursor: pointer; }
+button:hover { background: var(--struct); }
+button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--ball); outline-offset: 2px; }
+.play { min-width: 5.5em; }
+input[type=range] { flex: 1 1 160px; accent-color: var(--ball); min-width: 0; }
+.tread { min-width: 6.5em; color: var(--muted); }
+.caption { color: var(--muted); font-size: 0.92rem; }
+.key { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 0.9rem; }
+.key span { display: inline-flex; align-items: center; gap: 7px; }
+.swatch { width: 12px; height: 12px; border-radius: 50%; display: inline-block; flex: none; }
+
+/* results grid */
+.models { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 470px), 1fr)); gap: 28px; }
+.model { display: grid; gap: 8px; min-width: 0; }
+.tally { color: var(--muted); font-size: 0.9rem; }
+.tablewrap { overflow-x: auto; }
+table.grid { border-collapse: collapse; width: 100%; min-width: 420px; }
+table.grid th { font-family: var(--display); font-weight: 500; text-transform: uppercase; letter-spacing: 0.07em; font-size: 0.8rem; color: var(--muted); text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--ink); }
+table.grid td { padding: 7px 8px; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+table.grid td.cond { font-size: 0.9rem; white-space: nowrap; }
+.seeds { display: inline-flex; gap: 6px; }
+.seedbtn { width: 22px; height: 22px; padding: 0; border: 1px solid var(--ink); background: linear-gradient(to bottom, var(--n) 0 50%, var(--m) 50% 100%); }
+.seedbtn:hover { filter: brightness(1.1); }
+.seedbtn.pending { background: transparent; border: 1px dashed var(--muted); cursor: default; }
+.seedbtn.sel { outline: 2px solid var(--ball); outline-offset: 2px; }
+.legendrow { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; font-size: 0.88rem; color: var(--muted); }
+.legendrow .seedbtn { cursor: default; flex: none; }
+
+/* one run */
+.runhead { display: grid; gap: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { font: 500 0.82rem var(--body); padding: 3px 10px; border: 1px solid var(--rule); background: var(--sheet); }
+.chip.good { border-color: var(--good); color: var(--good); }
+.chip.bad { border-color: var(--bad); color: var(--bad); }
+.runbody { display: grid; grid-template-columns: minmax(0, 330px) minmax(0, 1fr); gap: 24px; align-items: start; }
+.col { display: grid; gap: 12px; min-width: 0; }
+img.px { image-rendering: pixelated; width: 100%; max-width: 330px; aspect-ratio: 1; border: 1px solid var(--rule); background: #fff; display: block; }
+.textonly { border: 1px dashed var(--rule); background: var(--sheet); padding: 18px; color: var(--muted); font-size: 0.92rem; }
+blockquote { margin: 0; padding: 10px 14px; border-left: 3px solid var(--ball); background: var(--sheet); font-size: 0.93rem; }
+.turn3 { display: grid; grid-template-columns: minmax(0, 200px) minmax(0, 1fr); gap: 18px; align-items: start; border-top: 1px solid var(--rule); padding-top: 16px; }
+.turn3 img.px { max-width: 200px; }
+.files { color: var(--muted); font-size: 0.8rem; overflow-wrap: anywhere; }
+@media (max-width: 760px) {
+  .runbody, .turn3 { grid-template-columns: minmax(0, 1fr); }
+  img.px { max-width: 260px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<main class="sheet">
+  <header class="titleblock">
+    <p class="eyebrow">Seeing Systems · Experiment 1b</p>
+    <h1>See the Outcome</h1>
+    <p class="lede">Can a model correct a shot when it can only judge it by where the ball went? Opus 5.5 wrote the shot. The harness then missed it on purpose, each model was shown one readback of the miss, and MuJoCo judged every correction.</p>
+    <dl class="stamp" id="stamp"></dl>
+  </header>
+
+  <section id="shots" aria-labelledby="shots-h">
+    <h2 id="shots-h">The shots</h2>
+    <p class="intro">Opus's own shot, which goes in as written, and the three misses made from it with a one-line edit to its launch. Drawn as the experiment's drafting view: a side elevation over a plan from above, at one scale, in metres. A ball is drawn every 0.1 s, older copies lighter.</p>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Which shot" id="shotpick"></div>
+      <button class="play" id="shot-play" type="button">Replay</button>
+      <input type="range" id="shot-scrub" min="0" max="1000" value="1000" aria-label="Time in the flight">
+      <span class="tread num" id="shot-t"></span>
+    </div>
+    <figure><svg class="draft" id="shot-svg" role="img" aria-label="Side elevation and plan of the selected shot"></svg></figure>
+    <p class="caption" id="shot-caption"></p>
+  </section>
+
+  <section id="results" aria-labelledby="results-h">
+    <h2 id="results-h">Every run</h2>
+    <p class="intro">Each square is one run: one model, one readback, one miss, one seed. Pick a square to see what the model was shown, what it said, and where its corrections flew.</p>
+    <div class="legendrow">
+      <span><button class="seedbtn" type="button" tabindex="-1" aria-hidden="true" style="--n: var(--good); --m: var(--good)"></button> top: named the miss · bottom: the shot went in, in the end</span>
+      <span><button class="seedbtn" type="button" tabindex="-1" aria-hidden="true" style="--n: var(--good); --m: var(--bad)"></button> named it, still missed</span>
+      <span><button class="seedbtn" type="button" tabindex="-1" aria-hidden="true" style="--n: var(--bad); --m: var(--good)"></button> named it wrong, made it anyway</span>
+      <span><button class="seedbtn pending" type="button" tabindex="-1" aria-hidden="true"></button> not run yet</span>
+    </div>
+    <div class="models" id="grids"></div>
+  </section>
+
+  <section id="run" aria-labelledby="run-h">
+    <h2 id="run-h">One run</h2>
+    <div class="runhead" id="runhead"></div>
+    <div class="runbody">
+      <div class="col" id="runseen"></div>
+      <div class="col">
+        <div class="controls">
+          <button class="play" id="run-play" type="button">Replay</button>
+          <input type="range" id="run-scrub" min="0" max="1000" value="1000" aria-label="Time in the flight">
+          <span class="tread num" id="run-t"></span>
+        </div>
+        <figure><svg class="draft" id="run-svg" role="img" aria-label="The deliberate miss and the model's corrections"></svg></figure>
+        <div class="key" id="runkey"></div>
+      </div>
+    </div>
+    <div id="runturn3"></div>
+    <p class="files mono" id="runfiles"></p>
+  </section>
+</main>
+
+<script>
+const DATA = /*__DATA__*/null;
+const NS = "http://www.w3.org/2000/svg";
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const MISS_LABEL = { none: "Made (base)", short: "Short", long: "Long", left: "Left" };
+const ROLE = {
+  ref: { color: "var(--miss)", label: "Opus's shot, made", faint: true },
+  miss: { color: "var(--miss)", label: "Deliberate miss" },
+  c1: { color: "var(--ball)", label: "Correction 1" },
+  c2: { color: "var(--second)", label: "Correction 2" },
+};
+const el = (tag, attrs = {}, parent) => {
+  const n = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+  if (parent) parent.appendChild(n);
+  return n;
+};
+const h = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+const fmt = (v, d = 2) => (v == null ? "n/a" : Number(v).toFixed(d));
+const stepText = (miss, s) => miss === "none" ? "" : s.kind === "aim" ? ` ${s.step}°` : ` ${s.step > 0 ? "+" : "−"}${Math.abs(s.step * 100)}%`;
+const outcomeText = f => f.made ? "made" : f.outcome;
+
+// ---- drafting view: side elevation over plan, one scale, metres ----
+function DraftView(svg) {
+  const V = DATA.view, G = DATA.geometry;
+  const W = 800, padL = 34, padR = 10, s = (W - padL - padR) / (V.x[1] - V.x[0]);
+  const top = 22, sideH = (V.z[1] - V.z[0]) * s, gap = 50, planTop = top + sideH + gap, planH = (V.y[1] - V.y[0]) * s;
+  const H = planTop + planH + 8;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const X = x => padL + (x - V.x[0]) * s, Zs = z => top + (V.z[1] - z) * s, Yp = y => planTop + (V.y[1] - y) * s;
+  // bands
+  el("rect", { x: padL, y: top, width: W - padL - padR, height: sideH, fill: "none", stroke: "var(--rule)" }, svg);
+  el("rect", { x: padL, y: planTop, width: W - padL - padR, height: planH, fill: "none", stroke: "var(--rule)" }, svg);
+  el("text", { x: padL, y: top - 7, class: "bandlabel" }, svg).textContent = "Side elevation · looking along +y";
+  el("text", { x: padL, y: planTop - 7, class: "bandlabel" }, svg).textContent = "Plan · looking down, +y is the shooter's left";
+  // metre ticks
+  for (let x = Math.ceil(V.x[0]); x <= V.x[1]; x++) {
+    el("line", { x1: X(x), x2: X(x), y1: Zs(0), y2: Zs(0) + 6, stroke: "var(--muted)" }, svg);
+    el("text", { x: X(x), y: Zs(0) + 20, "text-anchor": "middle", "font-size": 12 }, svg).textContent = x === 0 ? "0 m" : x;
+    el("line", { x1: X(x), x2: X(x), y1: planTop + planH, y2: planTop + planH - 5, stroke: "var(--rule)" }, svg);
+  }
+  for (let z = 1; z <= V.z[1]; z++) {
+    el("line", { x1: padL - 5, x2: padL, y1: Zs(z), y2: Zs(z), stroke: "var(--muted)" }, svg);
+    el("text", { x: padL - 8, y: Zs(z) + 4, "text-anchor": "end", "font-size": 12 }, svg).textContent = z;
+  }
+  for (const y of [-1, 0, 1]) {
+    el("line", { x1: padL - 5, x2: padL, y1: Yp(y), y2: Yp(y), stroke: "var(--muted)" }, svg);
+    el("text", { x: padL - 8, y: Yp(y) + 4, "text-anchor": "end", "font-size": 12 }, svg).textContent = y;
+  }
+  el("line", { x1: padL, x2: W - padR, y1: Zs(0), y2: Zs(0), stroke: "var(--ink)", "stroke-width": 1.2 }, svg);
+  // the still scene
+  const geo = el("g", {}, svg);
+  for (const b of G.boxes) {
+    el("rect", { x: X(b.lo[0]), y: Zs(b.hi[2]), width: Math.max(1.5, (b.hi[0] - b.lo[0]) * s), height: Math.max(1.5, (b.hi[2] - b.lo[2]) * s), fill: "var(--struct)", stroke: "var(--ink)", "stroke-width": 0.8 }, geo);
+  }
+  for (const b of [...G.boxes].sort((p, q) => p.hi[2] - q.hi[2])) {
+    el("rect", { x: X(b.lo[0]), y: Yp(b.hi[1]), width: Math.max(1.5, (b.hi[0] - b.lo[0]) * s), height: Math.max(1.5, (b.hi[1] - b.lo[1]) * s), fill: "var(--struct)", stroke: "var(--ink)", "stroke-width": 0.8 }, geo);
+  }
+  for (const c of G.segs) {
+    const w = Math.max(1.6, 2 * c.r * s);
+    el("line", { x1: X(c.a[0]), y1: Zs(c.a[2]), x2: X(c.b[0]), y2: Zs(c.b[2]), stroke: "var(--ink)", "stroke-width": w, "stroke-linecap": "round" }, geo);
+    el("line", { x1: X(c.a[0]), y1: Yp(c.a[1]), x2: X(c.b[0]), y2: Yp(c.b[1]), stroke: "var(--ink)", "stroke-width": w, "stroke-linecap": "round" }, geo);
+  }
+  const R = G.ball_r * s;
+  el("text", { x: X(G.rim[0]), y: Zs(G.rim[2]) + 18, "text-anchor": "middle", "font-size": 11 }, svg).textContent = "rim 3.05 m";
+
+  let flights = [];
+  const layer = el("g", {}, svg);
+  function residueIdx(f) {
+    const out = [], last = f.t[f.t.length - 1];
+    for (let k = 0; k * 0.1 <= last + 1e-9; k++) {
+      let best = 0;
+      for (let i = 0; i < f.t.length; i++) if (Math.abs(f.t[i] - k * 0.1) < Math.abs(f.t[best] - k * 0.1)) best = i;
+      out.push(best);
+    }
+    if (out[out.length - 1] !== f.t.length - 1) out.push(f.t.length - 1);
+    return out;
+  }
+  function at(f, t) {
+    const T = f.t; if (t >= T[T.length - 1]) return f.p[T.length - 1];
+    let i = 0; while (i < T.length - 2 && T[i + 1] <= t) i++;
+    const a = (t - T[i]) / (T[i + 1] - T[i] || 1), p = f.p[i], q = f.p[i + 1];
+    return [p[0] + a * (q[0] - p[0]), p[1] + a * (q[1] - p[1]), p[2] + a * (q[2] - p[2])];
+  }
+  return {
+    duration() { return Math.max(0.1, ...flights.map(f => f.f.t[f.f.t.length - 1])); },
+    set(list) {
+      layer.replaceChildren(); flights = [];
+      list.forEach((item, k) => {
+        const role = ROLE[item.role], g = el("g", {}, layer), idx = residueIdx(item.f);
+        const res = idx.map((i, j) => {
+          const w = 0.3 + 0.7 * (j / Math.max(1, idx.length - 1)), op = role.faint ? 0.18 + 0.22 * w : w;
+          const p = item.f.p[i];
+          return { t: item.f.t[i],
+            a: el("circle", { cx: X(p[0]), cy: Zs(p[2]), r: R, fill: role.color, "fill-opacity": op * 0.55, stroke: role.color, "stroke-opacity": op, "stroke-width": 1 }, g),
+            b: el("circle", { cx: X(p[0]), cy: Yp(p[1]), r: R, fill: role.color, "fill-opacity": op * 0.55, stroke: role.color, "stroke-opacity": op, "stroke-width": 1 }, g) };
+        });
+        const ballA = role.faint ? null : el("circle", { r: R + 1.5, fill: role.color, stroke: "var(--sheet)", "stroke-width": 1.5 }, g);
+        const ballB = role.faint ? null : el("circle", { r: R + 1.5, fill: role.color, stroke: "var(--sheet)", "stroke-width": 1.5 }, g);
+        const end = item.f.p[item.f.p.length - 1];
+        const lab = role.faint ? null : el("text", { x: X(end[0]) + R + 6, y: Zs(end[2]) - R - 8 - 19 * k, "font-size": 15, fill: role.color, style: `fill:${role.color};font-weight:500` }, g);
+        if (lab) lab.textContent = outcomeText(item.f);
+        flights.push({ f: item.f, res, ballA, ballB, lab });
+      });
+    },
+    time(t) {
+      for (const F of flights) {
+        for (const r of F.res) { const v = r.t <= t + 1e-9 ? "visible" : "hidden"; r.a.setAttribute("visibility", v); r.b.setAttribute("visibility", v); }
+        if (F.ballA) {
+          const p = at(F.f, t);
+          F.ballA.setAttribute("cx", X(p[0])); F.ballA.setAttribute("cy", Zs(p[2]));
+          F.ballB.setAttribute("cx", X(p[0])); F.ballB.setAttribute("cy", Yp(p[1]));
+        }
+        if (F.lab) F.lab.setAttribute("visibility", t >= F.f.t[F.f.t.length - 1] - 1e-9 ? "visible" : "hidden");
+      }
+    },
+  };
+}
+
+function Player(view, playBtn, scrub, readout) {
+  let t = 0, raf = null, last = null;
+  const show = () => { view.time(t); scrub.value = Math.round(1000 * t / view.duration()); readout.textContent = `t = ${t.toFixed(2)} s`; };
+  const stop = () => { if (raf) cancelAnimationFrame(raf); raf = null; playBtn.textContent = "Replay"; };
+  const frame = now => {
+    if (last != null) t = Math.min(view.duration(), t + (now - last) / 1000);
+    last = now; show();
+    if (t >= view.duration()) return stop();
+    raf = requestAnimationFrame(frame);
+  };
+  playBtn.addEventListener("click", () => {
+    if (raf) return stop();
+    if (t >= view.duration() - 1e-6) t = 0;
+    last = null; playBtn.textContent = "Pause";
+    if (REDUCED) { t = view.duration(); show(); return stop(); }
+    raf = requestAnimationFrame(frame);
+  });
+  scrub.addEventListener("input", () => { stop(); t = view.duration() * scrub.value / 1000; show(); });
+  return { end() { stop(); t = view.duration(); show(); } };
+}
+
+// ---- header stamp ----
+const runs = DATA.runs;
+const stamp = document.getElementById("stamp");
+for (const [k, v] of [["Runs", `${runs.length} of ${DATA.total_cells}`], ["Spent on 1b", `$${DATA.spent_1b.toFixed(2)}`], ["Generated", DATA.generated]]) {
+  const d = h("div"); d.append(h("dt", null, k), h("dd", null, v)); stamp.append(d);
+}
+
+// ---- the shots ----
+const shotView = DraftView(document.getElementById("shot-svg"));
+const shotPlayer = Player(shotView, document.getElementById("shot-play"), document.getElementById("shot-scrub"), document.getElementById("shot-t"));
+const pick = document.getElementById("shotpick");
+function showShot(miss) {
+  for (const b of pick.children) b.setAttribute("aria-pressed", b.dataset.miss === miss);
+  const S = DATA.shots[miss], base = DATA.shots.none;
+  shotView.set(miss === "none" ? [{ role: "miss", f: base.flight }] : [{ role: "ref", f: base.flight }, { role: "miss", f: S.flight }]);
+  shotPlayer.end();
+  const f = S.flight;
+  const where = f.along == null ? "never reaches rim height" : `its path crosses the rim's plane ${Math.abs(f.along).toFixed(2)} m ${f.along < 0 ? "short of" : "past"} the center${Math.abs(f.across) > 0.005 ? ` and ${Math.abs(f.across).toFixed(2)} m to the ${f.across > 0 ? "left" : "right"}` : ""}`;
+  document.getElementById("shot-caption").textContent = miss === "none"
+    ? `Opus's shot as written: ${f.speed.toFixed(2)} m/s at ${f.elev.toFixed(1)}°, no spin. It goes in; ${where}. Lands at t = ${fmt(f.landed)} s.`
+    : `${MISS_LABEL[miss]}${stepText(miss, S)}: ${f.speed.toFixed(2)} m/s at ${f.elev.toFixed(1)}°, aim ${f.azim.toFixed(1)}°. ${f.made ? "It still goes in" : "It misses"}; ${where}. Lands at t = ${fmt(f.landed)} s. Opus's made shot is drawn faintly for reference.`;
+}
+for (const miss of ["none", "short", "long", "left"]) {
+  const b = h("button", null, MISS_LABEL[miss] + stepText(miss, DATA.shots[miss]));
+  b.type = "button"; b.dataset.miss = miss; b.addEventListener("click", () => showShot(miss)); pick.append(b);
+}
+showShot("short");
+
+// ---- every run ----
+const byCell = Object.fromEntries(runs.map(r => [r.cell, r]));
+const finalMade = r => (r.made2 != null ? r.made2 : r.made1);
+const grids = document.getElementById("grids");
+const seedButtons = {};
+for (const [mk, mlabel] of Object.entries(DATA.models)) {
+  const mine = runs.filter(r => r.model === mk);
+  const box = h("div", "model");
+  box.append(h("h3", null, mlabel));
+  const named = mine.filter(r => r.named_ok).length, made1 = mine.filter(r => r.made1).length, two = mine.filter(r => r.made2 != null);
+  box.append(h("p", "tally num", mine.length
+    ? `${mine.length} runs · named the miss ${named} · made after one correction ${made1} · after two ${two.filter(r => r.made2).length} of ${two.length}`
+    : "No runs yet"));
+  const wrap = h("div", "tablewrap"), table = h("table", "grid"), thead = h("thead"), hr = h("tr");
+  hr.append(h("th", null, "Readback"));
+  for (const miss of DATA.misses) hr.append(h("th", null, miss === "none" ? "Made" : MISS_LABEL[miss]));
+  thead.append(hr); table.append(thead);
+  const tb = h("tbody");
+  for (const [ck, clabel] of Object.entries(DATA.conditions)) {
+    const tr = h("tr"); tr.append(h("td", "cond", clabel));
+    for (const miss of DATA.misses) {
+      const td = h("td"), seeds = h("span", "seeds");
+      for (const s of DATA.seeds) {
+        const cell = `${mk}__${ck}__${miss}__s${s}`, r = byCell[cell], b = h("button", "seedbtn");
+        b.type = "button";
+        if (!r) { b.classList.add("pending"); b.disabled = true; b.setAttribute("aria-label", `${mlabel}, ${clabel}, ${miss}, seed ${s}: not run yet`); }
+        else {
+          b.style.setProperty("--n", r.named_ok ? "var(--good)" : "var(--bad)");
+          b.style.setProperty("--m", finalMade(r) ? "var(--good)" : "var(--bad)");
+          b.setAttribute("aria-label", `${mlabel}, ${clabel}, ${miss}, seed ${s}: named ${r.named}, ${finalMade(r) ? "made" : "missed"} in the end`);
+          b.title = `seed ${s}: named ${r.named} · ${finalMade(r) ? "made" : "missed"}`;
+          b.addEventListener("click", () => { selectRun(cell); document.getElementById("run").scrollIntoView({ behavior: REDUCED ? "auto" : "smooth", block: "start" }); });
+          seedButtons[cell] = b;
+        }
+        seeds.append(b);
+      }
+      td.append(seeds); tr.append(td);
+    }
+    tb.append(tr);
+  }
+  table.append(tb); wrap.append(table); box.append(wrap); grids.append(box);
+}
+
+// ---- one run ----
+const runView = DraftView(document.getElementById("run-svg"));
+const runPlayer = Player(runView, document.getElementById("run-play"), document.getElementById("run-scrub"), document.getElementById("run-t"));
+function chip(text, cls) { return h("span", "chip" + (cls ? " " + cls : ""), text); }
+function seenBlock(r, img, cond, res) {
+  const wrap = h("div", "col");
+  if (img) {
+    const i = h("img", "px"); i.src = img; i.alt = `The ${res} by ${res} pixel picture the model was sent`;
+    wrap.append(i, h("p", "caption", `${res} × ${res} px, exactly as sent, enlarged. ${cond.startsWith("camera") ? "Experiment 1's camera." : "The drafting view."}`));
+  } else {
+    wrap.append(h("div", "textonly", cond === "numbers" ? "No picture: the ball's position every 0.05 s, as a table of numbers, plus the scene text." : "No picture and no numbers: only the scene text, with the launch in its keyframe."));
+  }
+  return wrap;
+}
+function selectRun(cell) {
+  const r = byCell[cell]; if (!r) return;
+  for (const b of Object.values(seedButtons)) b.classList.remove("sel");
+  seedButtons[cell]?.classList.add("sel");
+  const cond = DATA.conditions[r.condition], res = r.condition.includes("_") ? r.condition.split("_")[1] : null;
+  const head = document.getElementById("runhead"); head.replaceChildren();
+  head.append(h("h3", null, `${DATA.models[r.model]} · ${cond} · ${r.miss === "none" ? "the made shot" : MISS_LABEL[r.miss].toLowerCase() + " miss"} · seed ${r.seed}`));
+  const chips = h("div", "chips");
+  chips.append(chip(`Named: ${r.named ?? "no answer"} (truth: ${r.truth})`, r.named_ok ? "good" : "bad"));
+  chips.append(chip(`Made after one correction: ${r.made1 ? "yes" : "no"}`, r.made1 ? "good" : "bad"));
+  if (r.made2 != null) chips.append(chip(`After two: ${r.made2 ? "yes" : "no"}`, r.made2 ? "good" : "bad"));
+  chips.append(chip(`$${r.cost.toFixed(3)} · ${r.tokens.toLocaleString()} tokens`));
+  if (r.rescored) chips.append(chip("Rescored: see run.json"));
+  head.append(chips);
+  const seen = document.getElementById("runseen"); seen.replaceChildren();
+  seen.append(h("p", "label", "What it was shown"), seenBlock(r, r.seen1, r.condition, res), h("p", "label", `What it said (evidence: ${r.evidence ?? "n/a"})`));
+  const q = h("blockquote", null, r.said || "No verdict parsed."); seen.append(q);
+  const list = [{ role: "miss", f: DATA.shots[r.miss].flight }];
+  const key = document.getElementById("runkey"); key.replaceChildren();
+  const addKey = (role, text) => { const s = h("span"); const sw = h("span", "swatch"); sw.style.background = ROLE[role].color; s.append(sw, document.createTextNode(text)); key.append(s); };
+  addKey("miss", `${r.miss === "none" ? "The shot it was shown (made)" : "Deliberate miss"}: ${outcomeText(DATA.shots[r.miss].flight)}`);
+  for (const c of r.corrections) {
+    const role = c.n === 1 ? "c1" : "c2";
+    if (c.flight) {
+      list.push({ role, f: c.flight });
+      const v = c.qvel.map(x => Number(x).toFixed(2)).join(", ");
+      addKey(role, `Correction ${c.n}: ${outcomeText(c.flight)} · launch (${v}) m/s${c.valid === false && c.flight.made ? " · changed more than the keyframe, not counted" : ""}`);
+    } else {
+      const s = h("span", null, `Correction ${c.n}: did not run (${c.problem})`); key.append(s);
+    }
+  }
+  if (r.corrections.length === 1 && r.made2 != null) key.append(h("span", null, "No second correction: it kept the first."));
+  runView.set(list); runPlayer.end();
+  const t3 = document.getElementById("runturn3"); t3.replaceChildren();
+  if (r.said3 || r.seen3) {
+    const box = h("div", "turn3"), left = h("div", "col"), right = h("div", "col");
+    if (r.seen3) { const i = h("img", "px"); i.src = r.seen3; i.alt = "The picture of its corrected shot"; left.append(i); }
+    else left.append(h("div", "textonly", r.condition === "numbers" ? "The numbers for its corrected shot." : "No readback."));
+    right.append(h("p", "label", "Turn 3: shown its own corrected shot"));
+    right.append(h("p", null, `MuJoCo: ${r.shown3 === "made" ? "it goes in" : r.shown3 ? "it misses " + r.shown3 : "n/a"}. The model said: ${r.goes_in3 === true ? "it goes in" : r.goes_in3 === false ? "it misses" : "no verdict"}.`));
+    if (r.said3) right.append(h("blockquote", null, r.said3));
+    box.append(left, right); t3.append(box);
+  }
+  document.getElementById("runfiles").textContent = `Every prompt, reply and image: ${r.dir}`;
+}
+const wanted = location.hash.slice(1);
+const firstPick = byCell[wanted] ? wanted : (["opus-5.5__drafting_128__none__s0", "opus-5.5__camera_128__left__s0"].find(c => byCell[c]) || runs[0]?.cell);
+if (firstPick) selectRun(firstPick);
+</script>

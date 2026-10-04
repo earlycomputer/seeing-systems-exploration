@@ -22,3 +22,9 @@ handoff's optional extension (readback as a body list or latent), which needs a 
 
 **2026-10-04: written up.** Results, lessons and the recommended next step (experiment 1b, see the outcome)
 are in the design journal; the handoff's results table and the program doc's ladder now carry the numbers.
+
+**2026-10-04: open questions closed by Jono.** The handoff's optional extension (readback as a body list) is
+closed without running it: the with-text arm already showed that a structured readback beats the picture when
+the error is written down. The small check of Opus 5.5 with pictures at 256 and 512 px is skipped: in
+experiment 1b Opus did worse with pictures at 128 px than at 64. "Ball x shifted 1.5 m sideways" means +1.5 m
+along x, toward the hoop, as run.
