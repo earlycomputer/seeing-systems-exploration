@@ -18,6 +18,7 @@ python -m harder.matrix --plan                       # what would run, rough cos
 python -m harder.matrix --first                      # seed 0 of every brief and arm, both models (28 worlds)
 python -m harder.matrix                              # all 112 worlds, 4 at a time, skips done worlds
 python -m harder.report                              # results/results.md
+python -m harder.viewer                              # results/viewer.html
 ```
 
 `--model dry-run` fixes each broken world with 1c's hand-written file and writes each new brief's fixture;
@@ -34,6 +35,7 @@ rescore.py    re-judges every saved file with the current tests, keeping old ver
 fixtures/     hand-written dominoes and pendulum worlds that pass their tests; never sent to a model
 broken/       the five broken worlds, exactly as sent
 run.py        one world;  matrix.py  every world;  report.py  the tables;  budget.py  the cap and 1d's ceiling
+viewer.py     results/viewer.html: every world running in 3D (1c's viewer, merged from exp1c-viewer)
 prompts/      every prompt, as sent (1c's, plus given.md for a broken world)
 results/      runs/<world>/<timestamp>/ in 1c's layout (every file as XML, world.json), spend.jsonl
 ```
@@ -90,3 +92,10 @@ results/      runs/<world>/<timestamp>/ in 1c's layout (every file as XML, world
   `python -m harder.rescore` re-judged every saved file: 3 worlds changed from fail to pass. Each world.json
   keeps its old verdicts under `superseded`. The tests never reach the models or steer the loop, so the
   re-judged verdicts are exactly what the fixed test would have given live.
+- **A second test flaw, found after the full run.** The pendulum test took the cup's centre from the box
+  around all its geoms. The naming convention puts every cup geom in the cup body, so a cup with an entry ramp
+  measured from the ramp's end: four cups placed exactly 1 m away measured 0.82 to 0.88 m. The centre is now
+  the cup body's origin when that lies within the cup's footprint, otherwise the footprint's middle
+  (`selftest.py` checks a ramped cup and an offset cup). Rescored: 3 worlds changed from fail to pass.
+- **The viewer.** 1c's viewer (parent session, `exp1c-viewer`) was merged into this branch, as the plan
+  said, and `viewer.py` adapts it: 1d's tests, the broken file shown as given, each world's break named.
