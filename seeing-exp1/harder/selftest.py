@@ -72,6 +72,20 @@ def main() -> int:
         j = tests.judge(BRIEFS[b]["test"], breaks.broken(b))
         fails = [k for k, v in (j.get("checks") or {}).items() if not v]
         check(not j.get("passed") and BREAK_TRIPS[b] in fails, f"broken {b} fails, tripping '{BREAK_TRIPS[b]}' ({fails})")
+    ramp = '      <geom name="cup_entry_ramp" type="box" pos="-0.35 0 0.006" euler="0 2 0" size="0.2 0.15 0.004"/>\n'
+    with_ramp = fixture("pendulum").replace('    </body>\n  </worldbody>', ramp + '    </body>\n  </worldbody>')
+    j = tests.judge("pendulum", with_ramp)
+    check(abs(j["values"]["cup_distance_m"] - 1.0) < 1e-6,
+          f"pendulum, a cup with an entry ramp: centre measured at the cup, {j['values']['cup_distance_m']} m")
+    offset = fixture("pendulum").replace('<body name="cup" pos="1.1 0 0">', '<body name="cup" pos="0 0 0">').replace(
+        'name="cup_base" type="box" pos="0 0 0.005"', 'name="cup_base" type="box" pos="1.1 0 0.005"').replace(
+        'name="cup_lip" type="box" pos="-0.15', 'name="cup_lip" type="box" pos="0.95').replace(
+        'name="cup_far" type="box" pos="0.15', 'name="cup_far" type="box" pos="1.25').replace(
+        'name="cup_left" type="box" pos="0 0.15', 'name="cup_left" type="box" pos="1.1 0.15').replace(
+        'name="cup_right" type="box" pos="0 -0.15', 'name="cup_right" type="box" pos="1.1 -0.15')
+    j = tests.judge("pendulum", offset)
+    check(bool(j.get("passed")) and abs(j["values"]["cup_distance_m"] - 1.0) < 1e-6,
+          f"pendulum, the cup's body at the world origin with its geoms offset: passes, {j['values']['cup_distance_m']} m")
     j = tests.judge("dominoes", leaning())
     check(bool(j.get("passed")), f"dominoes, the first starting tipped 20 degrees and released: passes ({[k for k, v in j['checks'].items() if not v]})")
     for b, what, xml, must in variants():

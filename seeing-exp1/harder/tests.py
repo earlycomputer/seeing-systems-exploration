@@ -74,7 +74,11 @@ def test_pendulum(run: Run) -> dict:
     lo0, hi0 = aabb(run, cup_gs, 0)
     lo1, hi1 = aabb(run, cup_gs, -1)
     start, end = run.xpos[0, b], run.xpos[-1, b]
-    dist = float(np.hypot(*((lo0[:2] + hi0[:2]) / 2 - start[:2])))
+    # The cup's centre: its body's origin when that lies within the cup's footprint (a cup with an entry ramp
+    # keeps its centre where the cup is), otherwise the middle of the footprint.
+    origin = run.xpos[0, cup]
+    centre = origin[:2] if inside_footprint(origin, lo0, hi0) else (lo0[:2] + hi0[:2]) / 2
+    dist = float(np.hypot(*(centre - start[:2])))
     hit = [i for i in range(len(run.contacts)) if touched(run, g, pg, steps=[i])]
     moved = np.nonzero(np.linalg.norm(run.xpos[:, b] - start, axis=1) > 0.01)[0]
     struck = bool(hit) and (not len(moved) or moved[0] >= hit[0])

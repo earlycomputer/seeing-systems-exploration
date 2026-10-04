@@ -7,6 +7,8 @@ The tests never reach the models and never steer the loop, so re-judging the sav
 verdicts the current tests would have given live. Each world.json keeps what it said before under
 `superseded`, with the reason. Added 2026-10-04: the dominoes test required the first domino to start upright,
 but "the first is tipped over" fairly allows it to start leaning; three first-run worlds were failed for it.
+Then, after the full run: the pendulum test took the cup's centre from the box around all its geoms, so a cup
+with an entry ramp (which the naming convention puts in the cup body) measured short of where the cup is.
 """
 
 from __future__ import annotations
@@ -19,7 +21,10 @@ from pathlib import Path
 from harder import tests
 from harder.settings import RUNS_DIR
 
-REASON = "the dominoes test lets the first domino start tipped; only the other nine must start upright (2026-10-04)"
+REASONS = ["the dominoes test lets the first domino start tipped; only the other nine must start upright (2026-10-04)",
+           "the pendulum test takes the cup's centre from its body's origin when that lies within the cup, so an entry "
+           "ramp no longer moves it (2026-10-04)"]
+REASON = REASONS[-1]
 KEYS = ("passes_first", "passes_final", "passed_at_round", "claim_correct", "final_checks")
 
 
