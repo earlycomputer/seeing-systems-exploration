@@ -2,7 +2,8 @@
 
 A model writes a physical scene as text, a dot renderer draws it, a low-resolution readback of the drawing
 goes back to the model, and the model has to find and fix a deliberate error using what it can see.
-Spec: [Experiment 1 handoff](https://claude.ai/artifact/8bvbRyeu42bgKoB6V1AbxH).
+Spec: [Experiment 1 handoff](https://claude.ai/artifact/8bvbRyeu42bgKoB6V1AbxH). Results, what they taught us
+and what comes next: [design journal](https://claude.ai/artifact/88e7a541-1b9c-49d6-85f3-d7ee56581363).
 
 ## Run it
 

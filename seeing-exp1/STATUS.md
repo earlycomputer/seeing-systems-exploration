@@ -19,3 +19,6 @@ runs completed for $7.52 (plus $0.10 authoring). With text, the loop closes at 3
 the picture alone, GPT-6.1 Sol closes it at 64 px for hoop height and ball size with no false alarms;
 Opus 5.5 does not close it at any resolution. The ten-line summary is in results/summary.md. Open: the
 handoff's optional extension (readback as a body list or latent), which needs a human's yes.
+
+**2026-10-04: written up.** Results, lessons and the recommended next step (experiment 1b, see the outcome)
+are in the design journal; the handoff's results table and the program doc's ladder now carry the numbers.
