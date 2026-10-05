@@ -49,6 +49,8 @@ class Compiled:
     problems: list[Problem] = field(default_factory=list)
     owner: dict[str, str] = field(default_factory=dict)  # MuJoCo name -> "Part.piece"
     joints: list[dict] = field(default_factory=list)
+    containers: list[tuple[str, tuple[float, float, float, float]]] = field(default_factory=list)  # name, x0 x1 y0 y1
+    rings: list[tuple[str, tuple[float, float, float], float]] = field(default_factory=list)  # name, centre, inner r
 
 
 def render(problems: list[Problem]) -> str:
@@ -189,6 +191,8 @@ def compile_world(world: P.World) -> Compiled:
     for part in world.parts:
         part.emit(e)
     c.owner, c.joints = e.owner, e.joints
+    c.containers = [(p.name.capitalize(), p.footprint()) for p in world.parts if isinstance(p, P.OpenBox)]
+    c.rings = [("Hoop", p.rim_centre.si, p.inner_diameter.si / 2) for p in world.parts if isinstance(p, P.Hoop)]
     check_meaning(c)
     if c.problems:
         return c

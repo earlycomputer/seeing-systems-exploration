@@ -10,7 +10,7 @@ calls and no spend: this is the vocabulary, checked against the seven 1d briefs.
 ```bash
 cd seeing-exp1 && source .venv/bin/activate
 python -m typed.demo          # compiles the seven briefs, judges each with 1d's tests, writes demo_output.md
-python -m typed.lang_demo     # the same seven written in the world language, with expect; writes lang_output.md
+python -m typed.lang_demo     # the seven in the world language, built from library.world; writes lang_output.md
 ```
 
 ## Where things are
@@ -21,49 +21,82 @@ parts.py      the parts: Floor, Ball, Hoop, Ramp, OpenBox, Door, Catapult, Stack
 compiler.py   checks types, then meaning, then overlaps; all problems at once; XML only when there are none
 replay.py     runs a compiled world; at(t) and events() say what happened in the parts' names
 briefs.py     the seven 1d briefs written as parts
-demo.py       the evidence: demo_output.md
-lang.py       the world language: plain indented lines, units in the numbers, positions as relations, expect
-worlds/       the seven briefs as .world files
+demo.py       the evidence for the Python layer: demo_output.md
+lang.py       the world language: primitives, relations, parts from library.world, bodies, expect
+library.world the parts library, written in the language itself: open box, ramp, door, catapult, pendulum,
+              hoop, table, raised bucket
+worlds/       the seven briefs as .world files, plus raised.world (a new part in use)
 lang_demo.py  the evidence for the language: lang_output.md
 ```
 
 ## The world language
 
 Jono asked on 2026-10-05 what a language for worlds would look like if it dropped programming's brackets and
-read well to people and machines alike. `lang.py` parses it into the typed parts above, so every check carries
-over. A part starts at the margin, its facts are indented under it, and each line is one key and its value:
+read well to people and machines alike, then asked to decompose the parts using it ("Sacrificing more lines for
+way more understanding is exactly the kind of tradeoff we can start moving towards"). The first form (commit
+abd792b) parsed into the Python parts above. This form has no parts in Python at all: every part is written in
+`library.world`, in the same language as the worlds, down to primitives.
 
 ```
-pendulum
-  hangs from         1.01 m up
-  length             95 cm
-  bob                sphere 5 cm, 1 kg
-  starts swung back  63°
-
-ball
-  is a   sphere 5 cm, 200 g
-  rests  on floor, 10 cm ahead of pendulum
-
-expect
-  pendulum.bob touches ball
-  ball comes to rest in cup
+part catapult                                   catapult
+  needs  pivot height                             is a          catapult
+  needs  arm length                               pivot height  40 cm
+  ...                                             arm length    1 m
+  stand                                           ...
+    is a  box 16 by 24 by pivot height − 6 cm
+    on    floor                                 ball
+  arm                                             is a   sphere 6 cm radius, 150 g
+    is a      box arm length by 6 by 4 cm, ...    moves  freely
+    its far end at pivot, level with pivot        sits   in catapult
+    turns on  catapult hinge, about y, at pivot
+    swings    swings                            expect
+  scoop base                                      ball comes to rest in bucket
+    is a         box 16 by 16 by 1 cm, 20 g
+    on           arm, at arm's near end
+    attached to  arm
 ```
 
-- **All seven briefs, written in it, pass their 1d tests**, and all 11 `expect` lines hold against the replay
-  (`lang_output.md`). The seven files use no brackets at all. They run 86 lines (7 to 19 each, without `expect`),
-  against 50 for the Python briefs and 229 for the hand-written XML: one fact per line costs lines.
-- **Units are part of the number.** `from 0° to 2.1` stops with ANGLE WITHOUT A UNIT at line 8, and `95 g` where
-  a length goes stops with WRONG KIND OF QUANTITY.
-- **Positions are relations, read top to bottom.** `1 m beyond ball` needs `ball` written above it; a misspelt
-  name gets "did you mean ball?". A part with a problem reports once: parts that refer to it stay quiet.
-- **`expect` speaks the replay's words.** With 1d's weak catapult spring the file still builds, and the line
-  fails with the evidence: `✗ ball comes to rest in bucket: ball comes to rest at (1.47, 0.00) m, 0.13 m short
-  of bucket`.
+- **All seven briefs, rebuilt on the library, pass their 1d tests**, and all 11 `expect` lines hold
+  (`lang_output.md`). The geometry is the same as the Python parts' to the millimetre. The one difference is
+  that the catapult's ball now starts touching the scoop instead of 0.5 mm into it.
+- **Eight primitives, eight parts.** Primitives are box, cube, sphere, rod, plank, post, ring and point. The
+  library holds open box, ramp, door, catapult, pendulum and hoop, plus table and raised bucket, in 182 lines.
+  The seven worlds take 128 lines without `expect`, against 86 in the first form and 229 of hand-written XML.
+- **One rule for `sits in`.** `sits in X` puts a thing on top of X's base, centred over it, by reading X's
+  pieces for one called `base` (or ending in ` base`). The same line seats a ball in the catapult's scoop, a
+  bucket, or a bucket on a table. No part knows how to seat anything; the Python `seat()` methods are gone.
+- **Positions are relations, one direction at a time.** `on`, `in`, `under`, `raised`, `40 cm up`, `2 m along`,
+  `1 m beyond X` (also behind, above, below, left of, right of), `at X's near end` (flush inside), `8 cm outside
+  X's left side` (flush outside), `centred on X's far end`, `level with X`, `its far end at X`, and `its rim 4 m
+  beyond ball` for one piece of a part. `on` a sloping plank rests on its face, `12 cm from the top`. A
+  direction set twice is a problem, TWO PLACES FOR ONE DIRECTION.
+- **Bodies come last.** A piece `moves freely`, `turns on <joint>, about <axis>, at <point>`, or is `attached
+  to` another. Pieces that move together become one MuJoCo body, named after the part when it has one; the
+  rest are fixed. `stacked 5 high` and `repeated 10 times, 10 cm apart along` make block1 to block5 and domino1
+  to domino10.
+- **New parts need no Python.** `table` is a box and four posts. `raised bucket` is a table and an open box
+  with one relation between them (`on table`). The 1d catapult, unchanged, throws into it (`raised.world`).
+- **Problems point at the line that caused them.** A bad value passed into a part is reported at the world
+  line where it was written, not inside the library: `from 0° to 2.1` stops with ANGLE WITHOUT A UNIT at the
+  door's `swings` line. A slip inside the library is reported at its library line. New problems include `sphere
+  6 cm` (SAY WHAT IT MEASURES: radius or across), NOTHING TO SIT IN, a need left out, and a misspelt need
+  ("did you mean `pivot height`?").
+- **Building is cheap.** Parsing and compiling a world takes about 6 ms; running it for 6 s of simulated time
+  takes about 500 ms. More lines cost nothing that matters.
 
-Decisions taken alone: a part's name picks its kind (`cup` and `bucket` are open boxes); `along` is x, `up` is z,
-`to the left` is y; a rod is given by its thickness, not its radius; parts may refer only to parts above them, so
-a world reads in one pass; positions default to x = y = 0. Angles are written `63°` or `1.1 rad`: the pendulum's
-1.1 rad became 63°, and the world still passes.
+Decisions taken alone:
+
+- **Directions.** Along is x, so beyond and ahead of are +x, and a thing's near end faces back along x. To the
+  left is y, and up is z.
+- **Naming.** A geom is named by its path (`catapult_scoop_base`). One convention entry, `hoop_rim_` to
+  `rim_`, keeps the 1d tests' own name for the rim; it is in Python, outside the language.
+- **Needs.**
+  - Needs are written into a part by name: whole words, longest first, one pass.
+  - A need may not share a name with a piece (NAME USED TWICE).
+  - `else` gives a default, and `else nothing` drops the line.
+- **Spheres.** A sphere must say `radius` or `across`.
+- **Open boxes.** An open box's walls are centred on its base's edges, as in the 1d fixtures. The cup with a
+  low near wall is the same part with `near wall height 2.5 cm`.
 
 ## What it showed
 

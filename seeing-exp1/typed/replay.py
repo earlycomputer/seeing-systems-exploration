@@ -17,7 +17,6 @@ import mujoco
 import numpy as np
 
 from typed.compiler import Compiled
-from typed.parts import Hoop, OpenBox
 from worlds import tests
 
 REST = 0.05  # m/s, as the tests
@@ -59,7 +58,7 @@ class Trace:
         seen = set(at_start)
         for i, pairs in enumerate(run.contacts):
             for a, b in sorted(pairs):
-                la, lb = sorted((self._label(a), self._label(b)), key=lambda s: s == "Floor")
+                la, lb = sorted((self._label(a), self._label(b)), key=lambda s: s.lower() == "floor")
                 if m.geom_bodyid[a] == m.geom_bodyid[b] or la == lb:
                     continue
                 key = tuple(sorted((la, lb)))
@@ -77,12 +76,10 @@ class Trace:
                 if len(hit):
                     verb = "starts at" if hit[0] == 0 else "reaches"
                     ev.append((run.times[hit[0]], f"{j['part']} {verb} its {end} stop ({val.deg:.0f} deg)"))
-        # A ball coming down through the height of a hoop's rim: through it, or how far off.
-        for hoop in (p for p in self.compiled.world.parts if isinstance(p, Hoop)):
-            cx, cy, cz = hoop.rim_centre.si
-            inner = hoop.inner_diameter.si / 2
+        # A loose thing coming down through the height of a ring (a hoop's rim): through it, or how far off.
+        for ring, (cx, cy, cz), inner in self.compiled.rings:
             for j in self.compiled.joints:
-                if j["part"] != "Ball":
+                if j["kind"] != "free":
                     continue
                 b = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_BODY, j["name"].split(" ")[0])
                 z = run.xpos[:, b, 2]
@@ -91,12 +88,11 @@ class Trace:
                     x, y = run.xpos[i, b, :2] + k * (run.xpos[i + 1, b, :2] - run.xpos[i, b, :2])
                     off = math.hypot(x - cx, y - cy)
                     if off < inner:
-                        ev.append((run.times[i], f"Ball drops through Hoop ({off * 100:.0f} cm from the rim's centre)"))
+                        ev.append((run.times[i], f"{j['part']} drops through {ring} ({off * 100:.0f} cm from the rim's centre)"))
                     else:
                         side = f"{cx - x:.2f} m short of" if x < cx else f"{x - cx:.2f} m past"
-                        ev.append((run.times[i], f"Ball comes down through rim height {side} the rim's centre"))
+                        ev.append((run.times[i], f"{j['part']} comes down through rim height {side} the rim's centre"))
         # Where each loose thing comes to rest, and where that is relative to any open box.
-        boxes = [p for p in self.compiled.world.parts if isinstance(p, OpenBox)]
         for j in self.compiled.joints:
             if j["kind"] != "free":
                 continue
@@ -111,9 +107,7 @@ class Trace:
                 continue
             p = run.xpos[-1, b]
             where = f"at ({p[0]:.2f}, {p[1]:.2f}) m"
-            for box in boxes:
-                x0, x1, y0, y1 = box.footprint()
-                name = box.name.capitalize()
+            for name, (x0, x1, y0, y1) in self.compiled.containers:
                 if x0 <= p[0] <= x1 and y0 <= p[1] <= y1:
                     where = f"inside {name}"
                 elif abs(p[1]) <= y1 + 0.5:

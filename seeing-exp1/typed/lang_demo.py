@@ -1,67 +1,151 @@
-"""The world language, end to end: parse each .world file in typed/worlds/, compile it, judge it with 1d's tests,
-check its `expect` lines against the replay, then show what the language says about a few mistakes.
-No model calls, no spend.
+"""The world language, end to end: parse each .world file in typed/worlds/ against the parts library
+(typed/library.world), compile it, judge the seven 1d briefs with 1d's own tests, check every `expect` line against
+the replay, then show what the language says about mistakes. No model calls, no spend.
 
     python -m typed.lang_demo       # writes typed/lang_output.md
 """
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from harder import tests
-from typed.compiler import compile_world, render
-from typed.lang import expectations, parse
+from typed.compiler import render
+from typed.lang import LIBRARY, compile_program, expectations, parse
 from typed.replay import replay
 
 HERE = Path(__file__).parent
 OUT = HERE / "lang_output.md"
+BRIEFS = ["shot", "cup", "door", "stack", "catapult", "dominoes", "pendulum"]
 
 
-def run(name: str, text: str) -> list[str]:
-    prog = parse(text)
-    if prog.problems:
-        return ["```", render(prog.problems), "```"]
-    c = compile_world(prog.world)
+def run(name: str, text: str, library: str | None = None) -> list[str]:
+    prog = parse(text, library)
+    c = compile_program(prog)
     if c.problems:
-        return ["```", render(c.problems), "```"]
-    j = tests.judge(name, c.xml)
-    verdict = "passes its 1d test" if j["passed"] else "fails its 1d test: " + ", ".join(
-        k for k, v in j["checks"].items() if not v)
-    out = [f"MuJoCo: {verdict}.", ""]
+        return ["```", render(c.problems).rstrip(), "```"]
+    out = []
+    if name in BRIEFS:
+        j = tests.judge(name, c.xml)
+        out += ["MuJoCo: " + ("passes its 1d test." if j["passed"] else "fails its 1d test: " + ", ".join(
+            k for k, v in j["checks"].items() if not v)), ""]
     for line, ok, evidence in expectations(prog, replay(c).events()):
         out.append(f"- {'✓' if ok else '✗'} `{line}`: {evidence}")
     return out
 
 
-def edit(name: str, old: str, new: str) -> str:
-    text = (HERE / "worlds" / f"{name}.world").read_text()
-    assert old in text, (name, old)
-    return text.replace(old, new)
+def world(name: str) -> str:
+    return (HERE / "worlds" / f"{name}.world").read_text()
 
 
-MISTAKES = [
+def edit(text: str, old: str, new: str) -> str:
+    assert old in text, old
+    return text.replace(old, new, 1)
+
+
+def facts(text: str) -> int:
+    """Lines that say something: not blank, not a comment."""
+    return sum(1 for ln in text.splitlines() if ln.strip() and not ln.strip().startswith("--"))
+
+
+def part_source(name: str) -> str:
+    text = LIBRARY.read_text()
+    m = re.search(rf"^part {re.escape(name)}\n.*?(?=^part |\Z)", text, re.S | re.M)
+    return m.group(0).rstrip()
+
+
+MISTAKES = [  # (world, what, old, new)
     ("door", "1d's door break: the range's end written with no unit", "from 0° to 120°", "from 0° to 2.1"),
     ("door", "the same slip, in degrees", "from 0° to 120°", "from 0° to 2.1°"),
     ("pendulum", "a mass where a length goes", "length             95 cm", "length             95 g"),
-    ("pendulum", "a misspelt line", "hangs from", "hangs frum"),
+    ("pendulum", "a misspelt line", "pivot height ", "pivot heigth "),
     ("cup", "a misspelt part name", "stands  on floor, 2.05 m along", "stands  on floor, 1 m beyond bal"),
-    ("catapult", "1d's catapult break: the spring at 2 N·m/rad instead of 3", "spring   3 N·m/rad", "spring   2 N·m/rad"),
+    ("catapult", "a sphere that doesn't say what its size measures", "sphere 6 cm radius", "sphere 6 cm"),
+    ("pendulum", "sitting in something that has no base", "rests     on floor, 10 cm ahead of pendulum",
+     "sits      in pendulum"),
+    ("cup", "two places for one direction", "stands  on floor, 2.05 m along", "stands  on floor, 2.05 m along, 1.5 m beyond ball"),
+    ("cup", "a need left out", "  walls   30 cm\n", ""),
+    ("catapult", "1d's catapult break: the spring at 2 N·m/rad instead of 3", "spring        3 N·m/rad", "spring        2 N·m/rad"),
     ("cup", "1d's cup break: the cup 60 cm further away", "2.05 m along", "2.65 m along"),
 ]
 
+SITS = """world  one rule, three hollows
+
+floor
+
+catapult
+  is a          catapult
+  pivot height  40 cm
+  arm length    1 m
+  arm mass      300 g
+  swings        from 0° to 55°
+  spring        3 N·m/rad toward 150°
+  damping       0.05 N·m·s/rad
+
+bucket
+  is an   open box
+  length  80 cm
+  width   80 cm
+  walls   40 cm
+  stands  on floor, 2 m along
+
+target
+  is a          raised bucket
+  table height  50 cm
+  size          80 cm
+  walls         30 cm
+  stands        on floor, 4 m along
+"""
+
+
+def sits_in() -> list[str]:
+    """The same `sits in` line, against three different hollows: no part knows how to seat anything."""
+    out = ["| line | rests on | ball's centre (m) |", "|---|---|---|"]
+    for where in ("catapult", "bucket", "target"):
+        text = SITS + f"\nball\n  is a   sphere 6 cm radius, 150 g\n  moves  freely\n  sits   in {where}\n"
+        prog = parse(text)
+        ball = next(i for i in prog.items if i.name == "ball")
+        top = next(i for i in prog.items if i.name == where)
+        base = next(i for i in top.walk() if i is not top and (i.name == "base" or i.name.endswith(" base")))
+        p = ball.shapes[0].pos
+        out.append(f"| `sits in {where}` | {base.path} | ({p[0]:.2f}, {p[1]:.2f}, {p[2]:.2f}) |")
+    return out
+
 
 def main() -> None:
-    lines = ["# The seven briefs in the world language", "",
-             "Generated by `python -m typed.lang_demo`. Each file in `typed/worlds/` is parsed into the typed parts, "
-             "compiled, run in MuJoCo and judged by 1d's own tests. Its `expect` lines are checked against the "
-             "replay's events.", ""]
-    for f in sorted((HERE / "worlds").glob("*.world")):
-        lines += [f"## {f.stem}", "", "```", f.read_text().rstrip(), "```", "", *run(f.stem, f.read_text()), ""]
+    lib = LIBRARY.read_text()
+    lines = ["# The world language, decomposed", "",
+             "Generated by `python -m typed.lang_demo`. Every part below is built from primitives in "
+             "`typed/library.world`, written in the language itself. Each world is parsed against that library, "
+             "compiled, run in MuJoCo, judged by 1d's own tests (the seven briefs), and its `expect` lines are "
+             "checked against the replay.", "",
+             f"Size: the library is {facts(lib)} lines for {lib.count(chr(10) + 'part ')} parts; the seven briefs "
+             f"are {sum(facts(world(n).split(chr(10) + 'expect')[0]) for n in BRIEFS)} lines without `expect`.", ""]
+    for name in BRIEFS:
+        lines += [f"## {name}", "", "```", world(name).rstrip(), "```", "", *run(name, world(name)), ""]
+
+    lines += ["# One rule for `sits in`", "",
+              "`sits in X` puts a thing on top of X's base, centred over it. The rule reads X's pieces: it looks for "
+              "one called `base` or ending in ` base`. Nothing in the catapult, the bucket or the raised bucket "
+              "knows how to seat a ball.", "", *sits_in(), ""]
+
+    lines += ["# A new part from old ones", "",
+              "`table` is new, built from a box and four posts. `raised bucket` is built from two parts already "
+              "in the library, a table and an open box, with one relation between them (`on table`). Neither "
+              "needed any Python.", "", "```", part_source("table"), "", part_source("raised bucket"), "```", "",
+              "A world that uses it: the 1d catapult, unchanged, throwing into a bucket on a 50 cm table.", "",
+              "```", world("raised").rstrip(), "```", "", *run("raised", world("raised")), ""]
+
     lines += ["# Mistakes, and what the language says", ""]
     for name, what, old, new in MISTAKES:
-        lines += [f"## {name}: {what}", "", f"`{old.strip()}` becomes `{new.strip()}`", "",
-                  *run(name, edit(name, old, new)), ""]
+        shown_old, shown_new = old.strip() or "(nothing)", new.strip() or "(the line removed)"
+        lines += [f"## {name}: {what}", "", f"`{shown_old}` becomes `{shown_new}`", "",
+                  *run(name, edit(world(name), old, new)), ""]
+    bad_lib = edit(lib, "box 16 by 24 by pivot height − 6 cm", "box 16 by 24 by pivot height − 6")
+    lines += ["## library: a slip inside a part", "",
+              "`box 16 by 24 by pivot height − 6 cm` becomes `box 16 by 24 by pivot height − 6` in the catapult's "
+              "stand", "", *run("catapult", world("catapult"), bad_lib), ""]
     OUT.write_text("\n".join(lines))
     print(OUT.read_text())
 

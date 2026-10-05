@@ -108,3 +108,7 @@ def v3(x: Speed, y: Speed, z: Speed) -> Velocity:
 
 
 AXES = {"x": (1, 0, 0), "y": (0, 1, 0), "z": (0, 0, 1)}
+
+
+class RotorInertia(Quantity):
+    kind = "rotor inertia"
