@@ -10,6 +10,7 @@ calls and no spend: this is the vocabulary, checked against the seven 1d briefs.
 ```bash
 cd seeing-exp1 && source .venv/bin/activate
 python -m typed.demo          # compiles the seven briefs, judges each with 1d's tests, writes demo_output.md
+python -m typed.lang_demo     # the same seven written in the world language, with expect; writes lang_output.md
 ```
 
 ## Where things are
@@ -21,7 +22,48 @@ compiler.py   checks types, then meaning, then overlaps; all problems at once; X
 replay.py     runs a compiled world; at(t) and events() say what happened in the parts' names
 briefs.py     the seven 1d briefs written as parts
 demo.py       the evidence: demo_output.md
+lang.py       the world language: plain indented lines, units in the numbers, positions as relations, expect
+worlds/       the seven briefs as .world files
+lang_demo.py  the evidence for the language: lang_output.md
 ```
+
+## The world language
+
+Jono asked on 2026-10-05 what a language for worlds would look like if it dropped programming's brackets and
+read well to people and machines alike. `lang.py` parses it into the typed parts above, so every check carries
+over. A part starts at the margin, its facts are indented under it, and each line is one key and its value:
+
+```
+pendulum
+  hangs from         1.01 m up
+  length             95 cm
+  bob                sphere 5 cm, 1 kg
+  starts swung back  63°
+
+ball
+  is a   sphere 5 cm, 200 g
+  rests  on floor, 10 cm ahead of pendulum
+
+expect
+  pendulum.bob touches ball
+  ball comes to rest in cup
+```
+
+- **All seven briefs, written in it, pass their 1d tests**, and all 11 `expect` lines hold against the replay
+  (`lang_output.md`). The seven files use no brackets at all. They run 86 lines (7 to 19 each, without `expect`),
+  against 50 for the Python briefs and 229 for the hand-written XML: one fact per line costs lines.
+- **Units are part of the number.** `from 0° to 2.1` stops with ANGLE WITHOUT A UNIT at line 8, and `95 g` where
+  a length goes stops with WRONG KIND OF QUANTITY.
+- **Positions are relations, read top to bottom.** `1 m beyond ball` needs `ball` written above it; a misspelt
+  name gets "did you mean ball?". A part with a problem reports once: parts that refer to it stay quiet.
+- **`expect` speaks the replay's words.** With 1d's weak catapult spring the file still builds, and the line
+  fails with the evidence: `✗ ball comes to rest in bucket: ball comes to rest at (1.47, 0.00) m, 0.13 m short
+  of bucket`.
+
+Decisions taken alone: a part's name picks its kind (`cup` and `bucket` are open boxes); `along` is x, `up` is z,
+`to the left` is y; a rod is given by its thickness, not its radius; parts may refer only to parts above them, so
+a world reads in one pass; positions default to x = y = 0. Angles are written `63°` or `1.1 rad`: the pendulum's
+1.1 rad became 63°, and the world still passes.
 
 ## What it showed
 

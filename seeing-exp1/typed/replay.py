@@ -60,7 +60,7 @@ class Trace:
         for i, pairs in enumerate(run.contacts):
             for a, b in sorted(pairs):
                 la, lb = sorted((self._label(a), self._label(b)), key=lambda s: s == "Floor")
-                if la.split(".")[0] == lb.split(".")[0]:
+                if m.geom_bodyid[a] == m.geom_bodyid[b] or la == lb:
                     continue
                 key = tuple(sorted((la, lb)))
                 if key not in seen:

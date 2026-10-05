@@ -38,7 +38,8 @@ class Problem:
     def render(self) -> str:
         bar = "-" * max(4, 72 - len(self.code) - len(self.path) - 4)
         return (f"-- {self.code} {bar} {self.path}\n\n"
-                f"I was expecting {self.expected}, but I found:\n\n    {self.found}\n\n{self.why}\n\nHint: {self.hint}\n")
+                f"I was expecting {self.expected}, but I found:\n\n    {self.found}\n\n"
+                + (f"{self.why}\n\n" if self.why else "") + (f"Hint: {self.hint}\n" if self.hint else ""))
 
 
 @dataclass
