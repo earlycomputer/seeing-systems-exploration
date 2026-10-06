@@ -1,0 +1,144 @@
+{
+  "world": "opus-5.5__door__history__s2",
+  "run_dir": "history/results/runs/opus-5.5__door__history__s2/20261006T184511Z",
+  "started_at": "20261006T184511Z",
+  "experiment": "1e",
+  "model": "opus-5.5",
+  "model_label": "Opus 5.5",
+  "model_id": "claude-opus-5-5",
+  "effort": "high",
+  "brief": "door",
+  "brief_text": "a door swings shut and stays shut",
+  "kind": "broken",
+  "test": "door",
+  "arm": "history",
+  "seed": 2,
+  "dry_run": false,
+  "turns": [
+    {
+      "turn": "round1",
+      "verdict": {
+        "what_happens": "The door starts at 68.8\u00b0, far outside its applied 0\u00b0\u20132.1\u00b0 range, so the joint limit throws it to 0\u00b0 in 0.06 s at about 1040\u00b0/s. It overshoots to -6.5\u00b0, bounces between the stops, and settles shut at 0\u00b0 by 0.75 s, staying there to 6 s.",
+        "works": false,
+        "problem": "The hinge range was written in radians but applied in degrees (0\u00b0\u20132.1\u00b0), so the door starts outside its range and is snapped shut by the limit constraint instead of swinging shut under its spring.",
+        "works_bool": false
+      },
+      "usage": {
+        "text": "**What happens in the run:** the door does end up shut and stays there, but it never swings. Its range is written as `range=\"0 2.1\"`, which looks like radians. MuJoCo's compiler defaults to degrees, so it applied the range as 0\u00b0 to 2.1\u00b0. The keyframe sets qpos=1.2, which is in radians (68.8\u00b0), so the door starts far outside its range. The limit constraint then throws it back in about 0.06 s at roughly 1040\u00b0/s. It overshoots to \u22126.5\u00b0, past its lower stop, bounces between the stops, and settles at 0\u00b0 by 0.75 s. That violent snap comes from the limit correcting the violation, not from a swing driven by the spring.\n\n**Fix:** give the range in degrees, `range=\"0 120\"`, so the starting 68.8\u00b0 is legal. The hinge spring (stiffness 40) and damping (25) then swing the door shut. The door's moment of inertia about the hinge is about 5.4 kg\u00b7m\u00b2, so the damping ratio is about 0.85. The door closes smoothly in about a second, and the lower stop at 0\u00b0 holds it shut.\n\n```xml\n<mujoco model=\"door_fixture\">\n  <option timestep=\"0.002\"/>\n  <worldbody>\n    <geom name=\"floor\" type=\"plane\" size=\"5 5 0.1\"/>\n    <geom name=\"frame_post\" type=\"box\" pos=\"0 -0.12 1.05\" size=\"0.04 0.04 1.05\"/>\n    <body name=\"door\" pos=\"0 0 1.0\">\n      <joint name=\"hinge\" type=\"hinge\" axis=\"0 0 1\" pos=\"0 0 0\" stiffness=\"40\" springref=\"0\" damping=\"25\" range=\"0 120\" limited=\"true\"/>\n      <geom name=\"door_panel\" type=\"box\" pos=\"0 0.45 0\" size=\"0.02 0.45 0.98\" mass=\"20\"/>\n    </body>\n  </worldbody>\n  <keyframe>\n    <key name=\"start\" qpos=\"1.2\"/>\n  </keyframe>\n</mujoco>\n```\n\n```json\n{\"what_happens\": \"The door starts at 68.8\u00b0, far outside its applied 0\u00b0\u20132.1\u00b0 range, so the joint limit throws it to 0\u00b0 in 0.06 s at about 1040\u00b0/s. It overshoots to -6.5\u00b0, bounces between the stops, and settles shut at 0\u00b0 by 0.75 s, staying there to 6 s.\", \"works\": false, \"problem\": \"The hinge range was written in radians but applied in degrees (0\u00b0\u20132.1\u00b0), so the door starts outside its range and is snapped shut by the limit constraint instead of swinging shut under its spring.\"}\n```",
+        "thinking": "Since the range is in degrees but the keyframe qpos is in radians, the door starts well outside its limit and gets violently snapped shut by the constraint in 0.06s \u2014 over 1000\u00b0/s, which is really a snap rather than a natural swing, even though it technically ends up shut.\n\nThe fix is to either set compiler angle to radian or change the range to degrees like \"0 120\" \u2014 then with that spring/damping setup (zeta\u22480.85) the door would settle smoothly with negligible overshoot, hitting the lower limit cleanly instead of being thrown.\n\nChecking settle time: decay rate near 2.3/s means a 1.2 rad swing damps to about 0.001 rad within roughly 3 seconds, which is acceptable.\n\n",
+        "input_tokens": 1499,
+        "output_tokens": 1798,
+        "cost_usd": 0.041956,
+        "stop_reason": "end_turn",
+        "served_model": "claude-opus-5-5",
+        "seconds": 18.3
+      },
+      "current_passed": false,
+      "sent_file": true,
+      "new_file_passed": true
+    },
+    {
+      "turn": "round2",
+      "verdict": {
+        "what_happens": "The door starts at rest at 68.8\u00b0 and its hinge spring swings it shut over about 1.7 s, peaking near 73\u00b0/s. It reaches the 0\u00b0 stop gently at 1.67 s and then stays still at 0\u00b0 through 6 s.",
+        "works": true,
+        "problem": "",
+        "works_bool": true
+      },
+      "usage": {
+        "text": "**What happens in the run:** the door starts still at 68.8\u00b0, inside its 0\u00b0\u2013120\u00b0 range. Its hinge spring swings it closed smoothly. It speeds up to about 73\u00b0/s around 0.5 s, then slows as the damping takes over, and passes 23\u00b0 at 0.75 s and 5\u00b0 at 1.25 s. It reaches its lower stop at 0\u00b0 (shut) at 1.67 s, moving only 5\u00b0/s, with no measurable overshoot. It is still at 0\u00b0 by 2.0 s and stays there through 6 s. This matches the brief.\n\n```json\n{\"what_happens\": \"The door starts at rest at 68.8\u00b0 and its hinge spring swings it shut over about 1.7 s, peaking near 73\u00b0/s. It reaches the 0\u00b0 stop gently at 1.67 s and then stays still at 0\u00b0 through 6 s.\", \"works\": true, \"problem\": \"\"}\n```",
+        "thinking": "That works well\u2014the door swings from 68.8\u00b0 down to 0 over about 1.7 seconds, peaking around 73\u00b0/s, and settles slowly into a closed, stable position.\n\n",
+        "input_tokens": 4033,
+        "output_tokens": 338,
+        "cost_usd": 0.022892,
+        "stop_reason": "end_turn",
+        "served_model": "claude-opus-5-5",
+        "seconds": 4.57
+      },
+      "current_passed": true,
+      "sent_file": false
+    }
+  ],
+  "files": [
+    {
+      "passed": false,
+      "checks": {
+        "door starts within its hinge's range": false,
+        "door starts open (at least 20 degrees)": true,
+        "door shut for the last second (within 2 degrees)": true,
+        "door still at the end": true
+      },
+      "values": {
+        "start_deg": 68.75,
+        "hinge_range_deg": [
+          0.0,
+          2.1
+        ],
+        "last_second_max_deg": 0.0,
+        "end_rate_rad_s": -0.0
+      },
+      "loaded": true,
+      "problem": null,
+      "diverged": null,
+      "load_log": [
+        "reset to keyframe 'start'"
+      ],
+      "label": "given",
+      "turn": "given",
+      "run": null
+    },
+    {
+      "passed": true,
+      "checks": {
+        "door starts within its hinge's range": true,
+        "door starts open (at least 20 degrees)": true,
+        "door shut for the last second (within 2 degrees)": true,
+        "door still at the end": true
+      },
+      "values": {
+        "start_deg": 68.75,
+        "hinge_range_deg": [
+          0.0,
+          120.0
+        ],
+        "last_second_max_deg": 0.0,
+        "end_rate_rad_s": -0.0
+      },
+      "loaded": true,
+      "problem": null,
+      "diverged": null,
+      "load_log": [
+        "reset to keyframe 'start'"
+      ],
+      "label": "round1",
+      "turn": "round1",
+      "run": null
+    }
+  ],
+  "load_attempts": 0,
+  "loads": true,
+  "passes_first": false,
+  "rounds": 2,
+  "passes_final": true,
+  "passed_at_round": 1,
+  "tried_fix": true,
+  "claims_works": true,
+  "claim_correct": true,
+  "final_checks": {
+    "door starts within its hinge's range": true,
+    "door starts open (at least 20 degrees)": true,
+    "door shut for the last second (within 2 degrees)": true,
+    "door still at the end": true
+  },
+  "seconds": 23.4,
+  "tokens": {
+    "input": 5532,
+    "output": 2136,
+    "total": 7668
+  },
+  "cost_usd": 0.064848,
+  "served_models": [
+    "claude-opus-5-5"
+  ],
+  "finished_at": "20261006T184535Z"
+}
