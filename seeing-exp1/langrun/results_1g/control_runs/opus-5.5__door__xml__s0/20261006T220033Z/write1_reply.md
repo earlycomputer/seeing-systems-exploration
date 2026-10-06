@@ -1,0 +1,32 @@
+The joint range was read as degrees, so the 1.4 rad (80°) start was far outside its 0° to 1.6° limit. I added `<compiler angle="radian"/>` so the range now means 0 to 1.6 rad (about 92°), and the start sits inside it.
+
+```xml
+<mujoco model="self_closing_door">
+  <compiler angle="radian"/>
+  <option timestep="0.002" gravity="0 0 -9.81"/>
+  <worldbody>
+    <light name="sun" pos="0 -3 4" dir="0 0.6 -0.8" directional="true"/>
+    <geom name="floor" type="plane" size="5 5 0.1" rgba="0.8 0.8 0.8 1"/>
+    <body name="frame" pos="0 0 0">
+      <geom name="post_hinge" type="box" pos="-0.06 0 1.03" size="0.04 0.06 1.03" rgba="0.4 0.3 0.2 1"/>
+      <geom name="post_latch" type="box" pos="0.96 0 1.03" size="0.04 0.06 1.03" rgba="0.4 0.3 0.2 1"/>
+      <geom name="lintel" type="box" pos="0.45 0 2.1" size="0.55 0.06 0.04" rgba="0.4 0.3 0.2 1"/>
+      <geom name="stop_strip" type="box" pos="0.45 -0.04 1.03" size="0.47 0.015 0.01" contype="0" conaffinity="0" rgba="0.3 0.2 0.1 1"/>
+    </body>
+    <body name="door" pos="0 0 0">
+      <joint name="hinge" type="hinge" axis="0 0 1" pos="0 0 0" limited="true" range="0 1.6" stiffness="60" springref="0" damping="55" armature="0.1"/>
+      <geom name="door_panel" type="box" pos="0.45 0 1.01" size="0.45 0.02 1.0" density="1000" contype="0" conaffinity="0" rgba="0.6 0.4 0.2 1"/>
+      <geom name="door_knob" type="sphere" pos="0.8 0.05 1.0" size="0.03" contype="0" conaffinity="0" rgba="0.9 0.8 0.2 1"/>
+    </body>
+  </worldbody>
+  <keyframe>
+    <key name="start" qpos="1.4" qvel="0"/>
+  </keyframe>
+</mujoco>
+```
+
+---
+thinking (summarized):
+
+I'll set the compiler to use radians and keep the keyframe angle around 1.4 rad within a 0 to 1.6 range to keep things simple.
+

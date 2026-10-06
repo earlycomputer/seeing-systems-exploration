@@ -1,0 +1,46 @@
+The ramp's ends must be written as positions, not as names of points, so I removed the two points and put their coordinates straight into the ramp.
+
+```world
+world  ball rolls down a ramp into a cup
+
+floor
+  friction  0.8, spinning 0.005, rolling 0.002
+
+ramp
+  is a       ramp
+  high end   0 m along, 50 cm up
+  low end    1 m along, 25 cm up
+  width      20 cm
+  thickness  4 cm
+  friction   0.9, spinning 0.005, rolling 0.002
+  colour     wood
+
+cup
+  is an      open box
+  length     40 cm
+  width      30 cm
+  walls      15 cm
+  friction   0.9, spinning 0.01, rolling 0.004
+  bounce     dead
+  colour     grey
+  stands     on floor, 1.3 m along
+
+ball
+  is a      sphere 3 cm radius, 60 g
+  rolls
+  bounce    dead
+  friction  0.9, spinning 0.01, rolling 0.004
+  colour    orange
+  moves     freely
+  rests     on ramp.deck, 10 cm from the top
+
+expect
+  ball touches ramp
+  ball comes to rest in cup
+```
+
+---
+thinking (summarized):
+
+I realize "high end" slots into "at high end" as a position clause, so I should use "0 m along, 50 cm up" instead, dropping the extraneous point references.
+
