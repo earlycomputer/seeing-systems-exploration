@@ -131,6 +131,31 @@ def checked(args) -> None:
                    f"{frac([w for w in cs if w['set'] == 'held-out'], 'passes_final')} | "
                    f"{frac([w for w in rs if w['set'] == 'held-out'], 'passes_final')} | {built_first} of {len(rs)} | "
                    f"{frac(rs, 'passes_first')} | ${sum(w['cost_usd'] for w in rs) / len(rs):.3f} |")
+    out += ["", "## Effort per world", "",
+            "Model turns (writes and see-and-fix rounds), tokens and wall time per world, from the world JSON. "
+            "\"To working\" counts only worlds that did not work as first written but worked in the end: the turns and "
+            "output tokens spent getting there.", "",
+            "| Condition | Arm | Worlds | Turns | Input tokens | Output tokens | Seconds | Cost | Turns to working | "
+            "Output tokens to working |", "|---|---|---|---|---|---|---|---|---|---|"]
+    for name, ws in (("1f", f), ("control", ctl), ("1g", g)):
+        for a in ARMS:
+            rs = [w for w in ws if w["arm"] == a]
+            if not rs:
+                continue
+            fixed = [w for w in rs if w["passes_final"] and not w["passes_first"]]
+            def till(w):
+                n = 0
+                for t in w["turns"]:
+                    n += 1
+                    if t.get("new_file_passed"):
+                        break
+                return n, sum(t["usage"]["output_tokens"] for t in w["turns"][:n])
+            tl = [till(w) for w in fixed]
+            avg = lambda xs: sum(xs) / len(xs) if xs else float("nan")
+            out.append(f"| {name} | {a} | {len(rs)} | {avg([len(w['turns']) for w in rs]):.2f} | "
+                       f"{avg([w['tokens']['input'] for w in rs]):,.0f} | {avg([w['tokens']['output'] for w in rs]):,.0f} | "
+                       f"{avg([w['seconds'] for w in rs]):.0f} | ${avg([w['cost_usd'] for w in rs]):.3f} | "
+                       + (f"{avg([t[0] for t in tl]):.2f} ({len(tl)} worlds) | {avg([t[1] for t in tl]):,.0f} |" if tl else "n/a | n/a |"))
     out += ["", "## By model", "", "| Model | Arm | Control | 1g | Control: last claim right | 1g: last claim right |",
             "|---|---|---|---|---|---|"]
     for m in [m for m in MODELS if any(w["model"] == m for w in g + ctl)]:
