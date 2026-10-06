@@ -1,0 +1,685 @@
+<title>Spacetime Debugger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: an instrument panel. The run plays on the left with time underneath it; the right column says what
+   happened (moments), what is true now (state) and why. Worldlines, source and forks sit below, full width. */
+:root {
+  --bg: #eef1f4; --panel: #ffffff; --ink: #18212b; --muted: #5a6674; --line: #d3dae1; --soft: #f5f7f9;
+  --run: #1d64c8; --fork: #b86e00; --ok: #23824f; --bad: #c2353f; --cone: rgba(29, 100, 200, 0.12);
+  --stage: #e6ebef; --struct: #dfe5ea; --grid: #b8c2cc;
+  --display: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --body: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0e1318; --panel: #151c23; --ink: #e2e8ee; --muted: #93a0ad; --line: #26313b; --soft: #1a222a;
+  --run: #6aa8ff; --fork: #f0a63a; --ok: #55c08a; --bad: #ff707a; --cone: rgba(106, 168, 255, 0.14);
+  --stage: #121920; --struct: #25303a; --grid: #34414d; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0e1318; --panel: #151c23; --ink: #e2e8ee; --muted: #93a0ad; --line: #26313b; --soft: #1a222a;
+  --run: #6aa8ff; --fork: #f0a63a; --ok: #55c08a; --bad: #ff707a; --cone: rgba(106, 168, 255, 0.14);
+  --stage: #121920; --struct: #25303a; --grid: #34414d; color-scheme: dark; }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--body); }
+.wrap { max-width: 1320px; margin: 0 auto; padding-inline: 20px; padding-block: 24px 64px; display: grid; gap: 20px; }
+h1 { font: 700 30px/1.1 var(--display); letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
+h2 { font: 600 13px/1.2 var(--body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0; }
+p { margin: 0; }
+.lede { max-width: 72ch; color: var(--muted); }
+.mono, .t { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+button { font: inherit; color: inherit; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--run); outline-offset: 2px; }
+.head { display: grid; gap: 10px; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 5px 12px; cursor: pointer; font-size: 14px; }
+.chip[aria-pressed="true"] { border-color: var(--run); box-shadow: inset 0 0 0 1px var(--run); font-weight: 600; }
+.chip .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
+.dot.ok { background: var(--ok); } .dot.bad { background: var(--bad); } .dot.none { background: var(--muted); }
+label.sel { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 14px; }
+select { font: inherit; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); }
+.note { color: var(--muted); font-size: 14px; }
+.main { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 900px) { .main { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 10px; min-width: 0; align-content: start; }
+#why ol.why { max-height: 380px; overflow: auto; }
+.col { display: grid; gap: 20px; min-width: 0; }
+#view { position: relative; aspect-ratio: 16 / 10; max-width: 100%; background: var(--stage); border-radius: 8px; overflow: hidden; }
+#canvas { width: 100%; height: 100%; display: block; }
+#hud { position: absolute; left: 10px; top: 8px; font: 500 13px var(--mono); color: var(--ink); background: color-mix(in srgb, var(--panel) 80%, transparent); padding: 2px 8px; border-radius: 4px; }
+#legend3d { position: absolute; right: 10px; top: 8px; font-size: 13px; background: color-mix(in srgb, var(--panel) 80%, transparent); padding: 2px 8px; border-radius: 4px; }
+#before { position: absolute; inset: 0; padding: 18px; overflow: auto; background: var(--stage); display: grid; align-content: start; gap: 10px; }
+#before pre { margin: 0; white-space: pre-wrap; font: 13px/1.5 var(--mono); }
+.nogl { position: absolute; inset: 0; display: grid; place-items: center; padding: 20px; text-align: center; color: var(--muted); }
+.transport { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.btn { border: 1px solid var(--line); background: var(--soft); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: 14px; }
+.btn:hover { border-color: var(--muted); }
+.time { position: relative; padding-top: 4px; }
+.lane { position: relative; height: 16px; }
+.lane .tick { position: absolute; top: 2px; width: 2px; height: 12px; margin-left: -1px; border-radius: 1px; background: var(--muted); cursor: pointer; border: 0; padding: 0; }
+.lane .tick.k-touch, .lane .tick.k-leave { background: var(--run); }
+.lane.fork .tick { background: var(--fork); }
+.lane .tick.k-rest { background: var(--ink); height: 14px; top: 1px; width: 3px; }
+.lane .tick.bad { background: var(--bad); width: 4px; }
+.lane .parted { position: absolute; top: 0; height: 16px; border-left: 2px dashed var(--fork); }
+.lanelabel { position: absolute; left: 0; top: -1px; font-size: 11px; color: var(--muted); transform: translateX(-100%); padding-right: 6px; }
+#scrub { width: 100%; accent-color: var(--run); margin: 0; }
+.axis { display: flex; justify-content: space-between; font: 12px var(--mono); color: var(--muted); }
+ol.moments { list-style: none; margin: 0; padding: 0; max-height: 360px; overflow: auto; display: grid; }
+ol.moments li button { width: 100%; text-align: left; display: grid; grid-template-columns: 56px 1fr; gap: 8px; border: 0; background: none; padding: 4px 6px; border-radius: 5px; cursor: pointer; }
+ol.moments li button:hover { background: var(--soft); }
+ol.moments li.future button { color: var(--muted); }
+ol.moments li.now button { background: color-mix(in srgb, var(--run) 14%, transparent); }
+ol.moments li.out button { opacity: 0.45; }
+ol.moments .t { color: var(--muted); font-size: 13px; padding-top: 1px; }
+.parts { display: grid; gap: 10px; }
+.part { border-top: 1px solid var(--line); padding-top: 10px; display: grid; gap: 6px; }
+.part:first-child { border-top: 0; padding-top: 0; }
+.part .name { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; font-weight: 600; }
+.nums { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 4px 12px; }
+.num { display: grid; }
+.num .k { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.num .v { font: 500 15px var(--mono); font-variant-numeric: tabular-nums; }
+.num .v.changed { color: var(--run); }
+.num .f { font: 13px var(--mono); color: var(--fork); }
+.words { font-size: 14px; color: var(--muted); }
+.since { font-size: 13px; color: var(--muted); }
+.expect { display: grid; gap: 6px; }
+.verdict { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.pill { font: 600 12px var(--body); padding: 1px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.pill.ok { color: var(--ok); } .pill.bad { color: var(--bad); }
+code { font: 14px var(--mono); }
+ol.why { margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; border-left: 2px solid var(--run); }
+ol.why li button { display: grid; grid-template-columns: 56px 1fr; gap: 8px; text-align: left; border: 0; background: none; padding: 3px 8px; cursor: pointer; width: 100%; border-radius: 0 5px 5px 0; }
+ol.why li button:hover { background: var(--soft); }
+ol.why .s { grid-column: 2; font-size: 13px; color: var(--muted); }
+ol.why .t { color: var(--muted); font-size: 13px; }
+.reach { font-size: 13px; color: var(--muted); }
+.wide { display: grid; gap: 20px; align-items: start; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+@media (max-width: 900px) { .wide { grid-template-columns: minmax(0, 1fr); } }
+.scroll { overflow-x: auto; }
+svg text { font-family: var(--body); }
+#lines svg { display: block; width: 100%; min-width: 560px; height: auto; }
+pre.src { margin: 0; font: 13px/1.6 var(--mono); overflow-x: auto; }
+pre.src span.ln { display: inline-block; width: 2.4em; color: var(--muted); user-select: none; }
+pre.src .edited { background: color-mix(in srgb, var(--fork) 18%, transparent); display: block; }
+pre.src .exp { display: block; }
+pre.src .exp.bad { background: color-mix(in srgb, var(--bad) 14%, transparent); }
+pre.src .exp.ok { background: color-mix(in srgb, var(--ok) 14%, transparent); }
+pre.src div { min-height: 1.6em; white-space: pre; }
+table.diff { border-collapse: collapse; width: 100%; font-size: 14px; }
+table.diff td { padding: 4px 6px; border-top: 1px solid var(--line); vertical-align: top; }
+table.diff td.t { white-space: nowrap; font-size: 13px; }
+.kind { font: 600 11px var(--body); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.kind.changed, .kind.gone, .kind.new { color: var(--fork); }
+#sweep svg { display: block; width: 100%; height: auto; min-width: 520px; }
+.tip { position: fixed; pointer-events: none; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px 9px; font-size: 13px; max-width: 300px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); z-index: 5; }
+pre.agent { margin: 0; max-height: 420px; overflow: auto; font: 12.5px/1.55 var(--mono); white-space: pre-wrap; background: var(--soft); border-radius: 6px; padding: 12px; }
+.foot { font-size: 13px; color: var(--muted); }
+@media (max-width: 520px) { h1 { font-size: 24px; } .wrap { padding-inline: 16px; } }
+</style>
+
+<div class="wrap">
+  <header class="head">
+    <h1>Spacetime debugger</h1>
+    <p class="lede">The weak-spring catapult from 1d, run once and kept whole. A run is a pure function of its world text, so this is its entire history. Scrub through it, step from moment to moment, ask any part why it is where it is, and fork one line to see where two runs part.</p>
+  </header>
+
+  <div class="bar">
+    <div class="chips" id="runs" role="group" aria-label="Run"></div>
+    <label class="sel" for="cmp">Compare with <select id="cmp"></select></label>
+  </div>
+  <p class="note" id="runnote"></p>
+
+  <div class="main">
+    <div class="col">
+      <section class="panel" aria-label="The run">
+        <div id="view"><canvas id="canvas"></canvas><div id="hud"></div><div id="legend3d" hidden></div><div id="before" hidden></div></div>
+        <div class="transport">
+          <button class="btn" id="play" type="button">Play</button>
+          <button class="btn" id="prev" type="button" title="Previous moment (←)">◀ Moment</button>
+          <button class="btn" id="next" type="button" title="Next moment (→)">Moment ▶</button>
+          <button class="btn" id="back" type="button" title="Back 0.02 s (,)">−0.02 s</button>
+          <button class="btn" id="fwd" type="button" title="Forward 0.02 s (.)">+0.02 s</button>
+          <label class="sel" for="speed">Speed <select id="speed"><option value="0.1">0.1×</option><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option></select></label>
+        </div>
+        <div class="time">
+          <div class="lane" id="laneA" aria-hidden="true"></div>
+          <input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Time">
+          <div class="lane fork" id="laneB" aria-hidden="true" hidden></div>
+          <div class="axis"><span>0 s</span><span id="axisEnd"></span></div>
+        </div>
+      </section>
+      <section class="panel" aria-labelledby="h-lines">
+        <h2 id="h-lines">Worldlines</h2>
+        <p class="note">One row per part, time across. A bar is a stretch of touching, drawn on both parts' rows. The shaded span is the light cone of the question in the Why panel: everything that could have reached it through touch. Click to move the playhead.</p>
+        <div class="scroll" id="lines"></div>
+      </section>
+    </div>
+    <div class="col">
+      <section class="panel" aria-labelledby="h-exp">
+        <h2 id="h-exp">Expected</h2>
+        <div id="expects"></div>
+      </section>
+      <section class="panel" aria-labelledby="h-state">
+        <h2 id="h-state">State</h2>
+        <div id="state"></div>
+      </section>
+      <section class="panel" aria-labelledby="h-why">
+        <h2 id="h-why">Why</h2>
+        <div id="why"></div>
+      </section>
+      <section class="panel" aria-labelledby="h-mom">
+        <h2 id="h-mom">Moments</h2>
+        <ol class="moments" id="moments"></ol>
+      </section>
+    </div>
+  </div>
+
+  <div class="wide">
+    <section class="panel" aria-labelledby="h-src">
+      <h2 id="h-src">The world</h2>
+      <p class="note" id="srcnote"></p>
+      <pre class="src" id="src"></pre>
+    </section>
+    <section class="panel" aria-labelledby="h-fork">
+      <h2 id="h-fork">Fork</h2>
+      <div id="fork"></div>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="h-sweep">
+    <h2 id="h-sweep">One line, eleven forks: the spring swept</h2>
+    <p class="note">The catapult world run again for each spring stiffness, nothing else changed. Where the ball first hits something after leaving the scoop (the floor, the bucket, or at 1.5 the catapult's own arm), and where it comes to rest. The band is the bucket.</p>
+    <div class="scroll" id="sweep"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-agent">
+    <div class="bar"><h2 id="h-agent">The same history, as an agent reads it</h2><button class="btn" id="copy" type="button">Copy</button><span class="note" id="copied"></span></div>
+    <p class="note">Every run on this page, in words: the world, each moment with the state of the parts involved, the expectations, the why chain and the forks. This is the text an agent would be handed.</p>
+    <pre class="agent" id="agent"></pre>
+  </section>
+  <p class="foot" id="gen"></p>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script id="data" type="application/json">/*__DATA__*/null</script>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+               "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/" } }
+</script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+const D = JSON.parse(document.getElementById("data").textContent);
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const RUNS = Object.fromEntries(D.runs.map((r) => [r.id, r]));
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const f2 = (x) => Number(x).toFixed(2);
+
+let cur = RUNS.weak, cmp = null, t = 0, playing = false, speed = 1, last = performance.now();
+let ask = null; // { label, t, title } the question the Why panel answers
+
+// ---- the light cone: the same walk as Recorder.cone in spacetime.py --------------------------------------
+function cone(run, label, T) {
+  const bo = run.body_of, mv = new Set(run.moving), h = new Map([[bo[label] ?? 0, T]]);
+  for (let changed = true; changed;) {
+    changed = false;
+    for (const iv of run.intervals) {
+      const a = bo[iv.a], b = bo[iv.b];
+      for (const [s, d] of [[a, b], [b, a]]) {
+        if (h.has(s) && mv.has(s) && iv.t0 <= h.get(s)) {
+          const x = Math.min(iv.t1, h.get(s));
+          if (x > (h.has(d) ? h.get(d) : -1)) { h.set(d, x); changed = true; }
+        }
+      }
+    }
+  }
+  return h;
+}
+function why(run, label, T) {
+  const h = cone(run, label, T), bo = run.body_of;
+  const inside = (e) => e.who.some((w) => h.has(bo[w]) && e.t <= h.get(bo[w]) + 1e-9);
+  const chain = run.events.filter((e) => e.t <= T + 1e-9 && inside(e) && !(e.kind === "touch" && e.t <= 0)).reverse();
+  return { h, chain };
+}
+
+// ---- runs and forks ---------------------------------------------------------------------------------------
+const verdictOf = (r) => !r.built ? "none" : r.expects.every((x) => x.ok) ? "ok" : "bad";
+function chips() {
+  $("runs").innerHTML = D.runs.map((r) => `<button type="button" class="chip" data-id="${r.id}" aria-pressed="${r === cur}"><span class="dot ${verdictOf(r)}"></span>${esc(r.name)}</button>`).join("");
+  const opts = D.runs.filter((r) => r !== cur && r.built && cur.built);
+  $("cmp").innerHTML = `<option value="">No fork</option>` + opts.map((r) => `<option value="${r.id}" ${cmp === r ? "selected" : ""}>${esc(r.name)}</option>`).join("");
+  $("cmp").disabled = !cur.built;
+}
+$("runs").addEventListener("click", (e) => { const b = e.target.closest(".chip"); if (b) choose(RUNS[b.dataset.id], cmp); });
+$("cmp").addEventListener("change", () => choose(cur, RUNS[$("cmp").value] || null));
+
+function defaultAsk(run) {
+  const x = run.expects.find((e) => !e.ok) || run.expects[0];
+  const subject = x.line.split(" ")[0];
+  return { label: subject, t: x.t, title: `Why does “${x.line}” ${x.ok ? "hold" : "fail"}?`, line: x.line, ok: x.ok };
+}
+
+function choose(run, fork) {
+  cur = run; cmp = fork && fork !== run && run.built && fork.built ? fork : null;
+  ask = run.built ? defaultAsk(run) : null;
+  $("runnote").textContent = run.note;
+  chips();
+  build();
+  timeLanes(); expects(); source(); forkPanel(); lines();
+  seek(run.built ? Math.min(t, run.end) : 0);
+}
+
+// ---- 3D (the 1c/1d viewer's renderer) -------------------------------------------------------------------
+let renderer = null;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas: $("canvas"), antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+} catch (e) {
+  $("view").insertAdjacentHTML("beforeend", '<div class="nogl">This browser could not start WebGL, so the run is not drawn here. Its moments, state and why are all still on this page.</div>');
+}
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(40, 16 / 10, 0.02, 400);
+camera.up.set(0, 0, 1);
+const controls = renderer ? new OrbitControls(camera, renderer.domElement) : null;
+if (controls) { controls.enableDamping = true; controls.dampingFactor = 0.12; }
+const hemi = new THREE.HemisphereLight(0xffffff, 0x8a8f94, 1.25); hemi.position.set(0, 0, 1);
+const sun = new THREE.DirectionalLight(0xffffff, 2.1);
+sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0004;
+scene.add(hemi, sun, sun.target);
+let root = null, grids = [], movers = [], ghostMovers = [], framed = false;
+const box = { lo: new THREE.Vector3(), hi: new THREE.Vector3() };
+const rgb = (c) => new THREE.Color().setRGB(c[0], c[1], c[2], THREE.SRGBColorSpace);
+const quat = (q, k = 0) => new THREE.Quaternion(q[k + 1], q[k + 2], q[k + 3], q[k]);
+
+function geometry(g, span) {
+  const s = g.s;
+  switch (g.t) {
+    case "box": return new THREE.BoxGeometry(2 * s[0], 2 * s[1], 2 * s[2]);
+    case "sphere": return new THREE.SphereGeometry(s[0], 36, 18);
+    case "ellipsoid": return new THREE.SphereGeometry(1, 36, 18).scale(s[0], s[1], s[2]);
+    case "capsule": return new THREE.CapsuleGeometry(s[0], 2 * s[1], 10, 28).rotateX(Math.PI / 2);
+    case "cylinder": return new THREE.CylinderGeometry(s[0], s[0], 2 * s[1], 36).rotateX(Math.PI / 2);
+    case "plane": return new THREE.PlaneGeometry(2 * (s[0] || span), 2 * (s[1] || span));
+  }
+  return null;
+}
+function gridLines(hx, hy) {
+  const pts = [];
+  for (let x = -Math.floor(hx); x <= hx; x++) pts.push(x, -hy, 0, x, hy, 0);
+  for (let y = -Math.floor(hy); y <= hy; y++) pts.push(-hx, y, 0, hx, y, 0);
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
+  return new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ transparent: true, opacity: 0.85 }));
+}
+function disposeTree(o) { o.traverse((c) => { if (c.geometry) c.geometry.dispose(); if (c.material) [].concat(c.material).forEach((m) => m.dispose()); }); }
+
+// Add one run's bodies to the scene. A ghost (the fork) shows only what moves or sits somewhere else.
+function addRun(run, ghost, span) {
+  const anim = run.anim, groups = {}, out = [];
+  const baseBody = Object.fromEntries(cur.anim.bodies.map((b) => [b.name, b]));
+  for (const b of anim.bodies) {
+    const moving = b.p.length > 3;
+    if (ghost && !moving) {
+      const o = baseBody[b.name];
+      if (o && o.p.every((v, i) => Math.abs(v - b.p[i]) < 1e-4)) continue;
+    }
+    const grp = new THREE.Group();
+    grp.position.fromArray(b.p.slice(0, 3)); grp.quaternion.copy(quat(b.q));
+    groups[b.b] = grp; root.add(grp);
+    if (moving) out.push({ grp, b });
+  }
+  for (const g of run.geoms) {
+    if (ghost && !groups[g.b]) continue;
+    if (ghost && g.t === "plane") continue;
+    const geo = geometry(g, span);
+    if (!geo) continue;
+    const mat = new THREE.MeshStandardMaterial({ color: ghost ? new THREE.Color(css("--fork")) : rgb(g.c), roughness: g.t === "plane" ? 0.95 : 0.7,
+      metalness: 0, transparent: ghost || g.c[3] < 1, opacity: ghost ? 0.38 : g.c[3], depthWrite: !ghost });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.fromArray(g.p); mesh.quaternion.copy(quat(g.q));
+    mesh.receiveShadow = !ghost; mesh.castShadow = !ghost && g.t !== "plane";
+    (groups[g.b] || root).add(mesh);
+    if (g.t === "plane") { const grid = gridLines(g.s[0] || span, g.s[1] || span); grid.position.z = 0.002; grids.push(grid); mesh.add(grid); }
+  }
+  return out;
+}
+
+function build() {
+  if (root) { scene.remove(root); disposeTree(root); }
+  root = new THREE.Group(); grids = []; movers = []; ghostMovers = [];
+  scene.add(root);
+  $("before").hidden = cur.built;
+  $("legend3d").hidden = !cmp;
+  if (cmp) $("legend3d").innerHTML = `<span style="color:var(--fork)">■</span> ${esc(cmp.name)}`;
+  if (!cur.built) {
+    $("before").innerHTML = `<h2>Before time starts</h2><p>This world does not build, so it has no run and no history. The problem is caught at the line that caused it, before anything moves.</p><pre>${esc(cur.problems)}</pre>`;
+    return;
+  }
+  const a = cur.anim;
+  box.lo.fromArray(a.lo); box.hi.fromArray(a.hi);
+  if (cmp) { box.lo.min(new THREE.Vector3().fromArray(cmp.anim.lo)); box.hi.max(new THREE.Vector3().fromArray(cmp.anim.hi)); }
+  const size = box.hi.clone().sub(box.lo), span = Math.max(4, Math.max(size.x, size.y) * 0.8 + 3);
+  movers = addRun(cur, false, span);
+  if (cmp) ghostMovers = addRun(cmp, true, span);
+  const c = box.lo.clone().add(box.hi).multiplyScalar(0.5), r = size.length() / 2;
+  sun.position.copy(c).add(new THREE.Vector3(-0.5, -0.8, 1.6).multiplyScalar(r + 2)); sun.target.position.copy(c);
+  const sc = sun.shadow.camera;
+  sc.left = sc.bottom = -(r + 1); sc.right = sc.top = r + 1; sc.near = 0.1; sc.far = 4 * (r + 2); sc.updateProjectionMatrix();
+  theme();
+  if (!framed) { fit(); framed = true; }
+}
+
+function frameAt(anim, time) {
+  const ts = anim.t, n = ts.length;
+  if (time <= ts[0]) return [0, 0, 0];
+  if (time >= ts[n - 1]) return [n - 1, n - 1, 0];
+  let lo = 0, hi = n - 1;
+  while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (ts[mid] <= time) lo = mid; else hi = mid; }
+  return [lo, hi, (time - ts[lo]) / (ts[hi] - ts[lo])];
+}
+const _qa = new THREE.Quaternion(), _qb = new THREE.Quaternion();
+function pose(obj, anim, b, time) {
+  const [i, j, a] = frameAt(anim, time), p = b.p, q = b.q;
+  obj.position.set(p[3 * i] + (p[3 * j] - p[3 * i]) * a, p[3 * i + 1] + (p[3 * j + 1] - p[3 * i + 1]) * a, p[3 * i + 2] + (p[3 * j + 2] - p[3 * i + 2]) * a);
+  _qa.copy(quat(q, 4 * i)); _qb.copy(quat(q, 4 * j)); obj.quaternion.copy(_qa.slerp(_qb, a));
+}
+function fit() {
+  const c = box.lo.clone().add(box.hi).multiplyScalar(0.5);
+  const dir = new THREE.Vector3(-0.2, -1.0, 0.45).normalize();
+  const right = new THREE.Vector3().crossVectors(dir, camera.up).normalize().negate();
+  const up = new THREE.Vector3().crossVectors(right, dir.clone().negate()).normalize();
+  const tv = Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2), th = tv * camera.aspect;
+  let dist = 0.5;
+  for (const x of [box.lo.x, box.hi.x]) for (const y of [box.lo.y, box.hi.y]) for (const z of [box.lo.z, box.hi.z]) {
+    const v = new THREE.Vector3(x, y, z).sub(c), toward = v.dot(dir);
+    dist = Math.max(dist, toward + Math.abs(v.dot(right)) / th, toward + Math.abs(v.dot(up)) / tv);
+  }
+  dist *= 1.04;
+  camera.position.copy(c).addScaledVector(dir, dist);
+  camera.near = Math.max(0.01, dist / 200); camera.far = dist * 20; camera.updateProjectionMatrix();
+  if (controls) { controls.target.copy(c); controls.update(); }
+}
+function theme() {
+  scene.background = new THREE.Color(css("--stage"));
+  hemi.groundColor = new THREE.Color(css("--struct"));
+  for (const g of grids) g.material.color = new THREE.Color(css("--grid"));
+}
+const rethemeAll = () => { theme(); if (cmp) build(); lines(); sweep(); };
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", rethemeAll);
+new MutationObserver(rethemeAll).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+function resize() {
+  if (!renderer) return;
+  const el = $("view"), w = el.clientWidth, h = el.clientHeight;
+  renderer.setSize(w, h, false); camera.aspect = w / Math.max(1, h); camera.updateProjectionMatrix();
+}
+new ResizeObserver(() => { const had = camera.aspect; resize(); if (Math.abs(had - camera.aspect) > 0.2 && cur.built) fit(); }).observe($("view"));
+
+// ---- time ---------------------------------------------------------------------------------------------------
+const end = () => (cur.built ? cur.end : 1);
+const frameOf = (run, time) => run.frames[Math.max(0, Math.min(run.frames.length - 1, Math.round(time * D.fps)))];
+function seek(time) {
+  t = Math.max(0, Math.min(end(), time));
+  show();
+}
+function show() {
+  if (!cur.built) {
+    $("hud").textContent = "no run"; $("scrub").disabled = true; $("axisEnd").textContent = "";
+    $("state").innerHTML = '<p class="note">Nothing exists yet: the world never built.</p>';
+    $("moments").innerHTML = ""; $("why").innerHTML = '<p class="note">There is no run to ask about. See the problem on the left.</p>';
+    return;
+  }
+  $("scrub").disabled = false;
+  for (const m of movers) pose(m.grp, cur.anim, m.b, t);
+  for (const m of ghostMovers) pose(m.grp, cmp.anim, m.b, t);
+  $("hud").textContent = `t ${f2(t)} s of ${f2(end())}` + (speed !== 1 ? `  ·  ${speed}×` : "");
+  $("scrub").value = String(Math.round((t / end()) * 1000));
+  $("axisEnd").textContent = `${f2(end())} s`;
+  moments(); state(); whyPanel(); playhead();
+}
+$("scrub").addEventListener("input", () => { playing = false; $("play").textContent = "Play"; seek((Number($("scrub").value) / 1000) * end()); });
+$("play").addEventListener("click", () => { if (t >= end() - 1e-6) t = 0; playing = !playing; $("play").textContent = playing ? "Pause" : "Play"; });
+$("speed").addEventListener("change", () => { speed = Number($("speed").value); show(); });
+const stepEvent = (dir) => {
+  if (!cur.built) return;
+  playing = false; $("play").textContent = "Play";
+  const ts = [...new Set(cur.events.map((e) => e.t))].sort((a, b) => a - b);
+  const next = dir > 0 ? ts.find((x) => x > t + 1e-6) : [...ts].reverse().find((x) => x < t - 1e-6);
+  seek(next ?? (dir > 0 ? end() : 0));
+};
+$("next").addEventListener("click", () => stepEvent(1));
+$("prev").addEventListener("click", () => stepEvent(-1));
+$("fwd").addEventListener("click", () => { playing = false; seek(t + 1 / D.fps); });
+$("back").addEventListener("click", () => { playing = false; seek(t - 1 / D.fps); });
+addEventListener("keydown", (e) => {
+  if (e.target.closest("input, select, textarea")) return;
+  if (e.key === "ArrowRight") { stepEvent(1); e.preventDefault(); }
+  else if (e.key === "ArrowLeft") { stepEvent(-1); e.preventDefault(); }
+  else if (e.key === ".") seek(t + 1 / D.fps);
+  else if (e.key === ",") seek(t - 1 / D.fps);
+});
+
+function timeLanes() {
+  const lane = (run, el) => {
+    el.innerHTML = run.events.map((e, i) => {
+      const bad = run.expects.some((x) => !x.ok && Math.abs(x.t - e.t) < 1e-6 && x.evidence.toLowerCase() === e.text.toLowerCase());
+      return `<button type="button" tabindex="-1" class="tick k-${e.kind}${bad ? " bad" : ""}" data-t="${e.t}" style="left:${(e.t / end()) * 100}%" title="${f2(e.t)} s  ${esc(e.text)}"></button>`;
+    }).join("");
+  };
+  if (!cur.built) { $("laneA").innerHTML = ""; $("laneB").hidden = true; return; }
+  lane(cur, $("laneA"));
+  $("laneB").hidden = !cmp;
+  if (cmp) {
+    lane(cmp, $("laneB"));
+    const d = D.diffs[`${cur.id}|${cmp.id}`];
+    if (d && d.parted != null) $("laneB").insertAdjacentHTML("beforeend", `<span class="parted" style="left:${(d.parted / end()) * 100}%" title="The runs part at ${f2(d.parted)} s"></span>`);
+  }
+}
+for (const id of ["laneA", "laneB"]) $(id).addEventListener("click", (e) => { const b = e.target.closest(".tick"); if (b) { playing = false; seek(Number(b.dataset.t)); } });
+
+// ---- moments, state, why -----------------------------------------------------------------------------------
+function moments() {
+  const inCone = ask ? why(cur, ask.label, ask.t).chain : [];
+  const set = new Set(inCone);
+  const nowT = Math.max(-1, ...cur.events.filter((e) => e.t <= t + 1e-6).map((e) => e.t));
+  $("moments").innerHTML = cur.events.map((e, i) => {
+    const cls = e.t > t + 1e-6 ? "future" : Math.abs(e.t - nowT) < 1e-6 ? "now" : "past";
+    return `<li class="${cls}${ask && !set.has(e) ? " out" : ""}"><button type="button" data-i="${i}"><span class="t">${f2(e.t)} s</span><span>${esc(e.text)}</span></button></li>`;
+  }).join("");
+  const now = $("moments").querySelector("li.now");
+  if (now && playing) now.scrollIntoView({ block: "nearest" });
+}
+$("moments").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { playing = false; seek(cur.events[Number(b.dataset.i)].t); } });
+
+const FIELDS = { free: [["x", "along", "m", 2], ["z", "up", "m", 2], ["speed", "speed", "m/s", 2], ["heading", "heading", "°", 0]],
+                 hinge: [["angle", "angle", "°", 1], ["rate", "turning", "°/s", 0]] };
+function state() {
+  const fr = frameOf(cur, t), prevE = [...cur.events].reverse().find((e) => e.t < t - 1e-6);
+  const pf = prevE ? frameOf(cur, prevE.t) : null, ff = cmp ? frameOf(cmp, t) : null;
+  let h = `<p class="since">${prevE ? `Blue values changed since the last moment, ${f2(prevE.t)} s: ${esc(prevE.text)}.` : "The start: nothing has happened yet."}${cmp ? ` Amber is ${esc(cmp.name)} at the same time.` : ""}</p><div class="parts">`;
+  for (const p of cur.parts) {
+    const s = fr.parts[p.part], ps = pf && pf.parts[p.part], fs = ff && ff.parts[p.part];
+    h += `<div class="part"><div class="name"><span>${esc(p.part)}</span><button type="button" class="btn" data-ask="${esc(p.part)}">Why is it here?</button></div><div class="nums">`;
+    for (const [k, name, unit, n] of FIELDS[p.kind]) {
+      const v = s[k], changed = ps && Math.abs(ps[k] - v) > Math.pow(10, -n) * 0.5;
+      h += `<div class="num"><span class="k">${name}</span><span class="v${changed ? " changed" : ""}">${Number(v).toFixed(n)} ${unit}</span>${fs ? `<span class="f">${Number(fs[k]).toFixed(n)} ${unit}</span>` : ""}</div>`;
+    }
+    h += `</div><div class="words">${esc(s.words)}</div></div>`;
+  }
+  $("state").innerHTML = h + "</div>";
+}
+$("state").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-ask]");
+  if (!b) return;
+  ask = { label: b.dataset.ask, t, title: `Why is ${b.dataset.ask} where it is at ${f2(t)} s?` };
+  show(); lines();
+});
+
+function whyPanel() {
+  if (!ask) { $("why").innerHTML = ""; return; }
+  const { h, chain } = why(cur, ask.label, ask.t);
+  const reach = cur.moving.filter((b) => h.has(b)).map((b) => `${cur.part_of_body[b]} up to ${f2(h.get(b))} s`).join(", ");
+  const left = cur.moving.filter((b) => !h.has(b)).map((b) => cur.part_of_body[b]);
+  let out = `<p><strong>${esc(ask.title)}</strong></p><p class="reach">Walking back from ${f2(ask.t)} s through touch alone reaches ${esc(reach)}.${left.length ? ` ${esc(left.join(", "))} never touched it, so cannot be the cause.` : ""} The floor and the stand never move, so they carry nothing between parts.</p><ol class="why">`;
+  out += chain.map((e) => `<li><button type="button" data-t="${e.t}"><span class="t">${f2(e.t)} s</span><span>${esc(e.text)}</span>${Object.keys(e.state).length ? `<span class="s">${esc(Object.values(e.state).join("; "))}</span>` : ""}</button></li>`).join("");
+  out += `</ol>`;
+  if (!(ask.line && Math.abs(ask.t - defaultAsk(cur).t) < 1e-9)) out += `<button type="button" class="btn" id="whyreset">Back to the expectation</button>`;
+  $("why").innerHTML = out;
+}
+$("why").addEventListener("click", (e) => {
+  if (e.target.id === "whyreset") { ask = defaultAsk(cur); show(); lines(); return; }
+  const b = e.target.closest("button[data-t]"); if (b) { playing = false; seek(Number(b.dataset.t)); }
+});
+
+function expects() {
+  if (!cur.built) { $("expects").innerHTML = '<p class="note">Not checked: the world never ran.</p>'; return; }
+  $("expects").innerHTML = cur.expects.map((x, i) => `<div class="expect"><div class="verdict"><span class="pill ${x.ok ? "ok" : "bad"}">${x.ok ? "✓ holds" : "✗ fails"}</span><code>${esc(x.line)}</code></div>
+    <p class="note">${esc(x.evidence)}, <button type="button" class="btn" data-t="${x.t}">at ${f2(x.t)} s</button></p>
+    ${!x.ok ? '<p class="note">That is where the failure shows, not where it began. The Why panel walks back from it.</p>' : ""}</div>`).join("");
+}
+$("expects").addEventListener("click", (e) => { const b = e.target.closest("button[data-t]"); if (b) { playing = false; ask = defaultAsk(cur); seek(Number(b.dataset.t)); lines(); } });
+
+// ---- worldlines: parts down, time across, touches as bars, the light cone shaded -------------------------------
+function rowOf(run, label) { const b = run.body_of[label]; return run.moving.includes(b) ? run.part_of_body[b] : label; }
+function lines() {
+  if (!cur.built) { $("lines").innerHTML = '<p class="note">No run, so no worldlines.</p>'; return; }
+  const rows = [...cur.moving.map((b) => cur.part_of_body[b])];
+  for (const iv of cur.intervals) for (const l of [iv.a, iv.b]) { const r = rowOf(cur, l); if (!rows.includes(r)) rows.push(r); }
+  const W = 760, L = 150, R = 14, top = 22, rh = 26, H = top + rows.length * rh + 26;
+  const x = (tt) => L + (tt / cur.end) * (W - L - R), y = (r) => top + rows.indexOf(r) * rh + rh / 2;
+  const ink = css("--ink"), muted = css("--muted"), line = css("--line"), run = css("--run"), fork = css("--fork");
+  const { h } = ask ? why(cur, ask.label, ask.t) : { h: new Map() };
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Worldlines: which parts touched which, over time">`;
+  for (let k = 0; k <= Math.floor(cur.end); k++) s += `<line x1="${x(k)}" x2="${x(k)}" y1="${top - 6}" y2="${H - 20}" stroke="${line}" stroke-width="1"/><text x="${x(k)}" y="${H - 6}" font-size="11" fill="${muted}" text-anchor="middle">${k} s</text>`;
+  rows.forEach((r) => {
+    const b = cur.moving.find((bb) => cur.part_of_body[bb] === r);
+    if (b != null && h.has(b)) s += `<rect x="${x(0)}" y="${y(r) - rh / 2 + 2}" width="${x(h.get(b)) - x(0)}" height="${rh - 4}" fill="${css("--cone")}" rx="3"/>`;
+    s += `<line x1="${x(0)}" x2="${x(cur.end)}" y1="${y(r)}" y2="${y(r)}" stroke="${b != null ? ink : line}" stroke-width="${b != null ? 1.5 : 1}" ${b != null ? "" : 'stroke-dasharray="3 3"'}/>`;
+    s += `<text x="${L - 8}" y="${y(r) + 4}" font-size="12" fill="${b != null ? ink : muted}" text-anchor="end">${esc(r)}</text>`;
+  });
+  for (const iv of cur.intervals) {
+    const ra = rowOf(cur, iv.a), rb = rowOf(cur, iv.b);
+    if (ra === rb) continue;
+    const ba = cur.body_of[iv.a], bb = cur.body_of[iv.b];
+    const lit = [ba, bb].some((bd) => cur.moving.includes(bd) && h.has(bd) && iv.t0 <= h.get(bd) + 1e-9);
+    const col = lit ? run : muted, w = Math.max(2, x(iv.t1) - x(iv.t0));
+    s += `<line x1="${x(iv.t0)}" x2="${x(iv.t0)}" y1="${y(ra)}" y2="${y(rb)}" stroke="${col}" stroke-width="1" opacity="0.55"/>`;
+    for (const r of [ra, rb]) s += `<rect x="${x(iv.t0)}" y="${y(r) - 4}" width="${w}" height="8" rx="4" fill="${col}"><title>${esc(iv.a)} touching ${esc(iv.b)}, ${f2(iv.t0)} to ${f2(iv.t1)} s</title></rect>`;
+  }
+  if (ask && rows.includes(rowOf(cur, ask.label))) s += `<circle cx="${x(ask.t)}" cy="${y(rowOf(cur, ask.label))}" r="5" fill="${css("--panel")}" stroke="${run}" stroke-width="2"><title>The question: ${esc(ask.title)}</title></circle>`;
+  if (cmp) { const d = D.diffs[`${cur.id}|${cmp.id}`]; if (d && d.parted != null) s += `<line x1="${x(d.parted)}" x2="${x(d.parted)}" y1="${top - 8}" y2="${H - 20}" stroke="${fork}" stroke-dasharray="4 3" stroke-width="1.5"/><text x="${x(d.parted) + 4}" y="${top - 10}" font-size="11" fill="${muted}">parts from ${esc(cmp.name)}</text>`; }
+  s += `<line id="ph" x1="0" x2="0" y1="${top - 8}" y2="${H - 20}" stroke="${ink}" stroke-width="1.5"/>`;
+  s += `<rect id="hit" x="${L}" y="0" width="${W - L - R}" height="${H}" fill="transparent" style="cursor:pointer"/></svg>`;
+  $("lines").innerHTML = s;
+  lines.x = x;
+  $("hit").addEventListener("click", (e) => {
+    const svg = $("lines").querySelector("svg"), pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY;
+    const p = pt.matrixTransform(svg.getScreenCTM().inverse());
+    playing = false; seek(((p.x - L) / (W - L - R)) * cur.end);
+  });
+  playhead();
+}
+function playhead() { const ph = document.getElementById("ph"); if (ph && lines.x) { ph.setAttribute("x1", lines.x(t)); ph.setAttribute("x2", lines.x(t)); } }
+
+// ---- source and fork -------------------------------------------------------------------------------------------
+function source() {
+  const ref = cmp || (cur.id !== "weak" ? RUNS.weak : null);
+  const exp = cur.built ? Object.fromEntries(cur.expects.map((x) => [x.row, x.ok])) : {};
+  $("src").innerHTML = cur.source.map((l, i) => {
+    const ed = ref && ref.source[i] !== l, ex = exp[i + 1];
+    const cls = ed ? "edited" : ex != null ? `exp ${ex ? "ok" : "bad"}` : "";
+    return `<div class="${cls}"><span class="ln">${i + 1}</span>${esc(l)}</div>`;
+  }).join("");
+  $("srcnote").textContent = ref ? `Highlighted: the line that differs from ${ref.name.toLowerCase()}.` : "The 1d catapult brief written in the world language, with 1d's break in it: line 11's spring is 2 N·m/rad where the brief has 3.";
+}
+function forkPanel() {
+  if (!cmp) {
+    $("fork").innerHTML = `<p class="note">${cur.built ? "Pick a run under Compare with. A fork is the same world with one line changed. Both runs are drawn together, the fork in amber, and the moments that moved, changed or disappeared are listed here." : "A world that does not build has nothing to fork."}</p>`;
+    return;
+  }
+  const d = D.diffs[`${cur.id}|${cmp.id}`];
+  const rows = d.events.filter((r) => r.kind !== "same");
+  const same = d.events.length - rows.length;
+  let h = `<p>${esc(d.summary.replace(/`/g, ""))}</p>`;
+  if (d.parted != null) h += `<p><button type="button" class="btn" data-t="${d.parted}">Go to ${f2(d.parted)} s, where they part</button></p>`;
+  h += `<p class="note">${same} moment${same === 1 ? "" : "s"} happen at the same time in both. The rest:</p><div class="scroll"><table class="diff"><tbody>`;
+  h += rows.map((r) => `<tr><td><span class="kind ${r.kind}">${r.kind}</span></td><td class="t mono">${r.ta != null ? f2(r.ta) + " s" : ""}</td><td>${esc(r.a ?? "")}</td><td class="t mono" style="color:var(--fork)">${r.tb != null ? f2(r.tb) + " s" : ""}</td><td>${esc(r.b ?? "")}</td></tr>`).join("");
+  $("fork").innerHTML = h + "</tbody></table></div>";
+}
+$("fork").addEventListener("click", (e) => { const b = e.target.closest("button[data-t]"); if (b) { playing = false; seek(Number(b.dataset.t)); } });
+
+// ---- the spring sweep ----------------------------------------------------------------------------------------------
+function sweep() {
+  const S = D.sweep, W = 760, H = 300, L = 64, R = 16, T = 18, B = 44;
+  const k0 = S[0].spring, k1 = S[S.length - 1].spring;
+  const xs = [...S.map((s) => s.land_x), ...S.map((s) => s.x)], cont = RUNS.weak.containers[0];
+  const CAP = cont.x1 + 1.0, v0 = Math.min(0, ...xs) - 0.1, v1 = Math.min(CAP, Math.max(cont.x1, ...xs)) + 0.2;
+  const cl = (v) => Math.min(v, CAP);
+  const X = (k) => L + ((k - k0) / (k1 - k0)) * (W - L - R), Y = (v) => T + (1 - (v - v0) / (v1 - v0)) * (H - T - B);
+  const ink = css("--ink"), muted = css("--muted"), line = css("--line"), panel = css("--panel"), ok = css("--ok"), bad = css("--bad");
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Where the ball first hits something and comes to rest, for each spring stiffness">`;
+  s += `<rect x="${L}" y="${Y(cont.x1)}" width="${W - L - R}" height="${Y(cont.x0) - Y(cont.x1)}" fill="${css("--cone")}"/><text x="${L + 6}" y="${Y(cont.x1) - 6}" font-size="12" fill="${muted}">bucket, ${f2(cont.x0)} to ${f2(cont.x1)} m along</text>`;
+  for (let v = Math.ceil(v0); v <= v1; v += 1) s += `<line x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}" stroke="${line}"/><text x="${L - 8}" y="${Y(v) + 4}" font-size="11" fill="${muted}" text-anchor="end">${v.toFixed(1)} m</text>`;
+  for (const p of S) s += `<text x="${X(p.spring)}" y="${H - B + 18}" font-size="11" fill="${muted}" text-anchor="middle">${p.spring}</text>`;
+  s += `<text x="${(L + W - R) / 2}" y="${H - 6}" font-size="12" fill="${muted}" text-anchor="middle">spring stiffness, N·m/rad</text>`;
+  s += `<text x="14" y="${(T + H - B) / 2}" font-size="12" fill="${muted}" text-anchor="middle" transform="rotate(-90 14 ${(T + H - B) / 2})">along the floor</text>`;
+  const weakK = 2;
+  s += `<line x1="${X(weakK)}" x2="${X(weakK)}" y1="${T}" y2="${H - B}" stroke="${muted}" stroke-dasharray="3 3"/><text x="${X(weakK) + 4}" y="${T + 10}" font-size="11" fill="${muted}">weak spring</text>`;
+  s += `<line x1="${X(3)}" x2="${X(3)}" y1="${T}" y2="${H - B}" stroke="${muted}" stroke-dasharray="3 3"/><text x="${X(3) + 4}" y="${T + 10}" font-size="11" fill="${muted}">1d's brief</text>`;
+  S.forEach((p, i) => {
+    const c = p.ok ? ok : bad;
+    s += `<line x1="${X(p.spring)}" x2="${X(p.spring)}" y1="${Y(cl(p.land_x))}" y2="${Y(cl(p.x))}" stroke="${c}" stroke-width="2" opacity="0.6"/>`;
+    s += `<circle cx="${X(p.spring)}" cy="${Y(cl(p.land_x))}" r="5" fill="${panel}" stroke="${c}" stroke-width="2"/>`;
+    if (p.x > CAP) s += `<path d="M${X(p.spring) - 6} ${Y(CAP) + 4} L${X(p.spring)} ${Y(CAP) - 6} L${X(p.spring) + 6} ${Y(CAP) + 4} Z" fill="${c}"/><text x="${X(p.spring) - 10}" y="${Y(CAP) + 4}" font-size="11" fill="${muted}" text-anchor="end">still rolling, ${p.x.toFixed(1)} m</text>`;
+    else s += `<circle cx="${X(p.spring)}" cy="${Y(p.x)}" r="5" fill="${c}" stroke="${panel}" stroke-width="2"/>`;
+    s += `<rect class="hit" data-i="${i}" x="${X(p.spring) - 14}" y="${T}" width="28" height="${H - T - B}" fill="transparent"/>`;
+  });
+  s += `</svg>`;
+  s += `<p class="note" style="margin-top:6px">○ the first thing the ball hits after leaving the scoop &nbsp; ● where it comes to rest &nbsp; <span style="color:var(--ok)">green</span> ✓ in the bucket &nbsp; <span style="color:var(--bad)">red</span> ✗ not</p>`;
+  $("sweep").innerHTML = s;
+}
+const tip = $("tip");
+$("sweep").addEventListener("pointermove", (e) => {
+  const r = e.target.closest(".hit");
+  if (!r) { tip.hidden = true; return; }
+  const p = D.sweep[Number(r.dataset.i)];
+  tip.innerHTML = `<strong>${p.spring} N·m/rad</strong> ${p.ok ? "✓" : "✗"}<br>${esc(p.land)} at ${f2(p.land_t)} s, ${f2(p.land_x)} m along<br>${esc(p.text)}`;
+  tip.hidden = false;
+  tip.style.left = Math.min(innerWidth - 310, e.clientX + 14) + "px"; tip.style.top = e.clientY + 14 + "px";
+});
+$("sweep").addEventListener("pointerleave", () => { tip.hidden = true; });
+
+// ---- the agent's copy --------------------------------------------------------------------------------------------
+$("agent").textContent = D.history;
+$("copy").addEventListener("click", async () => {
+  try { await navigator.clipboard.writeText(D.history); $("copied").textContent = "Copied."; }
+  catch { const r = document.createRange(); r.selectNodeContents($("agent")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $("copied").textContent = "Selected; copy it with your keyboard."; }
+});
+$("gen").textContent = `Generated ${D.generated} by seeing-exp1/typed/spacetime.py from the world files in typed/worlds/. MuJoCo ran every run here; nothing was typed by hand and no model was called.`;
+
+// ---- go ---------------------------------------------------------------------------------------------------------------
+function loop(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  if (playing && cur.built) {
+    t += dt * speed;
+    if (t >= end()) { t = end(); playing = false; $("play").textContent = "Play"; }
+    show();
+  }
+  if (controls) controls.update();
+  if (renderer) renderer.render(scene, camera);
+  requestAnimationFrame(loop);
+}
+resize();
+choose(RUNS.weak, null);
+seek(defaultAsk(RUNS.weak).t);
+sweep();
+requestAnimationFrame(loop);
+</script>

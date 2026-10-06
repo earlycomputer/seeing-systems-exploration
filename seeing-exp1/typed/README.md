@@ -125,3 +125,23 @@ Decisions taken alone:
   `first_tip=rps(4)` and the compiler writes the keyframe in MuJoCo's joint order.
 - **Each part reproduces its fixture.** Sizes, masses and offsets were copied from the hand-written worlds, so
   "passes its 1d test" compares like with like. The ball on the ramp sits 1 mm lower than the fixture's.
+
+## The spacetime debugger (first pass)
+
+Jono asked on 2026-10-06 for a first pass at the "spacetime travelling debugger": a way to understand state and
+errors over time. `spacetime.py` runs a world once and keeps its whole history; `spacetime.html` is the page.
+
+```bash
+python -m typed.spacetime     # writes spacetime_output.md (the history in words) and spacetime.html (the page)
+```
+
+- **History.** Every moving part's state 50 times a second, in numbers and words, and every moment: touches and
+  leaves between pieces (gaps under 30 ms closed), the highest point of each flight, stops, rests. Expect lines are
+  checked against `replay.py`'s events exactly as before.
+- **Why is a light cone.** Influence travels only through touch, so the cause of an outcome at time t is inside the
+  set of parts that touched it before t, and the parts that touched those, earlier still. Something that never
+  moves (floor, stand, bucket) stops the walk. The page runs the same walk for any part at any moment.
+- **Forks.** The same world with one line changed. Two runs are compared step by step: where they part (5 mm or
+  0.5°), and which moments moved, changed, disappeared or are new.
+- **Before time.** A world that doesn't build has no history; its problem is shown where the run would be.
+- The weak-spring catapult (1d's break) is the example, with four forks and a sweep of the spring line.
