@@ -139,4 +139,4 @@ Written after reading the tables above (2026-10-06).
 5. **Against Jono's 100x bar.** Nothing here is close: the largest effect is about 2x, in output tokens and time.
    Pass rates are at the ceiling for both formats on these briefs, so they cannot show a large effect either way.
 6. **Misses that remain** are about what the brief means more than about the world: three "comes to rest" fails at
-   0.05 to 0.07 m/s, and three seesaw worlds where Opus started the ball a few mm above the plank.
+   0.05 to 0.07 m/s, and seesaw worlds (3 in the control, 4 in 1g, all Opus) where the ball is not touching the plank at the start.
