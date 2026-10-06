@@ -1,0 +1,45 @@
+```world
+world  spring catapult into a bucket
+
+floor
+  size      8 m
+  friction  0.8, spinning 0.005, rolling 0.002
+
+catapult
+  is a          catapult
+  pivot height  65 cm
+  arm length    70 cm
+  arm mass      200 g
+  swings        from 0° to 55°
+  spring        4 N·m/rad toward 70°
+  damping       0.025 N·m·s/rad
+  armature      0.01 kg·m²
+
+ball
+  is a      sphere 2.5 cm radius, 40 g
+  moves     freely
+  rolls
+  bounce    dead
+  friction  0.8, spinning 0.01, rolling 0.005
+  colour    orange
+  rests     on catapult.scoop base, centred over catapult.scoop base
+
+bucket
+  is an           open box
+  length          1 m
+  width           80 cm
+  walls           50 cm
+  wall thickness  2 cm
+  base thickness  2 cm
+  sits            on floor, 3 m beyond ball
+
+expect
+  ball comes to rest in bucket
+```
+
+---
+thinking (summarized):
+
+**Fixing parser issues**
+
+I need to remove bounce friction from a certain part of the bucket in the parser's allowed list. The catapult function shouldn't have any extra bad parts. I'm checking if the ball rests properly on the scoop base and if it's centered over duplicate entries. There’s an error on line 33 of the parser related to bucket bounce, so I’ll remove both bounces. Overall, I want to correct the world with a bucket free of bounce friction, without any other changes needed.

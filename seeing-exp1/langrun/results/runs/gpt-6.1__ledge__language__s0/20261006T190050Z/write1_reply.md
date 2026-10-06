@@ -1,0 +1,41 @@
+```world
+world  rolling ball into a bucket
+
+floor
+  size      6 m
+  friction  0.8, spinning 0.005, rolling 0.002
+
+table
+  is a     table
+  surface  120 by 80 cm
+  height   75 cm
+  rests    on floor
+
+table edge
+  is a  point
+  centred on table.top's far end
+
+bucket
+  is an           open box
+  length          50 cm
+  width           40 cm
+  walls           25 cm
+  wall thickness  2 cm
+  base thickness  2 cm
+  rests           on floor, 60 cm beyond table edge
+
+ball
+  is a      sphere 3 cm radius, 100 g
+  rolls
+  bounce    dead
+  friction  0.7, spinning 0, rolling 0
+  colour    orange
+  moves     freely
+  rests     on table.top, 80 cm behind table edge
+  launched  1.6 m/s along
+  spins     53.333 rad/s about y
+
+expect
+  ball touches table
+  ball comes to rest in bucket
+```

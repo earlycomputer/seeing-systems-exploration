@@ -1,0 +1,60 @@
+```world
+world  three balls rolling into a cup
+
+floor
+  size      6 m
+  friction  0.6, spinning 0.001, rolling 0.0002
+
+ball1
+  is a      sphere 4 cm radius, 150 g
+  rolls
+  bounce    lively
+  friction  0.6, spinning 0.001, rolling 0.0002
+  colour    orange
+  moves     freely
+  sits      on floor, 0 m along, 0 m to the left
+  launched  2.5 m/s along
+  spins     62.5 rad/s about y
+
+ball2
+  is a      sphere 4 cm radius, 150 g
+  rolls
+  bounce    lively
+  friction  0.6, spinning 0.001, rolling 0.0002
+  colour    white
+  moves     freely
+  sits      on floor, 40 cm beyond ball1, 0 m to the left
+
+ball3
+  is a      sphere 4 cm radius, 150 g
+  rolls
+  bounce    lively
+  friction  0.6, spinning 0.001, rolling 0.0002
+  colour    orange
+  moves     freely
+  sits      on floor, 40 cm beyond ball2, 0 m to the left
+
+-- A low entrance lip admits the rolling ball.
+-- The taller sides and far wall contain it.
+cup
+  is an             open box
+  length            32 cm
+  width             22 cm
+  walls             14 cm
+  wall thickness    1 cm
+  base thickness    3 mm
+  near wall height  1 cm
+  sits              on floor, 50 cm beyond ball3, 0 m to the left
+
+expect
+  ball1 touches ball2
+  ball2 touches ball3
+  ball3 comes to rest in cup
+```
+
+---
+thinking (summarized):
+
+**Refining cup parameters**
+
+I'm trying to ensure I have the correct specifications for a cup model without friction and bounce color issues. I should remove any unnecessary flags affecting its properties. It seems like I should set default values—like 0.8 for friction and 0.002 for restitution—to enhance its performance during interactions with the floor. My focus now is on preserving the core functional elements while only needing the relevant code. Let's streamline this!
