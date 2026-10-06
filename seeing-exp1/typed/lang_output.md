@@ -334,6 +334,52 @@ expect
 
 - ✓ `ball comes to rest in target`: ball comes to rest inside target
 
+# Fixed after the language run
+
+Experiment 1f had models write worlds in this language. Of 58 language files they wrote, 18 were refused, and every refusal was one of four things the language got wrong rather than the model. All 58 build now.
+
+## cup: a library part given a thing's own facts (friction, colour)
+
+```
+  stands  on floor, 2.05 m along
+  friction  0.9, spinning 0.01, rolling 0.004
+  colour    wood
+```
+
+MuJoCo: passes its 1d test.
+
+- ✓ `ball touches ramp`: ramp.deck first touches ball
+- ✓ `ball comes to rest in cup`: ball comes to rest inside cup
+
+## door: a typographic minus as a sign
+
+```
+toward −5°
+```
+
+MuJoCo: passes its 1d test.
+
+- ✓ `door reaches its lower stop`: door.panel reaches its lower stop (0 deg)
+
+## catapult: a range without `from`
+
+```
+0° to 55°
+```
+
+MuJoCo: passes its 1d test.
+
+- ✓ `ball comes to rest in bucket`: ball comes to rest inside bucket
+
+## two of the same part: joint names
+
+Two pendulums from the library both turn on a joint called `pivot`. A joint keeps its written name unless another joint shares it; then each takes its part's name in front. Before, MuJoCo refused the file ("repeated name"). Pieces attached to a piece of another part now join that part's body.
+
+```
+<joint name="pendulum1_pivot" type="hinge" pos="0 0 0" axis="0 1 0"/>
+<joint name="pendulum2_pivot" type="hinge" pos="0 0 0" axis="0 1 0"/>
+```
+
 # Mistakes, and what the language says
 
 ## door: 1d's door break: the range's end written with no unit
@@ -399,7 +445,7 @@ Hint: write 5 cm or 1.2 m
 
 -- I DON'T KNOW THIS LINE ------------------------------ line 9: pendulum
 
-I was expecting a line pendulum understands: is a, is an, pivot height, length, bob size, bob mass, rod thickness, rod mass, starts swung back, damping, rests, sits, stands, hangs, lies, at, but I found:
+I was expecting a line pendulum understands: is a, is an, pivot height, length, bob size, bob mass, rod thickness, rod mass, starts swung back, damping, friction, colour, bounce, rolls, touches nothing, is, rests, sits, stands, hangs, lies, at, but I found:
 
     pivot heigth       1.01 m
 

@@ -100,7 +100,7 @@ def an(kind: str) -> str:
 
 
 def one_qty(text: str, kind: str, line: Line) -> float:
-    m = QTY.fullmatch(text.strip())
+    m = QTY.fullmatch(re.sub(r"^−(?=\d)", "-", text.strip()))  # −5° is minus five degrees
     if not m:
         raise line.problem("NOT A NUMBER", text.strip() or "(nothing)", f"{an(kind)}, like {EXAMPLE[kind]}", "",
                            f"write {EXAMPLE[kind]}")
@@ -575,6 +575,7 @@ ITEM_KEYS = ["is a", "is an", "is", "weighs", "friction", "rolls", "bounce", "co
              "launched", "spins", "first one spins", "turns on", "swings", "spring", "damping", "armature",
              "starts turned", "attached to", "stacked", "repeated", "size"]
 PLACE_KEYS = ["rests", "sits", "stands", "hangs", "lies", "at"]
+OWN_FACTS = ["friction", "colour", "bounce", "rolls", "touches nothing", "is"]  # a part passes these to every piece
 FLAGS = {"hollow": ("hollow", True), "slowed by air": ("drag", True), "touches nothing": ("ghost", True),
          "rolls": ("rolls", True), "lively": ("bounce", "lively"), "dead": ("bounce", "dead")}
 
@@ -607,7 +608,9 @@ class Reader:
             _, v = split_key(is_line.text, ["is a", "is an"])
             v, _ = subst(v, values)
             part = next((p for p in sorted(self.lib, key=len, reverse=True) if v == p or v.startswith(p + ",")), None)
-        keys = ITEM_KEYS + PLACE_KEYS if part is None else ["is a", "is an"] + [nd[0] for nd in self.lib[part].needs] + PLACE_KEYS
+        needs = [nd[0] for nd in self.lib[part].needs] if part else []
+        own = [k for k in OWN_FACTS if k not in needs]  # a need of the same name wins
+        keys = ITEM_KEYS + PLACE_KEYS if part is None else ["is a", "is an"] + needs + own + PLACE_KEYS
         for c in node.children:
             key, value = split_key(c.text, keys)
             ln = Line(c.n, c.text, f"{path}.{key.replace(' ', '_')}" if key else
@@ -622,7 +625,7 @@ class Reader:
                 raise ln.problem("I DON'T KNOW THIS LINE", c.text, f"a line {name} understands: {', '.join(keys)}", "",
                                  f"did you mean `{close[0]}`?" if close else "")
             v, ln.subs = subst(value, values)
-            if part is not None and key not in PLACE_KEYS + ["is a", "is an"]:
+            if part is not None and key in needs:
                 lines.append((key, v, ln))  # a need's value: written into the part as it stands
                 continue
             if v == "nothing":
@@ -655,12 +658,17 @@ class Reader:
                 place(item, v, scope, ln)
             elif part is None and key not in ("is a", "is an"):
                 copies = self.fact(item, key, v, ln, scope, copies)
+            elif part is not None and key in own:
+                for piece in item.walk():  # the cup's friction is the friction of every piece of the cup
+                    if piece.solid():
+                        self.fact(piece, key, v, ln, scope, 1)
         made = self.copies(item, copies, lines)
         return made
 
     def instance(self, item: Item, part: str, lines, file: str, path: str) -> None:
         d = self.lib[part]
-        given = {k: (v, ln) for k, v, ln in lines if k not in ("is a", "is an", "place")}
+        needs = {nd[0] for nd in d.needs}
+        given = {k: (v, ln) for k, v, ln in lines if k in needs}
         values = {}
         for need, default, n in d.needs:
             if need in given:
@@ -736,7 +744,7 @@ class Reader:
                 raise ln.problem("NOTHING TO TURN ON", ln.text, "a `turns on` line written above this one",
                                  f"`{key}` describes a hinge, and this piece has none.", "add `turns on ...` first")
             if key == "swings":
-                m = words(v, r"from (.+) to (.+)", ln, "`from 0° to 120°`")
+                m = words(v, r"(?:from )?(.+) to (.+)", ln, "`from 0° to 120°`")
                 hinge["range"] = (qty(m.group(1), "angle", ln), qty(m.group(2), "angle", ln))
             elif key == "spring":
                 m = words(v, r"(.+) toward (.+)", ln, "`40 N·m/rad toward 0°`")
@@ -844,10 +852,12 @@ def conventions(name: str) -> str:
 
 
 def mover(leaf: Item) -> Item | None:
-    seen = leaf
-    while seen is not None and not seen.motion:
+    """What a piece moves with: itself if it moves, else whatever it is attached to, followed to the end."""
+    seen, visited = leaf, set()
+    while seen is not None and not seen.motion and id(seen) not in visited:
+        visited.add(id(seen))
         seen = seen.attached
-    return seen
+    return seen if seen is not None and seen.motion else None
 
 
 def compile_program(prog: Program) -> Compiled:
@@ -890,6 +900,29 @@ def compile_program(prog: Program) -> Compiled:
                 a["rgba"] = p["colour"]
             xml.append("  " * indent + f'<geom name="{name}" ' + " ".join(f'{k}="{v}"' for k, v in a.items()) + "/>")
 
+    # Pieces move with whatever they are attached to, even a piece of another part written elsewhere in the world
+    # (a rod attached to a bob), so the bodies are grouped across the whole world before anything is written.
+    top_of = {id(i): top for top in prog.items for i in top.walk()}
+    groups: dict[int, tuple[Item, list[Item]]] = {}  # mover -> (mover, the pieces that move with it)
+    for top in prog.items:
+        for leaf in (i for i in top.walk() if i.solid()):
+            mv = mover(leaf)
+            if mv is not None:
+                groups.setdefault(id(mv), (mv, []))[1].append(leaf)
+    # A joint keeps the name it was written with unless another joint has it too (two pendulums from the library):
+    # then each takes its part's name in front, `pendulum1_pivot`, `pendulum2_pivot`.
+    hinges = [mv for mv, _ in groups.values() if mv.motion["kind"] == "hinge"]
+    taken = [mv.motion["joint"] for mv in hinges]
+    jname = {}
+    for mv in hinges:
+        name = mv.motion["joint"]
+        if taken.count(name) > 1:
+            top = top_of[id(mv)]
+            name = f"{top.name}_{name}"
+            if sum(top_of[id(o)] is top and o.motion["joint"] == mv.motion["joint"] for o in hinges) > 1:
+                name = f"{geom_name(mv, top)}_{mv.motion['joint']}"  # two in one part: the piece's name too
+        jname[id(mv)] = name
+
     for top in prog.items:
         if top.kind == "floor":
             a = {"type": "plane", "size": fmt(top.props["size"], top.props["size"], 0.1)}
@@ -899,15 +932,9 @@ def compile_program(prog: Program) -> Compiled:
             xml.append('    <geom name="floor" ' + " ".join(f'{k}="{v}"' for k, v in a.items()) + "/>")
             continue
         leaves = [i for i in top.walk() if i.solid()]
-        groups: dict[int, tuple[Item, list[Item]]] = {}
-        still = []
-        for leaf in leaves:
-            mv = mover(leaf)
-            if mv is None:
-                still.append(leaf)
-            else:
-                groups.setdefault(id(mv), (mv, []))[1].append(leaf)
-        if not groups:
+        still = [leaf for leaf in leaves if mover(leaf) is None]
+        own = [(mv, members) for mv, members in groups.values() if top_of[id(mv)] is top]
+        if not own and still:
             xml.append(f'    <body name="{top.name}">')
             for leaf in still:
                 geoms(leaf, top, np.zeros(3), 3)
@@ -915,8 +942,8 @@ def compile_program(prog: Program) -> Compiled:
         else:
             for leaf in still:
                 geoms(leaf, top, np.zeros(3), 2)
-        for mv, members in groups.values():
-            bname = top.name if len(groups) == 1 else geom_name(mv, top)
+        for mv, members in own:
+            bname = top.name if len(own) == 1 else geom_name(mv, top)
             mo = mv.motion
             if mo["kind"] == "free":
                 origin = mv.shapes[0].pos.copy()
@@ -942,12 +969,12 @@ def compile_program(prog: Program) -> Compiled:
                     a["damping"] = fmt(mo["damping"].si)
                 if mo.get("armature"):
                     a["armature"] = fmt(mo["armature"].si)
-                xml.append(f'      <joint name="{mo["joint"]}" ' + " ".join(f'{k}="{v}"' for k, v in a.items()) + "/>")
+                xml.append(f'      <joint name="{jname[id(mv)]}" ' + " ".join(f'{k}="{v}"' for k, v in a.items()) + "/>")
                 start = mo.get("start")
-                joints.append({"name": mo["joint"], "kind": "hinge", "part": mv.path, "qpos": [start.si if start else 0.0],
-                               "qvel": [0], "range": mo.get("range"), "start": start})
+                joints.append({"name": jname[id(mv)], "kind": "hinge", "part": mv.path,
+                               "qpos": [start.si if start else 0.0], "qvel": [0], "range": mo.get("range"), "start": start})
             for leaf in members:
-                geoms(leaf, top, origin, 3)
+                geoms(leaf, top_of[id(leaf)], origin, 3)
             xml.append("    </body>")
         base = base_of(top)
         if base is not None and mover(base) is None:

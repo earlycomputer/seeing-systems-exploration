@@ -70,6 +70,29 @@ MISTAKES = [  # (world, what, old, new)
     ("cup", "1d's cup break: the cup 60 cm further away", "2.05 m along", "2.65 m along"),
 ]
 
+FIXED = [  # (world, what, old, new): each was refused in experiment 1f, and builds now
+    ("cup", "a library part given a thing's own facts (friction, colour)", "  stands  on floor, 2.05 m along\n",
+     "  stands  on floor, 2.05 m along\n  friction  0.9, spinning 0.01, rolling 0.004\n  colour    wood\n"),
+    ("door", "a typographic minus as a sign", "toward 0°", "toward −5°"),
+    ("catapult", "a range without `from`", "from 0° to 55°", "0° to 55°"),
+]
+
+TWO = """world  two pendulums
+
+floor
+""" + "".join(f"""
+pendulum{i}
+  is a               pendulum
+  pivot height       1 m
+  length             90 cm
+  bob size           5 cm radius
+  bob mass           1 kg
+  rod thickness      2 cm
+  rod mass           100 g
+  starts swung back  30°
+  stands             {i - 1} m to the left
+""" for i in (1, 2))
+
 SITS = """world  one rule, three hollows
 
 floor
@@ -136,6 +159,19 @@ def main() -> None:
               "needed any Python.", "", "```", part_source("table"), "", part_source("raised bucket"), "```", "",
               "A world that uses it: the 1d catapult, unchanged, throwing into a bucket on a 50 cm table.", "",
               "```", world("raised").rstrip(), "```", "", *run("raised", world("raised")), ""]
+
+    lines += ["# Fixed after the language run", "",
+              "Experiment 1f had models write worlds in this language. Of 58 language files they wrote, 18 were "
+              "refused, and every refusal was one of four things the language got wrong rather than the model. "
+              "All 58 build now.", ""]
+    for name, what, old, new in FIXED:
+        lines += [f"## {name}: {what}", "", "```", new.strip("\n"), "```", "", *run(name, edit(world(name), old, new)), ""]
+    c = compile_program(parse(TWO))
+    lines += ["## two of the same part: joint names", "",
+              "Two pendulums from the library both turn on a joint called `pivot`. A joint keeps its written name unless another joint shares it; then each takes its "
+              "part's name in front. Before, MuJoCo refused the file (\"repeated name\"). Pieces attached to a "
+              "piece of another part now join that part's body.", "", "```",
+              *[ln.strip() for ln in c.xml.splitlines() if "<joint" in ln], "```", ""]
 
     lines += ["# Mistakes, and what the language says", ""]
     for name, what, old, new in MISTAKES:
