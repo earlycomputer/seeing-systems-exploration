@@ -8,10 +8,14 @@ test in expectation forms that the authors never see. Three arms:
 
 - `blind`: raw MJCF with no run information, as today's tools leave an agent: it writes the world and may check it
   against the brief, but is told nothing about the run.
-- `xml`: raw MJCF with the language's two checks (langrun/lint.py), the run's history in words each round, and its own
-  expectations checked against the run (1g's checked XML arm).
-- `language`: the world language with its errors, the run in words and its expectations checked (1g's checked
-  language arm).
+- `xml`: raw MJCF with the language's two checks (langrun/lint.py) and the run's history in words each round (1g
+  control's XML arm).
+- `language`: the world language with its errors and the run in words (1g control's language arm).
+
+No arm writes or hears expectations. 1g (2026-10-06) found that asking for them made first attempts worse (115
+against 134 of 160 working as first written, p = 0.015) and checking them every round didn't help (149 against 156
+in the end, p = 0.11): models argued with the checker, or never wrote down what the test checks. Every arm gets 1g
+control's line on what "at rest" means.
 
 After each world, both models read only its final file and say which hidden-test statements will hold (read.py):
 foresight and shared understanding. Then a quiz on the runs, answered from raw MuJoCo state or from the run in

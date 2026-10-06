@@ -12,8 +12,11 @@ targets and the baselines from 1d to 1f). Jono chose "Pilot first": 5 briefs, 60
 - **Hidden tests in expectation forms** (`hidden.py`), stricter than an author's own: a touch must begin after the
   start, a thing must not start where it comes to rest, and the lines must happen in order.
 - **Three arms** (`settings.py`): `blind` (MJCF, load errors only, no run information: today's tools), `xml` (MJCF,
-  checks, the run in words, expectations checked: 1g's XML arm) and `language` (1g's language arm). Every arm
-  writes expectations; only `xml` and `language` hear which hold. Opus 5.5 and GPT-6.1 Sol, 2 seeds.
+  checks, the run in words: 1g control's XML arm) and `language` (1g control's language arm). Opus 5.5 and GPT-6.1
+  Sol, 2 seeds.
+- **No expectations from authors** (changed 2026-10-06 before any spend, on 1g's result): asking for them cost first
+  attempts (115 against 134 of 160, p = 0.015) and checking them didn't help (149 against 156). Foresight is
+  measured by separate readers instead, so it can't disturb the authoring.
 - **Foresight and shared understanding** (`read.py`): both models read each final file, before seeing any run, and
   say which hidden-test statements will hold.
 - **Understanding** (`quiz.py`): questions generated from each run (at rest at the end, ends inside what, first

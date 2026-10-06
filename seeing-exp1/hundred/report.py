@@ -37,8 +37,8 @@ def main(argv: list[str] | None = None) -> int:
 
     out += ["## Building worlds", "",
             "| Arm | Worked | Right first write | Said it worked, didn't | Tokens per working world | Output tokens per "
-            "working world | Seconds per working world | Final description, median chars | Own expectations holding at "
-            "first write |", "|---|---|---|---|---|---|---|---|---|"]
+            "working world | Seconds per working world | Final description, median chars |",
+            "|---|---|---|---|---|---|---|---|"]
     per = {}
     for arm in ARMS:
         ws = [w for w in worlds if w["arm"] == arm]
@@ -50,11 +50,10 @@ def main(argv: list[str] | None = None) -> int:
         outt = sum(w["tokens"]["output"] for w in ws) / len(ok) if ok else None
         secs = sum(w["seconds"] for w in ws) / len(ok) if ok else None
         chars = [w["final_chars"] for w in ws if w.get("final_chars")]
-        fe = [x for w in ws for x in (w.get("first_expect") or [])]
         per[arm] = {"tok": tok, "wrong": wrong / len(ws), "secs": secs}
         out.append(f"| {arm} | {len(ok)}/{len(ws)} | {sum(w['passes_first'] for w in ws)}/{len(ws)} | {wrong}/{len(ws)} "
                    f"| {tok or 0:,.0f} | {outt or 0:,.0f} | {secs or 0:,.0f} | "
-                   f"{statistics.median(chars) if chars else 0:,.0f} | {sum(ok_ for _, ok_, _ in fe)}/{len(fe)} |")
+                   f"{statistics.median(chars) if chars else 0:,.0f} |")
     if "blind" in per and "language" in per:
         out += ["", f"Language against blind XML: tokens per working world {ratio(per['blind']['tok'], per['language']['tok'])} "
                 f"fewer, seconds {ratio(per['blind']['secs'], per['language']['secs'])} fewer, wrong claims "

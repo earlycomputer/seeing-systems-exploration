@@ -5,7 +5,8 @@
 
 1g's checked loop (langrun/run.py) with three arms (hundred/settings.py). The hidden test (hidden.py) judges the
 built MJCF; the model never sees it. The blind arm hears MuJoCo's load errors, as anyone would, and nothing about the
-run. Every arm writes its expectations; only the xml and language arms are told which hold.
+run. No arm is asked for expectations: 1g found that asking cost first attempts (115 against 134 of 160, p = 0.015)
+and checking them didn't help (149 against 156), so every arm gets 1g control's rest line instead.
 """
 
 from __future__ import annotations
@@ -158,13 +159,13 @@ def main(argv: list[str] | None = None) -> int:
 
     if FORMAT[arm] == "xml":
         first = langrun_prompt("author_xml", brief=B["brief"], names=briefs_mod.names_xml(B), seconds=f"{SIM_SECONDS:g}")
-        first = first.rstrip() + "\n\n" + (own("expect_blind") if arm == "blind" else langrun_prompt("expect_xml"))
+        first = first.rstrip() + "\n\n" + langrun_prompt("rest")
     else:
         guide = langrun_prompt("guide", library=LIBRARY.read_text().strip())
         first = langrun_prompt("author_language", brief=B["brief"], names=briefs_mod.names_language(B),
                                seconds=f"{SIM_SECONDS:g}", guide=guide.strip(),
                                example=(LANGRUN_PROMPTS / "example.world").read_text().strip())
-        first = first.rstrip() + "\n\n" + langrun_prompt("expect_language")
+        first = first.rstrip() + "\n\n" + langrun_prompt("rest")
     (out / "author_prompt.md").write_text(first)
     load_problem = "load_problem_xml" if FORMAT[arm] == "xml" else "load_problem_language"
     see_task = "see_task_xml" if FORMAT[arm] == "xml" else "see_task_language"
@@ -198,8 +199,7 @@ def main(argv: list[str] | None = None) -> int:
                 if arm == "blind":
                     h, verb_words = own("see_blind"), "will happen when it runs"
                 else:
-                    h = (expect.words(current.get("expect_results") or []) or
-                         "You wrote no expectations, so none were checked.") + "\n\n" + see_history(current["run"], "your")
+                    h = see_history(current["run"], "your")
                     verb_words = "happens in the run"
                 (out / f"round{rnd}_history.md").write_text(h)
                 parts = [text(h), text(langrun_prompt(see_task, verb=verb_words))]

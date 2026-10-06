@@ -7,3 +7,6 @@
   large ratio could show.
 - Reading a language world costs its parts library (about 13 KB) on every read. That is a real cost of the format
   and is counted.
+- 1g also found 37 expectation lines that needed forms the checker can't express ("rises at least 0.5 m"). 1h's
+  hidden tests are limited to the same forms, so the brief writer may steer toward touches, rests and drops. The
+  tests can only measure what those forms say.
