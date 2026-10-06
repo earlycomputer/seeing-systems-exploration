@@ -1,0 +1,86 @@
+```xml
+<mujoco model="basketball_shot">
+  <compiler angle="radian"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast"/>
+  <visual>
+    <global offwidth="1280" offheight="720"/>
+  </visual>
+
+  <worldbody>
+    <light name="court_light" pos="2 -3 8" dir="0.1 0.3 -1" diffuse="0.9 0.9 0.9"/>
+    <camera name="overview" pos="2 -11 6" xyaxes="1 0 0 0 0.32 0.9474"/>
+
+    <geom name="floor" type="plane" pos="0 0 0" size="10 8 0.1" rgba="0.62 0.43 0.25 1" condim="6" friction="1.0 0.02 0.02" solref="0.012 1"/>
+
+    <!-- Size-7 basketball: 0.754 m circumference and 0.624 kg mass. -->
+    <body name="ball" pos="0 0 0.12">
+      <freejoint name="ball_free"/>
+      <geom name="ball" type="sphere" size="0.12" mass="0.624" rgba="0.88 0.29 0.045 1" condim="6" friction="1.0 0.02 0.02" solref="0.012 1"/>
+    </body>
+
+    <!-- Rim center is 4 m from launch and 3.05 m above the floor.
+         Centerline radius 0.2381 minus tube radius 0.0095 gives
+         the regulation 0.2286 m opening radius. -->
+    <body name="hoop" pos="4 0 3.05">
+      <geom name="rim_00" type="capsule" fromto="0.238100 0 0 0.233525 0.046451 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_01" type="capsule" fromto="0.233525 0.046451 0 0.219976 0.091117 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_02" type="capsule" fromto="0.219976 0.091117 0 0.197973 0.132281 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_03" type="capsule" fromto="0.197973 0.132281 0 0.168362 0.168362 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_04" type="capsule" fromto="0.168362 0.168362 0 0.132281 0.197973 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_05" type="capsule" fromto="0.132281 0.197973 0 0.091117 0.219976 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_06" type="capsule" fromto="0.091117 0.219976 0 0.046451 0.233525 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_07" type="capsule" fromto="0.046451 0.233525 0 0 0.238100 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_08" type="capsule" fromto="0 0.238100 0 -0.046451 0.233525 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_09" type="capsule" fromto="-0.046451 0.233525 0 -0.091117 0.219976 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_10" type="capsule" fromto="-0.091117 0.219976 0 -0.132281 0.197973 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_11" type="capsule" fromto="-0.132281 0.197973 0 -0.168362 0.168362 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_12" type="capsule" fromto="-0.168362 0.168362 0 -0.197973 0.132281 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_13" type="capsule" fromto="-0.197973 0.132281 0 -0.219976 0.091117 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_14" type="capsule" fromto="-0.219976 0.091117 0 -0.233525 0.046451 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_15" type="capsule" fromto="-0.233525 0.046451 0 -0.238100 0 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_16" type="capsule" fromto="-0.238100 0 0 -0.233525 -0.046451 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_17" type="capsule" fromto="-0.233525 -0.046451 0 -0.219976 -0.091117 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_18" type="capsule" fromto="-0.219976 -0.091117 0 -0.197973 -0.132281 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_19" type="capsule" fromto="-0.197973 -0.132281 0 -0.168362 -0.168362 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_20" type="capsule" fromto="-0.168362 -0.168362 0 -0.132281 -0.197973 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_21" type="capsule" fromto="-0.132281 -0.197973 0 -0.091117 -0.219976 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_22" type="capsule" fromto="-0.091117 -0.219976 0 -0.046451 -0.233525 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_23" type="capsule" fromto="-0.046451 -0.233525 0 0 -0.238100 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_24" type="capsule" fromto="0 -0.238100 0 0.046451 -0.233525 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_25" type="capsule" fromto="0.046451 -0.233525 0 0.091117 -0.219976 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_26" type="capsule" fromto="0.091117 -0.219976 0 0.132281 -0.197973 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_27" type="capsule" fromto="0.132281 -0.197973 0 0.168362 -0.168362 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_28" type="capsule" fromto="0.168362 -0.168362 0 0.197973 -0.132281 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_29" type="capsule" fromto="0.197973 -0.132281 0 0.219976 -0.091117 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_30" type="capsule" fromto="0.219976 -0.091117 0 0.233525 -0.046451 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+      <geom name="rim_31" type="capsule" fromto="0.233525 -0.046451 0 0.238100 0 0" size="0.0095" rgba="1 0.24 0.035 1"/>
+
+      <geom name="backboard" type="box" pos="0.401 0 0.375" size="0.02 0.9 0.525" rgba="0.82 0.9 0.96 0.55"/>
+      <geom name="rim_mount" type="box" pos="0.3095 0 -0.035" size="0.0715 0.06 0.025" rgba="1 0.24 0.035 1"/>
+    </body>
+
+    <body name="support" pos="4.8 1.15 0">
+      <geom name="support_post" type="capsule" fromto="0 0 0.07 0 0 4.1" size="0.07" rgba="0.18 0.21 0.25 1"/>
+      <geom name="support_arm" type="capsule" fromto="0 0 3.8 -0.359 -0.5 3.8" size="0.045" rgba="0.18 0.21 0.25 1"/>
+    </body>
+  </worldbody>
+
+  <!-- Ball starts touching the floor. The launch targets the rim center
+       on descent at 1.5 s, including the discrete integration offset.
+       Dissipative floor contact and rolling friction settle the ball. -->
+  <keyframe>
+    <key name="start" time="0" qpos="0 0 0.12 1 0 0 0" qvel="2.666666667 0 9.320643333 0 0 0"/>
+  </keyframe>
+</mujoco>
+```
+
+---
+thinking (summarized):
+
+**Evaluating design structure**
+
+I’m considering how to use condim6 torque to ensure the stationary contact ball is settled correctly. It might sink slightly on a non-bouncy floor, possibly about a millimeter. I think I could simplify things by not needing backboard support, but it does give a visually appealing scene with the pole support. I’ll have to use primitive geometries for the hoop, ring, and board. Overall, I’m estimating I might need around 70 lines for the entire file.
+
+**Considering launch parameters**
+
+I'm thinking about the key parameters: the position is "0 0 0.12 1 0 0 0" and the velocity is "2.666666667 0 9.320643333 0 0 0". There's an idea to optionally add a launch marker using a floor circle with a cylinder that has a top measurement of -.001. I wonder if I need to consider any extra friction or hindrances, which might not be necessary, but it's something to keep in mind as I plan this out.

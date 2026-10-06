@@ -1,0 +1,66 @@
+```xml
+<mujoco model="ten_domino_cascade">
+  <compiler angle="degree" autolimits="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100" tolerance="1e-9"/>
+
+  <worldbody>
+    <light name="main_light" pos="0.25 -0.4 1.5" dir="0 0.2 -1" diffuse="0.8 0.8 0.8"/>
+    <geom name="floor" type="plane" pos="0 0 0" size="2 2 0.1" friction="0.8 0.005 0.0001" condim="3" solref="0.01 1" solimp="0.95 0.99 0.001" rgba="0.25 0.28 0.32 1"/>
+
+    <!-- The first domino leans 20 degrees toward +x, with its bottom edge on the floor. -->
+    <body name="domino1" pos="0 0 0.097047444" quat="0.984807753 0 0.173648178 0">
+      <freejoint name="domino1_free"/>
+      <geom name="domino1_geom" type="box" size="0.009 0.035 0.1" density="700" friction="0.8 0.005 0.0001" condim="3" solref="0.01 1" solimp="0.95 0.99 0.001" rgba="0.85 0.25 0.18 1"/>
+    </body>
+
+    <body name="domino2" pos="0.06 0 0.1">
+      <freejoint name="domino2_free"/>
+      <geom name="domino2_geom" type="box" size="0.009 0.035 0.1" density="700" friction="0.8 0.005 0.0001" condim="3" solref="0.01 1" solimp="0.95 0.99 0.001" rgba="0.9 0.65 0.2 1"/>
+    </body>
+
+    <body name="domino3" pos="0.12 0 0.1">
+      <freejoint name="domino3_free"/>
+      <geom name="domino3_geom" type="box" size="0.009 0.035 0.1" density="700" friction="0.8 0.005 0.0001" condim="3" solref="0.01 1" solimp="0.95 0.99 0.001" rgba="0.9 0.65 0.2 1"/>
+    </body>
+
+    <body name="domino4" pos="0.18 0 0.1">
+      <freejoint name="domino4_free"/>
+      <geom name="domino4_geom" type="box" size="0.009 0.035 0.1" density="700" friction="0.8 0.005 0.0001" condim="3" solref="0.01 1" solimp="0.95 0.99 0.001" rgba="0.9 0.65 0.2 1"/>
+    </body>
+
+    <body name="domino5" pos="0.24 0 0.1">
+      <freejoint name="domino5_free"/>
+      <geom name="domino5_geom" type="box" size="0.009 0.035 0.1" density="700" friction="0.8 0.005 0.0001" condim="3" solref="0.01 1" solimp="0.95 0.99 0.001" rgba="0.9 0.65 0.2 1"/>
+    </body>
+
+    <body name="domino6" pos="0.30 0 0.1">
+      <freejoint name="domino6_free"/>
+      <geom name="domino6_geom" type="box" size="0.009 0.035 0.1" density="700" friction="0.8 0.005 0.0001" condim="3" solref="0.01 1" solimp="0.95 0.99 0.001" rgba="0.9 0.65 0.2 1"/>
+    </body>
+
+    <body name="domino7" pos="0.36 0 0.1">
+      <freejoint name="domino7_free"/>
+      <geom name="domino7_geom" type="box" size="0.009 0.035 0.1" density="700" friction="0.8 0.005 0.0001" condim="3" solref="0.01 1" solimp="0.95 0.99 0.001" rgba="0.9 0.65 0.2 1"/>
+    </body>
+
+    <body name="domino8" pos="0.42 0 0.1">
+      <freejoint name="domino8_free"/>
+      <geom name="domino8_geom" type="box" size="0.009 0.035 0.1" density="700" friction="0.8 0.005 0.0001" condim="3" solref="0.01 1" solimp="0.95 0.99 0.001" rgba="0.9 0.65 0.2 1"/>
+    </body>
+
+    <body name="domino9" pos="0.48 0 0.1">
+      <freejoint name="domino9_free"/>
+      <geom name="domino9_geom" type="box" size="0.009 0.035 0.1" density="700" friction="0.8 0.005 0.0001" condim="3" solref="0.01 1" solimp="0.95 0.99 0.001" rgba="0.9 0.65 0.2 1"/>
+    </body>
+
+    <body name="domino10" pos="0.54 0 0.1">
+      <freejoint name="domino10_free"/>
+      <geom name="domino10_geom" type="box" size="0.009 0.035 0.1" density="700" friction="0.8 0.005 0.0001" condim="3" solref="0.01 1" solimp="0.95 0.99 0.001" rgba="0.9 0.65 0.2 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start"/>
+  </keyframe>
+</mujoco>
+```

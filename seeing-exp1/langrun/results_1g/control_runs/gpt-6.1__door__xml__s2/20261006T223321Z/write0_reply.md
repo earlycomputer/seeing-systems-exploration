@@ -1,0 +1,37 @@
+```xml
+<mujoco model="self_closing_door">
+  <compiler angle="radian" autolimits="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast"/>
+
+  <visual>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.65 0.65 0.65"/>
+  </visual>
+
+  <worldbody>
+    <light name="overhead_light" pos="0 -2 4" dir="0 0 -1"/>
+    <geom name="floor" type="plane" pos="0 0 0" size="4 4 0.1" rgba="0.65 0.68 0.70 1"/>
+
+    <geom name="hinge_side_jamb" type="box" pos="-0.61 0 1.1" size="0.05 0.10 1.1" rgba="0.30 0.32 0.35 1"/>
+    <geom name="latch_side_jamb" type="box" pos="0.61 0 1.1" size="0.05 0.10 1.1" rgba="0.30 0.32 0.35 1"/>
+    <geom name="frame_header" type="box" pos="0 0 2.21" size="0.66 0.10 0.06" rgba="0.30 0.32 0.35 1"/>
+
+    <body name="door" pos="-0.5 0 1.1">
+      <!-- A damped closer drives the door against its zero-angle stop. -->
+      <joint name="hinge" type="hinge" pos="0 0 0" axis="0 0 1" limited="true" range="0 1.5" stiffness="60" springref="-0.03" damping="32" solreflimit="0.008 1" solimplimit="0.99 0.999 0.001"/>
+      <geom name="door_panel" type="box" pos="0.5 0 0" size="0.5 0.035 1" mass="12" rgba="0.52 0.28 0.12 1"/>
+      <geom name="door_handle" type="sphere" pos="0.85 -0.075 0" size="0.04" mass="0.1" rgba="0.75 0.75 0.78 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start" qpos="1.2" qvel="0"/>
+  </keyframe>
+</mujoco>
+```
+
+---
+thinking (summarized):
+
+**Considering integration parameters**
+
+I need to think about including floor friction values, like 1, 0.005, and 0.0001, even though they might not be essential. I see that key position is set to qpos="1.2" and qvel="0". I'm also considering setting the timestep to 0.002 for implicit fast integration. It might help to think about adding a joint with armature="0.02" to improve stability, but I'm deciding against it for now.

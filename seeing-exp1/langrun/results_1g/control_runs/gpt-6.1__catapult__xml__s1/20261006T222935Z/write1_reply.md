@@ -1,0 +1,74 @@
+```xml
+<mujoco model="catapult_into_bucket">
+  <compiler angle="degree" autolimits="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" cone="elliptic" iterations="100"/>
+  <visual>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.7 0.7 0.7" specular="0.2 0.2 0.2"/>
+  </visual>
+
+  <worldbody>
+    <light name="key_light" pos="1 -3 5" dir="0 0 -1"/>
+    <camera name="overview" pos="1.5 -6 3" xyaxes="1 0 0 0 0.4 0.916515"/>
+    <geom name="floor" type="plane" pos="0 0 0" size="8 5 0.1" rgba="0.78 0.79 0.75 1" friction="1 0.03 0.01"/>
+
+    <!-- The ball begins at (0, 0, 0.365). The bucket centre is (3, 0, 0.365). -->
+    <body name="catapult_base" pos="1 0 0">
+      <geom name="catapult_foot" type="box" pos="0 0 0.04" size="0.32 0.36 0.04" rgba="0.30 0.18 0.09 1"/>
+      <geom name="catapult_support_left" type="box" pos="0 -0.28 0.16" size="0.07 0.055 0.12" rgba="0.42 0.25 0.12 1"/>
+      <geom name="catapult_support_right" type="box" pos="0 0.28 0.16" size="0.07 0.055 0.12" rgba="0.42 0.25 0.12 1"/>
+      <geom name="catapult_axle" type="cylinder" fromto="0 -0.34 0.24 0 0.34 0.24" size="0.045" rgba="0.23 0.25 0.28 1"/>
+
+      <!-- The beam's rounded end touches the axle without overlapping it. -->
+      <body name="catapult_arm" pos="0 0 0.24">
+        <joint name="catapult_hinge" type="hinge" axis="0 1 0" range="0 45" damping="0.02" armature="0.005" solreflimit="0.004 1" solimplimit="0.99 0.999 0.001"/>
+        <geom name="catapult_beam" type="capsule" fromto="-0.07 0 0 -1 0 0" size="0.025" mass="0.18" rgba="0.60 0.36 0.15 1"/>
+        <geom name="catapult_spoon_bottom" type="box" pos="-1 0 0.04" size="0.14 0.15 0.02" mass="0.05" friction="0.8 0.02 0.005" solref="0.006 1" rgba="0.55 0.32 0.13 1"/>
+        <geom name="catapult_spoon_back" type="box" pos="-1.095 0 0.12" size="0.03 0.15 0.08" mass="0.03" friction="0.8 0.02 0.005" solref="0.006 1" rgba="0.55 0.32 0.13 1"/>
+        <geom name="catapult_spoon_left" type="box" pos="-1 -0.135 0.12" size="0.14 0.015 0.08" mass="0.02" friction="0.8 0.02 0.005" solref="0.006 1" rgba="0.55 0.32 0.13 1"/>
+        <geom name="catapult_spoon_right" type="box" pos="-1 0.135 0.12" size="0.14 0.015 0.08" mass="0.02" friction="0.8 0.02 0.005" solref="0.006 1" rgba="0.55 0.32 0.13 1"/>
+      </body>
+    </body>
+
+    <body name="ball" pos="0 0 0.365">
+      <freejoint name="ball_free"/>
+      <geom name="ball" type="sphere" size="0.065" mass="0.12" condim="6" friction="1 0.04 0.02" solref="0.008 1" solimp="0.95 0.99 0.001" rgba="0.95 0.22 0.08 1"/>
+    </body>
+
+    <!-- A solid bottom and overlapping wall segments form an open bucket. -->
+    <body name="bucket" pos="3 0 0.365">
+      <geom name="bucket_bottom" type="cylinder" pos="0 0 -0.33" size="0.625 0.035" condim="6" friction="1 0.04 0.02" solref="0.008 1" rgba="0.12 0.35 0.55 1"/>
+      <geom name="bucket_wall_00" type="box" pos="0.585 0 0" euler="0 0 0" size="0.035 0.12 0.295" condim="6" friction="1 0.04 0.02" solref="0.008 1" rgba="0.18 0.48 0.70 1"/>
+      <geom name="bucket_wall_01" type="box" pos="0.54047 0.22387 0" euler="0 0 22.5" size="0.035 0.12 0.295" condim="6" friction="1 0.04 0.02" solref="0.008 1" rgba="0.18 0.48 0.70 1"/>
+      <geom name="bucket_wall_02" type="box" pos="0.413657 0.413657 0" euler="0 0 45" size="0.035 0.12 0.295" condim="6" friction="1 0.04 0.02" solref="0.008 1" rgba="0.18 0.48 0.70 1"/>
+      <geom name="bucket_wall_03" type="box" pos="0.22387 0.54047 0" euler="0 0 67.5" size="0.035 0.12 0.295" condim="6" friction="1 0.04 0.02" solref="0.008 1" rgba="0.18 0.48 0.70 1"/>
+      <geom name="bucket_wall_04" type="box" pos="0 0.585 0" euler="0 0 90" size="0.035 0.12 0.295" condim="6" friction="1 0.04 0.02" solref="0.008 1" rgba="0.18 0.48 0.70 1"/>
+      <geom name="bucket_wall_05" type="box" pos="-0.22387 0.54047 0" euler="0 0 112.5" size="0.035 0.12 0.295" condim="6" friction="1 0.04 0.02" solref="0.008 1" rgba="0.18 0.48 0.70 1"/>
+      <geom name="bucket_wall_06" type="box" pos="-0.413657 0.413657 0" euler="0 0 135" size="0.035 0.12 0.295" condim="6" friction="1 0.04 0.02" solref="0.008 1" rgba="0.18 0.48 0.70 1"/>
+      <geom name="bucket_wall_07" type="box" pos="-0.54047 0.22387 0" euler="0 0 157.5" size="0.035 0.12 0.295" condim="6" friction="1 0.04 0.02" solref="0.008 1" rgba="0.18 0.48 0.70 1"/>
+      <geom name="bucket_wall_08" type="box" pos="-0.585 0 0" euler="0 0 180" size="0.035 0.12 0.295" condim="6" friction="1 0.04 0.02" solref="0.008 1" rgba="0.18 0.48 0.70 1"/>
+      <geom name="bucket_wall_09" type="box" pos="-0.54047 -0.22387 0" euler="0 0 202.5" size="0.035 0.12 0.295" condim="6" friction="1 0.04 0.02" solref="0.008 1" rgba="0.18 0.48 0.70 1"/>
+      <geom name="bucket_wall_10" type="box" pos="-0.413657 -0.413657 0" euler="0 0 225" size="0.035 0.12 0.295" condim="6" friction="1 0.04 0.02" solref="0.008 1" rgba="0.18 0.48 0.70 1"/>
+      <geom name="bucket_wall_11" type="box" pos="-0.22387 -0.54047 0" euler="0 0 247.5" size="0.035 0.12 0.295" condim="6" friction="1 0.04 0.02" solref="0.008 1" rgba="0.18 0.48 0.70 1"/>
+      <geom name="bucket_wall_12" type="box" pos="0 -0.585 0" euler="0 0 270" size="0.035 0.12 0.295" condim="6" friction="1 0.04 0.02" solref="0.008 1" rgba="0.18 0.48 0.70 1"/>
+      <geom name="bucket_wall_13" type="box" pos="0.22387 -0.54047 0" euler="0 0 292.5" size="0.035 0.12 0.295" condim="6" friction="1 0.04 0.02" solref="0.008 1" rgba="0.18 0.48 0.70 1"/>
+      <geom name="bucket_wall_14" type="box" pos="0.413657 -0.413657 0" euler="0 0 315" size="0.035 0.12 0.295" condim="6" friction="1 0.04 0.02" solref="0.008 1" rgba="0.18 0.48 0.70 1"/>
+      <geom name="bucket_wall_15" type="box" pos="0.54047 -0.22387 0" euler="0 0 337.5" size="0.035 0.12 0.295" condim="6" friction="1 0.04 0.02" solref="0.008 1" rgba="0.18 0.48 0.70 1"/>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <velocity name="catapult_drive" joint="catapult_hinge" kv="20" ctrllimited="true" ctrlrange="0 4.5" forcelimited="true" forcerange="-25 25"/>
+  </actuator>
+
+  <keyframe>
+    <key name="start" qpos="0 0 0 0.365 1 0 0 0" qvel="0 0 0 0 0 0 0" ctrl="4.5"/>
+  </keyframe>
+</mujoco>
+```
+
+---
+thinking (summarized):
+
+**Considering beam design**
+
+I'm analyzing the preferred tolerance of -0.071 mm for the gap and using a tangential approach of -0.07 mm for at-most touch. The beam needs to be supported physically with an invisible hinge, allowing for a short acceptable gap. I could use an axle split method to accommodate movement, creating two cylinders within the same body. Maintaining a 1 mm clearance is crucial, and I want to ensure that the beam overlaps correctly with the cylinders. The time budget is tight, but it seems manageable.

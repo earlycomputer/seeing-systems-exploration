@@ -1,0 +1,57 @@
+```xml
+<mujoco model="rolling_ball_into_bucket">
+  <compiler angle="degree"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast"/>
+  <statistic center="-0.1 0 0.4" extent="2.1"/>
+
+  <visual>
+    <global azimuth="135" elevation="-25"/>
+  </visual>
+
+  <worldbody>
+    <light name="overhead" pos="0 -1 3" dir="0 0 -1" diffuse="0.8 0.8 0.8"/>
+    <geom name="floor" type="plane" size="3 2 0.1" rgba="0.75 0.77 0.79 1" friction="0.8 0.01 0.01" condim="6"/>
+
+    <!-- Table top is at z=0.80; its departure edge is at x=0. -->
+    <body name="table" pos="0 0 0">
+      <geom name="table_top" type="box" pos="-0.7 0 0.76" size="0.7 0.4 0.04" rgba="0.55 0.34 0.17 1" friction="0.8 0.001 0.0001" condim="3" solref="0.015 1"/>
+      <geom name="table_leg_back_left" type="box" pos="-1.27 -0.30 0.36" size="0.045 0.045 0.36" rgba="0.35 0.22 0.12 1"/>
+      <geom name="table_leg_back_right" type="box" pos="-1.27 0.30 0.36" size="0.045 0.045 0.36" rgba="0.35 0.22 0.12 1"/>
+      <geom name="table_leg_front_left" type="box" pos="-0.13 -0.30 0.36" size="0.045 0.045 0.36" rgba="0.35 0.22 0.12 1"/>
+      <geom name="table_leg_front_right" type="box" pos="-0.13 0.30 0.36" size="0.045 0.045 0.36" rgba="0.35 0.22 0.12 1"/>
+    </body>
+
+    <!-- Open bucket: centre 0.60 m beyond the table edge, bottom on the floor. -->
+    <!-- Overlapping wall boxes form a closed, sixteen-sided rim and wall. -->
+    <body name="bucket" pos="0.6 0 0">
+      <geom name="bucket_bottom" type="cylinder" pos="0 0 0.025" size="0.24 0.025" rgba="0.12 0.30 0.50 1" friction="1 0.02 0.01" condim="6" solref="0.015 1"/>
+      <geom name="bucket_wall_00" type="box" pos="0.210000 0 0.165" euler="0 0 0" size="0.018 0.044 0.135" rgba="0.18 0.43 0.68 1" friction="1 0.02 0.01" condim="6" solref="0.015 1"/>
+      <geom name="bucket_wall_01" type="box" pos="0.194015 0.080364 0.165" euler="0 0 22.5" size="0.018 0.044 0.135" rgba="0.18 0.43 0.68 1" friction="1 0.02 0.01" condim="6" solref="0.015 1"/>
+      <geom name="bucket_wall_02" type="box" pos="0.148492 0.148492 0.165" euler="0 0 45" size="0.018 0.044 0.135" rgba="0.18 0.43 0.68 1" friction="1 0.02 0.01" condim="6" solref="0.015 1"/>
+      <geom name="bucket_wall_03" type="box" pos="0.080364 0.194015 0.165" euler="0 0 67.5" size="0.018 0.044 0.135" rgba="0.18 0.43 0.68 1" friction="1 0.02 0.01" condim="6" solref="0.015 1"/>
+      <geom name="bucket_wall_04" type="box" pos="0 0.210000 0.165" euler="0 0 90" size="0.018 0.044 0.135" rgba="0.18 0.43 0.68 1" friction="1 0.02 0.01" condim="6" solref="0.015 1"/>
+      <geom name="bucket_wall_05" type="box" pos="-0.080364 0.194015 0.165" euler="0 0 112.5" size="0.018 0.044 0.135" rgba="0.18 0.43 0.68 1" friction="1 0.02 0.01" condim="6" solref="0.015 1"/>
+      <geom name="bucket_wall_06" type="box" pos="-0.148492 0.148492 0.165" euler="0 0 135" size="0.018 0.044 0.135" rgba="0.18 0.43 0.68 1" friction="1 0.02 0.01" condim="6" solref="0.015 1"/>
+      <geom name="bucket_wall_07" type="box" pos="-0.194015 0.080364 0.165" euler="0 0 157.5" size="0.018 0.044 0.135" rgba="0.18 0.43 0.68 1" friction="1 0.02 0.01" condim="6" solref="0.015 1"/>
+      <geom name="bucket_wall_08" type="box" pos="-0.210000 0 0.165" euler="0 0 180" size="0.018 0.044 0.135" rgba="0.18 0.43 0.68 1" friction="1 0.02 0.01" condim="6" solref="0.015 1"/>
+      <geom name="bucket_wall_09" type="box" pos="-0.194015 -0.080364 0.165" euler="0 0 202.5" size="0.018 0.044 0.135" rgba="0.18 0.43 0.68 1" friction="1 0.02 0.01" condim="6" solref="0.015 1"/>
+      <geom name="bucket_wall_10" type="box" pos="-0.148492 -0.148492 0.165" euler="0 0 225" size="0.018 0.044 0.135" rgba="0.18 0.43 0.68 1" friction="1 0.02 0.01" condim="6" solref="0.015 1"/>
+      <geom name="bucket_wall_11" type="box" pos="-0.080364 -0.194015 0.165" euler="0 0 247.5" size="0.018 0.044 0.135" rgba="0.18 0.43 0.68 1" friction="1 0.02 0.01" condim="6" solref="0.015 1"/>
+      <geom name="bucket_wall_12" type="box" pos="0 -0.210000 0.165" euler="0 0 270" size="0.018 0.044 0.135" rgba="0.18 0.43 0.68 1" friction="1 0.02 0.01" condim="6" solref="0.015 1"/>
+      <geom name="bucket_wall_13" type="box" pos="0.080364 -0.194015 0.165" euler="0 0 292.5" size="0.018 0.044 0.135" rgba="0.18 0.43 0.68 1" friction="1 0.02 0.01" condim="6" solref="0.015 1"/>
+      <geom name="bucket_wall_14" type="box" pos="0.148492 -0.148492 0.165" euler="0 0 315" size="0.018 0.044 0.135" rgba="0.18 0.43 0.68 1" friction="1 0.02 0.01" condim="6" solref="0.015 1"/>
+      <geom name="bucket_wall_15" type="box" pos="0.194015 -0.080364 0.165" euler="0 0 337.5" size="0.018 0.044 0.135" rgba="0.18 0.43 0.68 1" friction="1 0.02 0.01" condim="6" solref="0.015 1"/>
+    </body>
+
+    <body name="ball" pos="-0.7 0 0.84">
+      <freejoint name="ball_free"/>
+      <geom name="ball" type="sphere" size="0.04" mass="0.18" rgba="0.90 0.16 0.08 1" friction="0.6 0.001 0.0001" condim="3" solref="0.015 1"/>
+    </body>
+  </worldbody>
+
+  <!-- Initial spin satisfies rolling without slipping: omega_y = vx / radius. -->
+  <keyframe>
+    <key name="start" qpos="-0.7 0 0.84 1 0 0 0" qvel="1.55 0 0 0 38.75 0"/>
+  </keyframe>
+</mujoco>
+```

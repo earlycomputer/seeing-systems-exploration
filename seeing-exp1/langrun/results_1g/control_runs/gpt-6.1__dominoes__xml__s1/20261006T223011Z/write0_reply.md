@@ -1,0 +1,64 @@
+```xml
+<mujoco model="ten_domino_chain">
+  <compiler angle="degree"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100" cone="elliptic"/>
+
+  <worldbody>
+    <light name="main_light" pos="0.3 -0.6 2" dir="0 0 -1" diffuse="0.8 0.8 0.8"/>
+    <camera name="overview" pos="0.32 -1.4 0.85" xyaxes="1 0 0 0 0.447214 0.894427"/>
+
+    <geom name="floor" type="plane" pos="0 0 0" size="2 2 0.1" friction="0.8 0.005 0.0001" condim="3" rgba="0.25 0.28 0.32 1"/>
+
+    <!-- The first domino starts tilted 12 degrees toward +x, beyond its balance point. -->
+    <body name="domino1" pos="0 0 0.148802" quat="0.9945218954 0 0.1045284633 0">
+      <freejoint name="domino1_free"/>
+      <geom name="domino1_geom" type="box" size="0.01 0.05 0.15" mass="0.36" friction="0.8 0.005 0.0001" condim="3" solref="0.006 1" solimp="0.95 0.99 0.001" rgba="0.9 0.25 0.15 1"/>
+    </body>
+
+    <body name="domino2" pos="0.07 0 0.15">
+      <freejoint name="domino2_free"/>
+      <geom name="domino2_geom" type="box" size="0.01 0.05 0.15" mass="0.36" friction="0.8 0.005 0.0001" condim="3" solref="0.006 1" solimp="0.95 0.99 0.001" rgba="0.95 0.55 0.15 1"/>
+    </body>
+
+    <body name="domino3" pos="0.14 0 0.15">
+      <freejoint name="domino3_free"/>
+      <geom name="domino3_geom" type="box" size="0.01 0.05 0.15" mass="0.36" friction="0.8 0.005 0.0001" condim="3" solref="0.006 1" solimp="0.95 0.99 0.001" rgba="0.95 0.75 0.15 1"/>
+    </body>
+
+    <body name="domino4" pos="0.21 0 0.15">
+      <freejoint name="domino4_free"/>
+      <geom name="domino4_geom" type="box" size="0.01 0.05 0.15" mass="0.36" friction="0.8 0.005 0.0001" condim="3" solref="0.006 1" solimp="0.95 0.99 0.001" rgba="0.65 0.8 0.2 1"/>
+    </body>
+
+    <body name="domino5" pos="0.28 0 0.15">
+      <freejoint name="domino5_free"/>
+      <geom name="domino5_geom" type="box" size="0.01 0.05 0.15" mass="0.36" friction="0.8 0.005 0.0001" condim="3" solref="0.006 1" solimp="0.95 0.99 0.001" rgba="0.2 0.75 0.35 1"/>
+    </body>
+
+    <body name="domino6" pos="0.35 0 0.15">
+      <freejoint name="domino6_free"/>
+      <geom name="domino6_geom" type="box" size="0.01 0.05 0.15" mass="0.36" friction="0.8 0.005 0.0001" condim="3" solref="0.006 1" solimp="0.95 0.99 0.001" rgba="0.15 0.75 0.7 1"/>
+    </body>
+
+    <body name="domino7" pos="0.42 0 0.15">
+      <freejoint name="domino7_free"/>
+      <geom name="domino7_geom" type="box" size="0.01 0.05 0.15" mass="0.36" friction="0.8 0.005 0.0001" condim="3" solref="0.006 1" solimp="0.95 0.99 0.001" rgba="0.15 0.55 0.9 1"/>
+    </body>
+
+    <body name="domino8" pos="0.49 0 0.15">
+      <freejoint name="domino8_free"/>
+      <geom name="domino8_geom" type="box" size="0.01 0.05 0.15" mass="0.36" friction="0.8 0.005 0.0001" condim="3" solref="0.006 1" solimp="0.95 0.99 0.001" rgba="0.3 0.35 0.9 1"/>
+    </body>
+
+    <body name="domino9" pos="0.56 0 0.15">
+      <freejoint name="domino9_free"/>
+      <geom name="domino9_geom" type="box" size="0.01 0.05 0.15" mass="0.36" friction="0.8 0.005 0.0001" condim="3" solref="0.006 1" solimp="0.95 0.99 0.001" rgba="0.6 0.3 0.85 1"/>
+    </body>
+
+    <body name="domino10" pos="0.63 0 0.15">
+      <freejoint name="domino10_free"/>
+      <geom name="domino10_geom" type="box" size="0.01 0.05 0.15" mass="0.36" friction="0.8 0.005 0.0001" condim="3" solref="0.006 1" solimp="0.95 0.99 0.001" rgba="0.85 0.3 0.65 1"/>
+    </body>
+  </worldbody>
+</mujoco>
+```
