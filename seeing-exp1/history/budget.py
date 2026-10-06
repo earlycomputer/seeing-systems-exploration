@@ -1,7 +1,7 @@
 """Spend for experiments 1e (the run in words), 1f (the language run) and 1g (1f with expectations checked).
 
 Jono chose both on 2026-10-06 ("Both" on the decision card: "about $20 to $26 of the $34.35"). Together they stop at
-JOINT_CEILING_USD, and every experiment together stays under the program's $100 cap. Going past either needs Jono.
+JOINT_CEILING_USD, and every experiment together stays under the program's cap (config.py). Going past either needs Jono.
 """
 
 from config import ROOT, SPEND_CAP_USD

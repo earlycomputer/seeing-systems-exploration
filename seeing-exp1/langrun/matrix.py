@@ -15,6 +15,7 @@ import argparse
 import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+from config import SPEND_CAP_USD
 from loop.models import MODELS
 from history import budget
 from langrun import run as run_world
@@ -52,7 +53,7 @@ def main() -> int:
     est = sum(EST_USD.get((m, w[1]), 0.0) for m, w in todo)
     s = budget.spent()
     print(f"{len(todo)} worlds to run; rough cost ${est:.2f}; spent so far: " +
-          ", ".join(f"{k} ${v:.2f}" for k, v in s.items()) + f" (total ${sum(s.values()):.2f} of $100)")
+          ", ".join(f"{k} ${v:.2f}" for k, v in s.items()) + f" (total ${sum(s.values()):.2f} of ${SPEND_CAP_USD:.0f})")
     if args.plan:
         for m, w in todo:
             print("  ", run_world.world_id(m, *w))

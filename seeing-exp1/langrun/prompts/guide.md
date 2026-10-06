@@ -102,7 +102,8 @@ written bare.
 ## Parts
 
 A part is a named whole from the library below, used with `is a <part>` followed by the lines it `needs`
-(a need with `else` has a default). Its pieces are named `<thing>.<piece>` in the run: `catapult.scoop base`.
+(a need with `else` has a default). A part also takes a thing's own facts (`friction`, `colour`, `bounce`,
+`rolls`, `touches nothing`, `is`), which apply to every piece. Its pieces are named `<thing>.<piece>` in the run: `catapult.scoop base`.
 Inside a world, positions may refer to a part's pieces the same way: `on bucket.base`.
 
 You may also define new parts: put them in a ```parts block, written exactly as the library's parts are.
