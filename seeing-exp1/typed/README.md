@@ -84,6 +84,17 @@ part catapult                                   catapult
 - **Building is cheap.** Parsing and compiling a world takes about 6 ms; running it for 6 s of simulated time
   takes about 500 ms. More lines cost nothing that matters.
 
+- **Fixed after experiment 1f (2026-10-06).** Models writing in the language had 18 of 58 files refused, and
+  every refusal was the language's fault. All 58 build now (`lang_output.md`, "Fixed after the language run"):
+  - A library part takes a thing's own facts (`friction`, `colour`, `bounce`, `rolls`, `touches nothing`, `is`)
+    and passes them to every piece. A need with the same name wins.
+  - `−5°` reads as minus five degrees. The minus sign is subtraction only with spaces around it, as in `pivot
+    height − 6 cm`.
+  - `swings 0° to 45°` works without `from`.
+  - Bodies are grouped across the whole world, so a rod attached to a bob written as another part joins the
+    bob's body instead of making a second joint of the same name. When two joints share a written name (two
+    pendulums from the library), each takes its part's name in front: `pendulum1_pivot`, `pendulum2_pivot`.
+
 Decisions taken alone:
 
 - **Directions.** Along is x, so beyond and ahead of are +x, and a thing's near end faces back along x. To the
