@@ -1,0 +1,101 @@
+```xml
+<mujoco model="basketball_floor_launch">
+  <compiler angle="radian"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" cone="elliptic" iterations="80" tolerance="1e-10"/>
+
+  <visual>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.7 0.7 0.7" specular="0.2 0.2 0.2"/>
+  </visual>
+
+  <worldbody>
+    <light name="court_light" pos="2 -3 7" dir="0 0.3 -1" directional="true"/>
+    <camera name="side_view" pos="2 -8 4.2" xyaxes="1 0 0 0 0.265 0.964" fovy="50"/>
+
+    <geom name="floor" type="plane" pos="0 0 0" size="9 6 0.1" rgba="0.55 0.37 0.20 1" condim="6" friction="0.9 0.02 0.05" solref="0.01 1" solimp="0.95 0.99 0.001"/>
+
+    <!-- Size-7 basketball: 24 cm diameter and 624 g. -->
+    <body name="ball" pos="0 0 0.12">
+      <freejoint name="ball_free"/>
+      <geom name="ball" type="sphere" size="0.12" mass="0.624" rgba="0.88 0.29 0.045 1" condim="6" friction="0.9 0.02 0.05" solref="0.01 1" solimp="0.95 0.99 0.001"/>
+    </body>
+
+    <!-- Approximately 45 cm clear opening, with an 18 mm diameter steel rim. -->
+    <body name="hoop" pos="4 0 3.05">
+      <geom name="rim_00" type="capsule" fromto="0.234 0 0 0.229504 0.045651 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_01" type="capsule" fromto="0.229504 0.045651 0 0.216188 0.089548 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_02" type="capsule" fromto="0.216188 0.089548 0 0.194564 0.130003 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_03" type="capsule" fromto="0.194564 0.130003 0 0.165463 0.165463 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_04" type="capsule" fromto="0.165463 0.165463 0 0.130003 0.194564 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_05" type="capsule" fromto="0.130003 0.194564 0 0.089548 0.216188 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_06" type="capsule" fromto="0.089548 0.216188 0 0.045651 0.229504 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_07" type="capsule" fromto="0.045651 0.229504 0 0 0.234 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_08" type="capsule" fromto="0 0.234 0 -0.045651 0.229504 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_09" type="capsule" fromto="-0.045651 0.229504 0 -0.089548 0.216188 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_10" type="capsule" fromto="-0.089548 0.216188 0 -0.130003 0.194564 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_11" type="capsule" fromto="-0.130003 0.194564 0 -0.165463 0.165463 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_12" type="capsule" fromto="-0.165463 0.165463 0 -0.194564 0.130003 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_13" type="capsule" fromto="-0.194564 0.130003 0 -0.216188 0.089548 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_14" type="capsule" fromto="-0.216188 0.089548 0 -0.229504 0.045651 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_15" type="capsule" fromto="-0.229504 0.045651 0 -0.234 0 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_16" type="capsule" fromto="-0.234 0 0 -0.229504 -0.045651 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_17" type="capsule" fromto="-0.229504 -0.045651 0 -0.216188 -0.089548 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_18" type="capsule" fromto="-0.216188 -0.089548 0 -0.194564 -0.130003 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_19" type="capsule" fromto="-0.194564 -0.130003 0 -0.165463 -0.165463 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_20" type="capsule" fromto="-0.165463 -0.165463 0 -0.130003 -0.194564 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_21" type="capsule" fromto="-0.130003 -0.194564 0 -0.089548 -0.216188 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_22" type="capsule" fromto="-0.089548 -0.216188 0 -0.045651 -0.229504 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_23" type="capsule" fromto="-0.045651 -0.229504 0 0 -0.234 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_24" type="capsule" fromto="0 -0.234 0 0.045651 -0.229504 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_25" type="capsule" fromto="0.045651 -0.229504 0 0.089548 -0.216188 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_26" type="capsule" fromto="0.089548 -0.216188 0 0.130003 -0.194564 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_27" type="capsule" fromto="0.130003 -0.194564 0 0.165463 -0.165463 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_28" type="capsule" fromto="0.165463 -0.165463 0 0.194564 -0.130003 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_29" type="capsule" fromto="0.194564 -0.130003 0 0.216188 -0.089548 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_30" type="capsule" fromto="0.216188 -0.089548 0 0.229504 -0.045651 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="rim_31" type="capsule" fromto="0.229504 -0.045651 0 0.234 0 0" size="0.009" rgba="1 0.22 0.035 1"/>
+      <geom name="hoop_bracket" type="box" pos="0.3045 0 -0.007" size="0.0705 0.045 0.013" rgba="1 0.22 0.035 1"/>
+    </body>
+
+    <body name="backboard" pos="4.4 0 3.425">
+      <geom name="backboard_panel" type="box" size="0.025 0.9 0.525" rgba="0.86 0.91 0.96 1"/>
+      <geom name="target_left" type="box" pos="-0.029 -0.295 -0.15" size="0.004 0.015 0.225" rgba="0.12 0.12 0.12 1" contype="0" conaffinity="0"/>
+      <geom name="target_right" type="box" pos="-0.029 0.295 -0.15" size="0.004 0.015 0.225" rgba="0.12 0.12 0.12 1" contype="0" conaffinity="0"/>
+      <geom name="target_bottom" type="box" pos="-0.029 0 -0.375" size="0.004 0.31 0.015" rgba="0.12 0.12 0.12 1" contype="0" conaffinity="0"/>
+      <geom name="target_top" type="box" pos="-0.029 0 0.075" size="0.004 0.31 0.015" rgba="0.12 0.12 0.12 1" contype="0" conaffinity="0"/>
+    </body>
+
+    <!-- Supports are outside the ball's flight and landing lane. -->
+    <body name="basket_support" pos="4.48 0 0">
+      <geom name="support_left" type="capsule" fromto="0 -0.85 0.06 0 -0.85 3.5" size="0.055" rgba="0.18 0.21 0.25 1"/>
+      <geom name="support_right" type="capsule" fromto="0 0.85 0.06 0 0.85 3.5" size="0.055" rgba="0.18 0.21 0.25 1"/>
+      <geom name="support_base_left" type="box" pos="0 -0.85 0.035" size="0.3 0.18 0.035" rgba="0.18 0.21 0.25 1"/>
+      <geom name="support_base_right" type="box" pos="0 0.85 0.035" size="0.3 0.18 0.035" rgba="0.18 0.21 0.25 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <!-- Ideal ballistic center crossing: t = 4/3 s, z = 3.05 m, descending. -->
+    <!-- Sliding and rolling contact friction dissipate motion after landing. -->
+    <key name="start" qpos="0 0 0.12 1 0 0 0" qvel="3 0 8.7375 0 0 0"/>
+  </keyframe>
+</mujoco>
+```
+
+---
+thinking (summarized):
+
+**Analyzing basketball measurements**
+
+I need to check the tools since none are provided to run properly. I can derive some analytical data instead. It looks like I’m choosing variables like vx and vz, and looking at measurements for a basketball rim and its board. I’m considering dimensions like the diameter of the ball and distances from the backboard. I’m also checking where the ball contacts and ensuring it meets regulation. It’s all about making sure the measurements align as they should.
+
+**Checking ball trajectory and supports**
+
+I see that the stanchion stands at x4.6 while the ball may hit the floor at x5.34, which looks like it’ll collide around that point! I’m thinking about placing supports at y1.25 or even positioning them at x4.9—however, at that spot, the ball might still contact the stanchion. I need to check the friction and gravity settings too, which could affect the ball's motion. I’m also careful about ensuring the trajectory remains clear of any obstacles while allowing for proper damping to manage bounce and stop.
+
+**Adjusting friction settings for rolling**
+
+I’m noticing that rolling friction in MuJoCo is significant, especially when the ball is moving fast. It seems that the potential for contact might be higher at this speed, which could lead to some twisting—yikes! I’ll set the sphere’s friction to values like 1, .005, and .03 with a priority of 1, ensuring I maximize the ball's friction against the floor defaults. This should help manage any unexpected interactions and keep the ball under control.
+
+**Calculating geometry and dimensions**
+
+I'm analyzing a geometric shape, focusing on a circle with a centerline of .234, and determining the appropriate radius, which seems to be around .23513 for an inscribed circle. I'm noting properties like diameter and regulation tolerances, considering what's allowed for a basketball hoop, which has its own specific standards. I’m trying to finalize some capsule sizes with particular coordinates, managing the attributes like thickness and friction settings to ensure everything fits correctly in this design.

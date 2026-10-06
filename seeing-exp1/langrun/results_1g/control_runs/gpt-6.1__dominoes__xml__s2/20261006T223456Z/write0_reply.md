@@ -1,0 +1,92 @@
+```xml
+<mujoco model="ten_domino_chain">
+  <compiler angle="degree"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100" cone="elliptic"/>
+
+  <visual>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.65 0.65 0.65" specular="0.15 0.15 0.15"/>
+  </visual>
+
+  <worldbody>
+    <light name="overhead" pos="0.4 -0.5 2" dir="0 0 -1" diffuse="0.8 0.8 0.8"/>
+    <geom name="floor" type="plane" pos="0 0 0" size="3 2 0.1" friction="0.9 0.005 0.0001" solref="0.008 1" solimp="0.95 0.99 0.001" rgba="0.25 0.28 0.32 1"/>
+
+    <!-- The first domino starts tilted 12 degrees toward the row.
+         Its lower forward edge is on the floor. -->
+    <body name="domino1" pos="0.021053398 0 0.100309700" quat="0.994521895 0 0.104528463 0">
+      <freejoint name="domino1_free"/>
+      <geom name="domino1_box" type="box" size="0.012 0.04 0.10" density="650" friction="0.8 0.005 0.0001" solref="0.008 1" solimp="0.95 0.99 0.001" rgba="0.85 0.24 0.16 1"/>
+    </body>
+
+    <body name="domino2" pos="0.08 0 0.10">
+      <freejoint name="domino2_free"/>
+      <geom name="domino2_box" type="box" size="0.012 0.04 0.10" density="650" friction="0.8 0.005 0.0001" solref="0.008 1" solimp="0.95 0.99 0.001" rgba="0.92 0.86 0.68 1"/>
+    </body>
+
+    <body name="domino3" pos="0.16 0 0.10">
+      <freejoint name="domino3_free"/>
+      <geom name="domino3_box" type="box" size="0.012 0.04 0.10" density="650" friction="0.8 0.005 0.0001" solref="0.008 1" solimp="0.95 0.99 0.001" rgba="0.92 0.86 0.68 1"/>
+    </body>
+
+    <body name="domino4" pos="0.24 0 0.10">
+      <freejoint name="domino4_free"/>
+      <geom name="domino4_box" type="box" size="0.012 0.04 0.10" density="650" friction="0.8 0.005 0.0001" solref="0.008 1" solimp="0.95 0.99 0.001" rgba="0.92 0.86 0.68 1"/>
+    </body>
+
+    <body name="domino5" pos="0.32 0 0.10">
+      <freejoint name="domino5_free"/>
+      <geom name="domino5_box" type="box" size="0.012 0.04 0.10" density="650" friction="0.8 0.005 0.0001" solref="0.008 1" solimp="0.95 0.99 0.001" rgba="0.92 0.86 0.68 1"/>
+    </body>
+
+    <body name="domino6" pos="0.40 0 0.10">
+      <freejoint name="domino6_free"/>
+      <geom name="domino6_box" type="box" size="0.012 0.04 0.10" density="650" friction="0.8 0.005 0.0001" solref="0.008 1" solimp="0.95 0.99 0.001" rgba="0.92 0.86 0.68 1"/>
+    </body>
+
+    <body name="domino7" pos="0.48 0 0.10">
+      <freejoint name="domino7_free"/>
+      <geom name="domino7_box" type="box" size="0.012 0.04 0.10" density="650" friction="0.8 0.005 0.0001" solref="0.008 1" solimp="0.95 0.99 0.001" rgba="0.92 0.86 0.68 1"/>
+    </body>
+
+    <body name="domino8" pos="0.56 0 0.10">
+      <freejoint name="domino8_free"/>
+      <geom name="domino8_box" type="box" size="0.012 0.04 0.10" density="650" friction="0.8 0.005 0.0001" solref="0.008 1" solimp="0.95 0.99 0.001" rgba="0.92 0.86 0.68 1"/>
+    </body>
+
+    <body name="domino9" pos="0.64 0 0.10">
+      <freejoint name="domino9_free"/>
+      <geom name="domino9_box" type="box" size="0.012 0.04 0.10" density="650" friction="0.8 0.005 0.0001" solref="0.008 1" solimp="0.95 0.99 0.001" rgba="0.92 0.86 0.68 1"/>
+    </body>
+
+    <body name="domino10" pos="0.72 0 0.10">
+      <freejoint name="domino10_free"/>
+      <geom name="domino10_box" type="box" size="0.012 0.04 0.10" density="650" friction="0.8 0.005 0.0001" solref="0.008 1" solimp="0.95 0.99 0.001" rgba="0.92 0.86 0.68 1"/>
+    </body>
+  </worldbody>
+
+  <!-- Only domino1 has initial velocity: rotation toward +x about its
+       lower forward edge. All other dominoes start at rest. -->
+  <keyframe>
+    <key name="start" qvel="0.2006194 0 -0.0181068 0 2 0   0 0 0 0 0 0   0 0 0 0 0 0   0 0 0 0 0 0   0 0 0 0 0 0   0 0 0 0 0 0   0 0 0 0 0 0   0 0 0 0 0 0   0 0 0 0 0 0   0 0 0 0 0 0"/>
+  </keyframe>
+</mujoco>
+```
+
+---
+thinking (summarized):
+
+**Designing a domino cascade**
+
+I need to output a robust domino cascade scene lasting 6 seconds, but I can't use any tools for checks. I’m considering designing a freejoint box for the dominoes with an initial angle and velocity set through keyframes. I need to ensure the positions and spacings are appropriate, perhaps using a standard domino spacing of .065 and a height of .14. The first domino could be tilted at 12 degrees. I'll specify the initial geometry and positions accordingly, avoiding contact with the next domino.
+
+**Setting up domino parameters**
+
+I'm working on calculating the parameters for the domino setup. The first domino will be positioned at the center, with some adjustments to its bottom support height based on angle and trigonometric calculations. I’m figuring out the center of mass and ensuring there's no overlap with the adjacent domino while maintaining appropriate spacing of .075. I want to create stable configurations that will lead to a successful chain reaction. Lastly, I'm determining physical properties like friction and mass to ensure everything works as intended.
+
+**Optimizing keyframe settings**
+
+I need to simplify my approach by using a keyframe with qpos set to 70 since the long uncertainty isn’t ideal. It’s more efficient not to include qvel. I can establish the first angle12 and create a keyframe list for qvel with a count of 60. By organizing mentally into six groups, I should make sure to separate them properly, using multiple spaces if necessary. Keeping an exact count of 60 repeated nine times is essential.
+
+**Writing XML for MuJoCo model**
+
+I'm focusing on creating an XML format for a MuJoCo model called "ten_domino_chain." The compiler angle needs to be set to degree, and I need to ensure autolimit is true. I’m also considering optional elements, such as including a quaternion with no effect and defining joints to be free with no damping. Lastly, I'll make sure there are no prefatory claims in the final include; it should be straightforward and precise.

@@ -1,0 +1,58 @@
+```world
+world  ball rolls down a ramp into a cup
+
+floor
+  size      5 m
+  friction  0.8, spinning 0.005, rolling 0.002
+
+ramp start
+  is a  point
+  at    65 cm up
+
+ramp finish
+  is a  point
+  at    1.2 m beyond ramp start, 34 cm up
+
+ramp
+  is a       ramp
+  high end   ramp start
+  low end    ramp finish
+  width      30 cm
+  thickness  2 cm
+  friction   0.8, spinning 0.005, rolling 0.001
+  bounce     dead
+  colour     wood
+
+cup
+  is an             open box
+  length            70 cm
+  width             40 cm
+  walls             30 cm
+  near wall height  30 cm
+  wall thickness    2 cm
+  base thickness    2 cm
+  on                floor, 35 cm beyond ramp finish
+  friction          0.9, spinning 0.01, rolling 0.02
+  bounce            dead
+  colour            grey
+
+ball
+  is a      sphere 3 cm radius, 150 g
+  rolls
+  moves     freely
+  bounce    dead
+  friction  0.8, spinning 0.005, rolling 0.001
+  colour    orange
+  on        ramp, 12 cm from the top
+
+expect
+  ball touches ramp
+  ball comes to rest in cup
+```
+
+---
+thinking (summarized):
+
+**Calculating ball flight**
+
+I’m working through the numbers about a ball’s flight path. It starts at 55 over 1.2 meters, with specific points like a cup near the wall at .12 and the far walls at .4. There’s a low foot at .22 just above the near wall. The ball's flight from .25 to .05 lasts about .16 seconds and has a horizontal landing around .25. It rolls and eventually hits the far wall at .66. Interesting dynamics here!

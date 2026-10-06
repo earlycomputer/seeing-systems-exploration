@@ -104,6 +104,15 @@ def main() -> None:
     print("\n".join(out))
 
 
+def fisher(a: int, n1: int, b: int, n2: int) -> float:
+    """Two-sided Fisher exact test for a of n1 against b of n2."""
+    from math import comb
+    k, n = a + b, n1 + n2
+    p = [comb(n1, i) * comb(n2, k - i) / comb(n, k) for i in range(max(0, k - n2), min(k, n1) + 1)]
+    p0 = comb(n1, a) * comb(n2, b) / comb(n, k)
+    return min(1.0, sum(x for x in p if x <= p0 * (1 + 1e-9)))
+
+
 def checked(args) -> None:
     """1g beside its control and 1f. The control has the fixed language, the history and the rest line, but no
     expectations, so 1g against the control is the effect of checking expectations alone."""
@@ -131,6 +140,18 @@ def checked(args) -> None:
                    f"{frac([w for w in cs if w['set'] == 'held-out'], 'passes_final')} | "
                    f"{frac([w for w in rs if w['set'] == 'held-out'], 'passes_final')} | {built_first} of {len(rs)} | "
                    f"{frac(rs, 'passes_first')} | ${sum(w['cost_usd'] for w in rs) / len(rs):.3f} |")
+    def n(ws, k):
+        return sum(bool(w.get(k)) for w in ws), len(ws)
+    out += ["", "## Two-sided Fisher exact tests", "", "| Comparison | A | B | p |", "|---|---|---|---|"]
+    for label, x, y, k in (("works in the end: control vs 1g, both arms", ctl, g, "passes_final"),
+                           ("works as first written: control vs 1g, both arms", ctl, g, "passes_first"),
+                           ("works in the end: control, language vs xml", [w for w in ctl if w["arm"] == "language"],
+                            [w for w in ctl if w["arm"] == "xml"], "passes_final"),
+                           ("works in the end: 1g, language vs xml", [w for w in g if w["arm"] == "language"],
+                            [w for w in g if w["arm"] == "xml"], "passes_final")):
+        (a1, n1), (b1, n2) = n(x, k), n(y, k)
+        if n1 and n2:
+            out.append(f"| {label} | {a1} of {n1} | {b1} of {n2} | {fisher(a1, n1, b1, n2):.3f} |")
     out += ["", "## Effort per world", "",
             "Model turns (writes and see-and-fix rounds), tokens and wall time per world, from the world JSON. "
             "\"To working\" counts only worlds that did not work as first written but worked in the end: the turns and "
