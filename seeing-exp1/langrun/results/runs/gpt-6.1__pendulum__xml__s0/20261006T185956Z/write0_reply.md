@@ -1,0 +1,66 @@
+```xml
+<mujoco model="pendulum_ball_cup">
+  <compiler angle="radian" inertiafromgeom="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="80"/>
+  <statistic center="0.35 0 0.3" extent="1.35"/>
+
+  <worldbody>
+    <light name="main_light" pos="0.3 -1.5 3" dir="0 0.4 -1" directional="true"/>
+    <geom name="floor" type="plane" size="3 2 0.1" friction="0.65 0.005 0.00015" condim="6" solref="0.008 1" solimp="0.95 0.99 0.001" rgba="0.72 0.74 0.76 1"/>
+
+    <body name="anchor" pos="-0.11 0 0.705">
+      <geom name="anchor_axle" type="cylinder" size="0.022 0.08" quat="0.7071068 0.7071068 0 0" contype="0" conaffinity="0" rgba="0.25 0.27 0.30 1"/>
+    </body>
+
+    <!-- Gravity releases the pendulum from its keyframe angle. -->
+    <body name="pendulum" pos="-0.11 0 0.705">
+      <joint name="pendulum_hinge" type="hinge" axis="0 1 0" limited="true" range="-0.65 0.65" damping="0.003" armature="0.00005"/>
+      <geom name="pendulum_rod" type="capsule" fromto="0 0 0 0 0 -0.60" size="0.012" mass="0.04" friction="0.35 0.005 0.0001" rgba="0.30 0.33 0.37 1"/>
+      <geom name="pendulum_bob" type="sphere" pos="0 0 -0.65" size="0.05" mass="0.30" friction="0.35 0.005 0.0001" solref="0.008 1" solimp="0.95 0.99 0.001" rgba="0.85 0.30 0.12 1"/>
+    </body>
+
+    <body name="ball" pos="0 0 0.04">
+      <freejoint name="ball_free"/>
+      <geom name="ball" type="sphere" size="0.04" mass="0.05" friction="0.65 0.005 0.00015" condim="6" solref="0.008 1" solimp="0.95 0.99 0.001" rgba="0.95 0.78 0.12 1"/>
+    </body>
+
+    <!-- Cup centre is exactly 1 m from the ball's initial centre in x-y. -->
+    <!-- The shallow entry ramp crosses a low lip; the other seven walls retain the ball. -->
+    <body name="cup" pos="1 0 0">
+      <geom name="cup_base" type="cylinder" pos="0 0 0.002" size="0.18 0.002" friction="0.8 0.01 0.001" condim="6" solref="0.008 1" rgba="0.15 0.45 0.70 1"/>
+      <geom name="cup_wall_east" type="box" pos="0.16 0 0.067" size="0.008 0.070 0.063" friction="0.8 0.01 0.001" condim="6" solref="0.008 1" rgba="0.15 0.45 0.70 1"/>
+      <geom name="cup_wall_northeast" type="box" pos="0.113137 0.113137 0.067" quat="0.9238795 0 0 0.3826834" size="0.008 0.070 0.063" friction="0.8 0.01 0.001" condim="6" solref="0.008 1" rgba="0.15 0.45 0.70 1"/>
+      <geom name="cup_wall_north" type="box" pos="0 0.16 0.067" quat="0.7071068 0 0 0.7071068" size="0.008 0.070 0.063" friction="0.8 0.01 0.001" condim="6" solref="0.008 1" rgba="0.15 0.45 0.70 1"/>
+      <geom name="cup_wall_northwest" type="box" pos="-0.113137 0.113137 0.067" quat="0.3826834 0 0 0.9238795" size="0.008 0.070 0.063" friction="0.8 0.01 0.001" condim="6" solref="0.008 1" rgba="0.15 0.45 0.70 1"/>
+      <geom name="cup_entry_lip" type="box" pos="-0.16 0 0.011" size="0.008 0.070 0.011" friction="0.8 0.01 0.001" condim="6" solref="0.008 1" rgba="0.15 0.45 0.70 1"/>
+      <geom name="cup_wall_southwest" type="box" pos="-0.113137 -0.113137 0.067" quat="0.3826834 0 0 -0.9238795" size="0.008 0.070 0.063" friction="0.8 0.01 0.001" condim="6" solref="0.008 1" rgba="0.15 0.45 0.70 1"/>
+      <geom name="cup_wall_south" type="box" pos="0 -0.16 0.067" quat="0.7071068 0 0 -0.7071068" size="0.008 0.070 0.063" friction="0.8 0.01 0.001" condim="6" solref="0.008 1" rgba="0.15 0.45 0.70 1"/>
+      <geom name="cup_wall_southeast" type="box" pos="0.113137 -0.113137 0.067" quat="0.9238795 0 0 -0.3826834" size="0.008 0.070 0.063" friction="0.8 0.01 0.001" condim="6" solref="0.008 1" rgba="0.15 0.45 0.70 1"/>
+      <geom name="cup_entry_ramp" type="box" pos="-0.212301 0 0.007062" quat="0.9961483 0 -0.087685 0" size="0.062969 0.070 0.004" friction="0.8 0.005 0.00015" condim="6" solref="0.008 1" rgba="0.24 0.55 0.78 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start" qpos="0.5 0 0 0.04 1 0 0 0" qvel="0 0 0 0 0 0 0"/>
+  </keyframe>
+</mujoco>
+```
+
+---
+thinking (summarized):
+
+**Analyzing cup and pendulum design**
+
+I’m thinking about a cup design with a low rim and a ramp for a ball to roll into. The dimensions include a cylindrical shape with specific thickness and slopes, and I need to ensure the ball can roll smoothly with a targeted velocity. I’m also calculating a pendulum with precise hinge and bob positions based on gravitational equilibrium. It’s kind of a puzzle to get those measurements right to avoid collisions!
+
+**Calculating pendulum mechanics**
+
+I’m working through the physics of a pendulum, considering how the hinge angle and geometry affect its motion. When the bob is released, it swings under gravity, creating positive velocity. I’m focusing on the pivot point and ensuring the bob's equilibrium position is calculated correctly to prevent collision with the ball. I'm also noting the height of the bob from the floor to avoid any obstructions, and I’ll keep damping minimal for smoother movement.
+
+**Analyzing ball dynamics**
+
+I'm thinking about how the ball interacts with the floor. When the contact happens, the downward force engages the spin, while the floor dissipates energy. If I've calculated correctly, the speed reduction seems to be about .60, which sounds good to me! It’s interesting to consider how various factors influence the movement. I want to make sure my understanding of the dynamics is accurate for any analysis or applications.
+
+**Rethinking naming conventions**
+
+I'm grappling with naming the body as "worldbody." It feels a bit odd since it lacks a conventional name attribute and doesn't seem like a typical body. Plus, I don’t think it needs a fixed camera or lights to be named. I’m also considering how to label the pivot support — should it simply be "support"? It seems like I need to specify its position too, which is at "-.11 0 .705." This is starting to feel more complex than I expected!

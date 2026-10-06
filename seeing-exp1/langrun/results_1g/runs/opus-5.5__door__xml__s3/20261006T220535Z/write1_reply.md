@@ -1,0 +1,34 @@
+My range and springref were written in radians, but MuJoCo read them as degrees. I added `<compiler angle="radian"/>` so the 0 to 1.7 rad range and the −0.1 rad spring rest angle mean what I intended.
+
+```xml
+<mujoco model="swinging_door">
+  <compiler angle="radian"/>
+  <option timestep="0.002" gravity="0 0 -9.81"/>
+  <worldbody>
+    <light name="sun" pos="0 0 4" dir="0 0 -1" directional="true"/>
+    <geom name="floor" type="plane" size="5 5 0.1" rgba="0.8 0.8 0.8 1"/>
+    <geom name="wall_left" type="box" pos="-0.15 -0.04 1.1" size="0.12 0.02 1.1" rgba="0.6 0.55 0.5 1"/>
+    <geom name="wall_right" type="box" pos="1.05 -0.04 1.1" size="0.12 0.02 1.1" rgba="0.6 0.55 0.5 1"/>
+    <geom name="jamb" type="box" pos="0.88 -0.04 1.01" size="0.04 0.02 0.95" rgba="0.4 0.3 0.2 1"/>
+    <body name="door" pos="0 0 0">
+      <joint name="hinge" type="hinge" axis="0 0 1" pos="0 0 0" limited="true" range="0 1.7" stiffness="20" springref="-0.1" damping="6" solreflimit="0.01 1"/>
+      <geom name="door_panel" type="box" pos="0.46 0 1.02" size="0.44 0.02 1.0" mass="20" rgba="0.7 0.45 0.25 1"/>
+      <geom name="door_knob" type="sphere" pos="0.82 0.05 1.0" size="0.03" mass="0.2" rgba="0.9 0.8 0.2 1"/>
+    </body>
+  </worldbody>
+  <keyframe>
+    <key name="start" qpos="1.4" qvel="0"/>
+  </keyframe>
+</mujoco>
+```
+
+```expect
+door reaches its lower stop
+door touches jamb
+```
+
+---
+thinking (summarized):
+
+I should add compiler angle="radian" since springref is also angle-based, interpreted in degrees by default. With the radian compiler, -0.1 rad for springref and a range of 0 to 1.7 rad both work fine.
+

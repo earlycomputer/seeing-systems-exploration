@@ -1,0 +1,49 @@
+<mujoco model="pendulum_ball_cup">
+  <option timestep="0.002" gravity="0 0 -9.81"/>
+
+  <visual>
+    <global offwidth="1280" offheight="720"/>
+  </visual>
+
+  <worldbody>
+    <light name="sun" pos="0.5 -1 2" dir="0 0.5 -1" directional="true"/>
+    <geom name="floor" type="plane" size="3 3 0.1" rgba="0.8 0.8 0.8 1"/>
+
+    <!-- static support for the pendulum (visual only, no collisions) -->
+    <body name="support" pos="-0.075 0 0.53">
+      <geom name="support_beam" type="box" size="0.02 0.08 0.01" pos="0 0 0.012" contype="0" conaffinity="0" rgba="0.3 0.3 0.3 1"/>
+      <geom name="support_post" type="cylinder" fromto="0 0.08 0.02 0 0.08 -0.53" size="0.01" contype="0" conaffinity="0" rgba="0.3 0.3 0.3 1"/>
+    </body>
+
+    <!-- pendulum: pivot 0.5 m above the bob centre; bob centre at ball-centre height at the bottom of the swing -->
+    <body name="pendulum" pos="-0.075 0 0.53">
+      <joint name="pendulum_hinge" type="hinge" axis="0 1 0" pos="0 0 0"/>
+      <geom name="pendulum_rod" type="capsule" fromto="0 0 0 0 0 -0.46" size="0.008" mass="0.05" contype="0" conaffinity="0" rgba="0.5 0.5 0.6 1"/>
+      <geom name="pendulum_bob" type="sphere" pos="0 0 -0.5" size="0.04" mass="0.5" contype="0" conaffinity="0" rgba="0.8 0.2 0.2 1"/>
+    </body>
+
+    <!-- ball resting on the floor at the origin -->
+    <body name="ball" pos="0 0 0.03">
+      <freejoint name="ball_free"/>
+      <geom name="ball" type="sphere" size="0.03" mass="0.1" condim="6" friction="1 0.005 0.0002" rgba="0.2 0.4 0.9 1"/>
+    </body>
+
+    <!-- cup centred 1 m from the ball start: low front lip, tall back and side walls -->
+    <body name="cup" pos="1 0 0">
+      <geom name="cup_base" type="box" size="0.1 0.1 0.003" pos="0 0 0.003" rgba="0.9 0.7 0.2 1"/>
+      <geom name="cup_front" type="box" size="0.005 0.1 0.0075" pos="-0.095 0 0.0075" rgba="0.9 0.7 0.2 1"/>
+      <geom name="cup_back" type="box" size="0.005 0.1 0.04" pos="0.095 0 0.04" rgba="0.9 0.7 0.2 1"/>
+      <geom name="cup_left" type="box" size="0.1 0.005 0.04" pos="0 0.095 0.04" rgba="0.9 0.7 0.2 1"/>
+      <geom name="cup_right" type="box" size="0.1 0.005 0.04" pos="0 -0.095 0.04" rgba="0.9 0.7 0.2 1"/>
+    </body>
+  </worldbody>
+
+  <contact>
+    <!-- the only pendulum contact: a mildly elastic, numerically stable strike with the ball -->
+    <pair name="strike" geom1="pendulum_bob" geom2="ball" condim="3" friction="0.2 0.2 0.005 0.0001 0.0001" solref="0.01 0.3"/>
+  </contact>
+
+  <keyframe>
+    <key name="start" qpos="0.785 0 0 0.03 1 0 0 0" qvel="0 0 0 0 0 0 0"/>
+  </keyframe>
+</mujoco>

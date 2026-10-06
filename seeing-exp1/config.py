@@ -28,5 +28,8 @@ RENDER_SIZE = 512
 RESOLUTIONS = (128, 64, 32)
 SEEDS = (0, 1, 2)
 
-# Guardrail: spending past this needs a human first (handoff, Decisions).
-SPEND_CAP_USD = 100.0
+# Guardrail: spending past this needs a human first (handoff, Decisions). Raised from $100 on 2026-10-06: Jono said
+# "Ok to increase budget, just keep me up to date" and chose the 1g rerun, "about $15, bringing the total to about
+# $100" ($84.58 spent before it). Then "No need to stop at $18. Be thorough": 1g grew to four seeds and a control,
+# stopping at $70 (history/budget.py).
+SPEND_CAP_USD = 160.0

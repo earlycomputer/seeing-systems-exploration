@@ -1,0 +1,94 @@
+No. The arm launches the ball, but the ball clips the cup’s front wall just after release, losing much of its horizontal speed. It lands on the floor short of the bucket, rolls into the bucket’s exterior, and stops outside.
+
+The revision removes that obstructing lip, increases the spring preload force, and widens the bucket. Its centre remains exactly 3 m from the ball’s initial centre.
+
+```xml
+<mujoco model="spring_catapult_into_bucket">
+  <compiler angle="radian"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" iterations="80"/>
+
+  <visual>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.65 0.65 0.65" specular="0.2 0.2 0.2"/>
+  </visual>
+
+  <worldbody>
+    <light name="scene_light" pos="0 -3 5" dir="0.2 0.3 -1"/>
+    <camera name="overview" pos="0.65 -5 3" xyaxes="1 0 0 0 0.47 0.883"/>
+
+    <geom name="floor" type="plane" size="8 6 0.1" friction="0.9 0.01 0.02" rgba="0.78 0.80 0.76 1"/>
+
+    <body name="catapult_frame" pos="0 0 0">
+      <geom name="catapult_base" type="box" pos="-0.35 0 0.035" size="0.62 0.30 0.035" contype="0" conaffinity="0" rgba="0.30 0.20 0.12 1"/>
+      <geom name="catapult_support_left" type="box" pos="0 0.20 0.12" size="0.075 0.045 0.085" contype="0" conaffinity="0" rgba="0.40 0.28 0.16 1"/>
+      <geom name="catapult_support_right" type="box" pos="0 -0.20 0.12" size="0.075 0.045 0.085" contype="0" conaffinity="0" rgba="0.40 0.28 0.16 1"/>
+      <geom name="catapult_axle" type="cylinder" pos="0 0 0.175" quat="0.70710678 0.70710678 0 0" size="0.045 0.255" contype="0" conaffinity="0" rgba="0.25 0.27 0.30 1"/>
+
+      <body name="catapult_arm" pos="0 0 0.175">
+        <inertial pos="-0.45 0 0" mass="0.6" diaginertia="0.002 0.06 0.06"/>
+        <joint name="catapult_hinge" type="hinge" axis="0 1 0" limited="true" range="0 0.70" stiffness="9.2" springref="1.4" damping="0.02" solreflimit="0.004 1" solimplimit="0.99 0.99 0.001"/>
+
+        <geom name="catapult_beam" type="box" pos="-0.45 0 0" size="0.45 0.035 0.025" contype="0" conaffinity="0" rgba="0.56 0.36 0.18 1"/>
+        <geom name="catapult_tray" type="box" pos="-0.9 0 0" size="0.10 0.10 0.025" priority="1" friction="0.6 0.005 0.002" solref="0.004 1" solimp="0.95 0.99 0.001" rgba="0.65 0.43 0.20 1"/>
+        <geom name="catapult_cup_back" type="box" pos="-1.0 0 0.075" size="0.018 0.118 0.05" priority="1" friction="0.6 0.005 0.002" solref="0.004 1" solimp="0.95 0.99 0.001" rgba="0.65 0.43 0.20 1"/>
+        <geom name="catapult_cup_left" type="box" pos="-0.9 0.1 0.075" size="0.082 0.018 0.05" priority="1" friction="0.6 0.005 0.002" solref="0.004 1" solimp="0.95 0.99 0.001" rgba="0.65 0.43 0.20 1"/>
+        <geom name="catapult_cup_right" type="box" pos="-0.9 -0.1 0.075" size="0.082 0.018 0.05" priority="1" friction="0.6 0.005 0.002" solref="0.004 1" solimp="0.95 0.99 0.001" rgba="0.65 0.43 0.20 1"/>
+      </body>
+    </body>
+
+    <body name="ball" pos="-0.9 0 0.275">
+      <freejoint name="ball_free"/>
+      <geom name="ball" type="sphere" size="0.075" mass="0.1" friction="0.5 0.005 0.002" solref="0.006 1" solimp="0.95 0.99 0.001" rgba="0.95 0.22 0.08 1"/>
+    </body>
+
+    <!-- Interior centre: (2.1, 0, 0.275), exactly 3 m from the initial ball centre. -->
+    <!-- Interior bottom: z=0.05. Rim: z=0.50. Minimum interior radius: 0.80 m. -->
+    <body name="bucket" pos="2.1 0 0.275">
+      <geom name="bucket_bottom" type="cylinder" pos="0 0 -0.25" size="0.88 0.025" priority="1" friction="0.9 0.01 0.02" solref="0.012 1" solimp="0.95 0.99 0.001" rgba="0.13 0.34 0.54 1"/>
+      <geom name="bucket_wall_00" type="box" pos="0.835 0 0" euler="0 0 0" size="0.035 0.175 0.225" priority="1" friction="0.9 0.01 0.02" solref="0.012 1" rgba="0.18 0.46 0.70 1"/>
+      <geom name="bucket_wall_01" type="box" pos="0.77143941 0.31954067 0" euler="0 0 0.39269908" size="0.035 0.175 0.225" priority="1" friction="0.9 0.01 0.02" solref="0.012 1" rgba="0.18 0.46 0.70 1"/>
+      <geom name="bucket_wall_02" type="box" pos="0.59043416 0.59043416 0" euler="0 0 0.78539816" size="0.035 0.175 0.225" priority="1" friction="0.9 0.01 0.02" solref="0.012 1" rgba="0.18 0.46 0.70 1"/>
+      <geom name="bucket_wall_03" type="box" pos="0.31954067 0.77143941 0" euler="0 0 1.17809725" size="0.035 0.175 0.225" priority="1" friction="0.9 0.01 0.02" solref="0.012 1" rgba="0.18 0.46 0.70 1"/>
+      <geom name="bucket_wall_04" type="box" pos="0 0.835 0" euler="0 0 1.57079633" size="0.035 0.175 0.225" priority="1" friction="0.9 0.01 0.02" solref="0.012 1" rgba="0.18 0.46 0.70 1"/>
+      <geom name="bucket_wall_05" type="box" pos="-0.31954067 0.77143941 0" euler="0 0 1.96349541" size="0.035 0.175 0.225" priority="1" friction="0.9 0.01 0.02" solref="0.012 1" rgba="0.18 0.46 0.70 1"/>
+      <geom name="bucket_wall_06" type="box" pos="-0.59043416 0.59043416 0" euler="0 0 2.35619449" size="0.035 0.175 0.225" priority="1" friction="0.9 0.01 0.02" solref="0.012 1" rgba="0.18 0.46 0.70 1"/>
+      <geom name="bucket_wall_07" type="box" pos="-0.77143941 0.31954067 0" euler="0 0 2.74889357" size="0.035 0.175 0.225" priority="1" friction="0.9 0.01 0.02" solref="0.012 1" rgba="0.18 0.46 0.70 1"/>
+      <geom name="bucket_wall_08" type="box" pos="-0.835 0 0" euler="0 0 3.14159265" size="0.035 0.175 0.225" priority="1" friction="0.9 0.01 0.02" solref="0.012 1" rgba="0.18 0.46 0.70 1"/>
+      <geom name="bucket_wall_09" type="box" pos="-0.77143941 -0.31954067 0" euler="0 0 3.53429174" size="0.035 0.175 0.225" priority="1" friction="0.9 0.01 0.02" solref="0.012 1" rgba="0.18 0.46 0.70 1"/>
+      <geom name="bucket_wall_10" type="box" pos="-0.59043416 -0.59043416 0" euler="0 0 3.92699082" size="0.035 0.175 0.225" priority="1" friction="0.9 0.01 0.02" solref="0.012 1" rgba="0.18 0.46 0.70 1"/>
+      <geom name="bucket_wall_11" type="box" pos="-0.31954067 -0.77143941 0" euler="0 0 4.31968990" size="0.035 0.175 0.225" priority="1" friction="0.9 0.01 0.02" solref="0.012 1" rgba="0.18 0.46 0.70 1"/>
+      <geom name="bucket_wall_12" type="box" pos="0 -0.835 0" euler="0 0 4.71238898" size="0.035 0.175 0.225" priority="1" friction="0.9 0.01 0.02" solref="0.012 1" rgba="0.18 0.46 0.70 1"/>
+      <geom name="bucket_wall_13" type="box" pos="0.31954067 -0.77143941 0" euler="0 0 5.10508806" size="0.035 0.175 0.225" priority="1" friction="0.9 0.01 0.02" solref="0.012 1" rgba="0.18 0.46 0.70 1"/>
+      <geom name="bucket_wall_14" type="box" pos="0.59043416 -0.59043416 0" euler="0 0 5.49778714" size="0.035 0.175 0.225" priority="1" friction="0.9 0.01 0.02" solref="0.012 1" rgba="0.18 0.46 0.70 1"/>
+      <geom name="bucket_wall_15" type="box" pos="0.77143941 -0.31954067 0" euler="0 0 5.89048623" size="0.035 0.175 0.225" priority="1" friction="0.9 0.01 0.02" solref="0.012 1" rgba="0.18 0.46 0.70 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start" qpos="0 -0.9 0 0.275 1 0 0 0" qvel="0 0 0 0 0 0 0"/>
+  </keyframe>
+</mujoco>
+```
+
+```expect
+ball touches catapult_tray
+ball comes to rest in bucket
+```
+
+```json
+{
+  "what_happens": "The catapult launches the ball, which clips the cup's front wall, lands short on the floor, rolls into the bucket's exterior, and stops outside at approximately (1.29, 0.00, 0.07) m.",
+  "works": false,
+  "problem": "The ball loses horizontal speed on the launch cup's front wall and does not enter the bucket."
+}
+```
+
+---
+thinking (summarized):
+
+**Analyzing cupback physics**
+
+I'm considering how the cupback interacts with the contact point and the rolling friction. If the leading sphere's center is slightly shifted, maybe the top face's friction could create a force along the +x, -z axis when the ball is spinning but also pressed against the stopped tray. I wonder if the high rolling friction slows the ball's spin before it releases, causing the ball to roll back. There’s definitely an interesting dynamic here!
+
+**Considering projectile motion**
+
+I’m not entirely sure about the flight path described. A catapult being used to throw a ball into a bucket that’s 3 meters away is an interesting scenario! If the ball only travels 2.55 meters, it seems like it won't reach the center of the bucket. Do I really need the bucket to be shaped like a hack? It seems like I want the ball to genuinely land in the center, but I need to rethink my approach.

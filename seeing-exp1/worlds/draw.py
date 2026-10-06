@@ -34,12 +34,27 @@ def moving_bodies(run: Run) -> list[int]:
     return out
 
 
+def _reach(m, b: int) -> float:
+    """How far the body's geoms reach from its origin: a turn of theta radians moves them up to theta * reach."""
+    gs = [g for g in range(m.ngeom) if m.geom_bodyid[g] == b]
+    return max((float(np.linalg.norm(m.geom_pos[g])) + float(m.geom_rbound[g]) for g in gs), default=0.0)
+
+
 def active_until(run: Run, bodies: list[int]) -> float:
-    """When the last moving body comes to rest (speed over 0.05 s windows), or the run's end."""
+    """When the last moving body comes to rest (speed over 0.05 s windows), or the run's end.
+
+    A body's speed is its origin's speed plus its turning rate times its reach, so a door or pendulum turning
+    about its own origin counts as moving (experiment 1d; 1c measured the origin only).
+    """
     k = max(1, round(0.05 / run.model.opt.timestep))
     if not bodies or len(run.times) <= k:
         return float(run.times[-1])
-    v = np.linalg.norm(run.xpos[k:, bodies] - run.xpos[:-k, bodies], axis=2).max(axis=1) / (k * run.model.opt.timestep)
+    dt = k * run.model.opt.timestep
+    lin = np.linalg.norm(run.xpos[k:, bodies] - run.xpos[:-k, bodies], axis=2) / dt  # (T-k, nb)
+    dots_ = np.abs(np.einsum("tbi,tbi->tb", run.xquat[k:, bodies], run.xquat[:-k, bodies]))
+    ang = 2 * np.arccos(np.clip(dots_, 0.0, 1.0)) / dt
+    reach = np.array([_reach(run.model, b) for b in bodies])
+    v = (lin + ang * reach).max(axis=1)
     busy = np.nonzero(v > REST_SPEED)[0]
     end = float(run.times[busy[-1] + k]) if len(busy) else 0.5
     return float(min(run.times[-1], max(0.5, end + 0.1)))

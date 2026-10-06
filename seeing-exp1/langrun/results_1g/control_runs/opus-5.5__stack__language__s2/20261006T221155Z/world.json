@@ -1,0 +1,179 @@
+{
+  "world": "opus-5.5__stack__language__s2",
+  "run_dir": "langrun/results_1g/control_runs/opus-5.5__stack__language__s2/20261006T221155Z",
+  "started_at": "20261006T221155Z",
+  "experiment": "1g-control",
+  "checked": false,
+  "control": true,
+  "model": "opus-5.5",
+  "model_label": "Opus 5.5",
+  "model_id": "claude-opus-5-5",
+  "effort": "high",
+  "brief": "stack",
+  "brief_text": "a stack of five blocks stands until the bottom block is pushed, then topples",
+  "set": "1d",
+  "kind": "primitives",
+  "test": "stack",
+  "arm": "language",
+  "seed": 2,
+  "dry_run": false,
+  "turns": [
+    {
+      "turn": "write0",
+      "usage": {
+        "text": "A rolling 2 kg ball is the pusher. It starts 1.2 m behind the stack and rolls along the floor. It strikes the bottom block about 0.9 s in, at 6 cm height. That knocks the bottom block out, and the four tall blocks above fall.\n\n```world\nworld  toppling stack\n\nfloor\n  size      6 m\n  friction  0.8, spinning 0.005, rolling 0.002\n\nblock\n  is a      box 8 by 8 by 16 cm, 300 g\n  friction  0.6, spinning 0.005, rolling 0.002\n  colour    wood\n  moves     freely\n  stacked   5 high\n  stands    on floor, 1 m along\n\nball\n  is a      sphere 6 cm radius, 2 kg\n  rolls\n  bounce    dead\n  friction  0.8, spinning 0.01, rolling 0.002\n  colour    orange\n  moves     freely\n  rests     on floor, 1.2 m behind block1\n  launched  1.2 m/s along\n  spins     20 rad/s about y\n\nexpect\n  ball touches block1\n```\n\nThe ball's starting spin (20 rad/s = 1.2 m/s \u00f7 6 cm) matches its speed, so it rolls from the start rather than sliding and losing speed. Nothing touches the stack until the ball arrives.\n\nI haven't run this. The bottom block might shoot out from under the others instead of tipping them. If so, the upper blocks may drop more or less straight down rather than visibly topple. The expectation only checks that the ball hits `block1`, not that the stack actually falls over.",
+        "thinking": "I'm picturing a stack of five blocks standing stable until something strikes the bottom block and topples the stack. I'm considering options like a pendulum swinging in or a heavy box sliding along the floor with friction to deliver the hit, leaning toward the sliding box as the simplest mechanism.\n\nWorking through the forces: the ball's momentum transfers to block1, which has to overcome friction from the blocks stacked above plus floor friction, so it shoots forward while the upper blocks drop and likely topple. I'm reconsidering the geometry\u2014maybe taller, narrower blocks (8x8x16 cm, 300g) stacked five high topple more easily, with the ball sized so it strikes at the right height, and I'm placing the ball 60 cm behind the stack on the floor for the setup.\n\nAdjusting the starting distance to around 1.2 m with launch speed 1.2 m/s gives roughly 0.9 seconds before impact, accounting for the ball transitioning from sliding to rolling (slipping friction reduces speed to about 5/7 of initial, so ~0.86 m/s) and adding spin to match rolling motion from the start.\n\n",
+        "input_tokens": 5260,
+        "output_tokens": 1772,
+        "cost_usd": 0.05648,
+        "stop_reason": "end_turn",
+        "served_model": "claude-opus-5-5",
+        "seconds": 18.66
+      },
+      "problem": "1 problem in this world. Nothing was built.\n\n-- UNKNOWN PART ------------------------------------- line 22: ball.rests\n\nI was expecting the name of a part written above this line, but I found:\n\n    block1\n\nA position can only refer to parts already written, so a world reads top to bottom.\n\nHint: did you mean block?\n"
+    },
+    {
+      "turn": "write1",
+      "usage": {
+        "text": "Positions can't refer to the stack's copies by name, so the ball is now placed relative to `block`. The offset fixes only the along direction, so the result is the same.\n\n```world\nworld  toppling stack\n\nfloor\n  size      6 m\n  friction  0.8, spinning 0.005, rolling 0.002\n\nblock\n  is a      box 8 by 8 by 16 cm, 300 g\n  friction  0.6, spinning 0.005, rolling 0.002\n  colour    wood\n  moves     freely\n  stacked   5 high\n  stands    on floor, 1 m along\n\nball\n  is a      sphere 6 cm radius, 2 kg\n  rolls\n  bounce    dead\n  friction  0.8, spinning 0.01, rolling 0.002\n  colour    orange\n  moves     freely\n  rests     on floor, 1.2 m behind block\n  launched  1.2 m/s along\n  spins     20 rad/s about y\n\nexpect\n  ball touches block1\n```\n\nThe `expect` line still names `block1`. If the checker rejects copy names there too, it will need changing to `block`. Everything else is unchanged and still unrun. The ball should hit the bottom block about 0.9 s in, but the stack might drop rather than visibly topple.",
+        "thinking": "Copies can't be referenced by name in positions, so I should use \"block\" to mean the original, and since the offset is only along one direction, I can just phrase it as \"on floor, 1.2 m behind block.\"\n\n",
+        "input_tokens": 7172,
+        "output_tokens": 518,
+        "cost_usd": 0.039048,
+        "stop_reason": "end_turn",
+        "served_model": "claude-opus-5-5",
+        "seconds": 5.8
+      },
+      "problem": null
+    },
+    {
+      "turn": "round1",
+      "verdict": {
+        "what_happens": "The stack stands untouched for the first second. At 1.01 s the 2 kg ball, rolling at about 1 m/s, hits block1, pushes it only 3 cm and stops dead. The upper blocks wobble about 3 degrees and settle. All five blocks are still stacked upright at 6 s.",
+        "works": false,
+        "problem": "The push from the light, slow, dead-bouncing ball is far too weak to move the loaded bottom block, so the stack never topples.",
+        "works_bool": false
+      },
+      "usage": {
+        "text": "## What happened in the run\n\nThe five blocks stand still for the first second. At 1.01 s the 2 kg ball, now slowed to about 1 m/s, hits `block1`. The bottom block is pinned by the 1.2 kg on top of it and by floor friction, so it slides only 3 cm. The dead contact stops the ball almost at once. The upper blocks wobble by 3\u00b0, then everything settles. The stack is still standing upright at 6 s, so it never topples.\n\n## Corrected world\n\nThe push needs far more momentum, and it must keep shoving rather than tap and stop.\n\n- **Pusher:** the ball becomes 10 kg, launched at 2.5 m/s with matching spin, from 2.5 m back, so it still arrives after about a second. It keeps driving `block1` forward after impact.\n- **Blocks:** block friction rises to 1.0, so the shove drags the base out from under the tall, narrow column and tips it over.\n\n```world\nworld  toppling stack\n\nfloor\n  size      8 m\n  friction  0.8, spinning 0.005, rolling 0.002\n\nblock\n  is a      box 8 by 8 by 16 cm, 300 g\n  friction  1.0, spinning 0.005, rolling 0.002\n  colour    wood\n  moves     freely\n  stacked   5 high\n  stands    on floor, 1 m along\n\nball\n  is a      sphere 6 cm radius, 10 kg\n  rolls\n  bounce    dead\n  friction  0.8, spinning 0.01, rolling 0.002\n  colour    orange\n  moves     freely\n  rests     on floor, 2.5 m behind block\n  launched  2.5 m/s along\n  spins     41.7 rad/s about y\n\nexpect\n  ball touches block1\n```\n\nThis is still unrun. A hard enough shove might pull the bottom block cleanly out from under the others, so the column drops 16 cm and stays upright instead of tipping.\n\n```json\n{\"what_happens\": \"The stack stands untouched for the first second. At 1.01 s the 2 kg ball, rolling at about 1 m/s, hits block1, pushes it only 3 cm and stops dead. The upper blocks wobble about 3 degrees and settle. All five blocks are still stacked upright at 6 s.\", \"works\": false, \"problem\": \"The push from the light, slow, dead-bouncing ball is far too weak to move the loaded bottom block, so the stack never topples.\"}\n```",
+        "thinking": "The stack didn't topple since the ball's impact only moved block1 by 3 cm, likely because friction absorbed most of the momentum. I need a much stronger push with more mass or speed, so I'm calculating the friction forces holding block1 in place\u2014both from the floor and from block2 resting on top.\n\nWorking through the math, block1 decelerates at roughly 63 m/s\u00b2 due to combined friction, meaning it would need an initial velocity around 3.5 m/s to slide 10 cm before stopping. A heavier, faster ball could transfer enough velocity to block1, but I'm also considering whether dragging block1 out would actually destabilize the stack through rotation rather than just horizontal displacement\u2014since simply removing the base cleanly might just let the blocks drop straight down and remain standing. I'm now thinking about whether hitting the ball at a different height or point of contact on block1 could introduce enough tilt to topple the stack.\n\nWorking through the timing, the ball passes under block2 before it falls far enough to intersect, so that collision path doesn't work. Enlarging the ball doesn't help either since its contact point stays fixed at its center height, only touching block1. I should try a different approach\u2014maybe a slower, sustained push instead of a quick impulse.\n\nThinking about a heavy sliding pusher box instead: sized shorter than block1 so it only contacts that one, launched fast enough to drag it forward while friction drags block2 along with it. But friction combination rules mean the floor's higher friction coefficient wins regardless of the pusher's surface, so a sliding box won't decelerate the way I want\u2014maybe a rolling sphere pusher would avoid that friction penalty.\n\nSwitching to a heavy lead-like sphere (radius 6 cm, 10 kg) launched at 2 m/s with matching spin so it rolls without slipping and keeps shoving after impact. At that mass and speed it should kick block1 forward fast enough to slide it out from under block2 within a few hundredths of a second, with the ball catching up and continuing to push while block2 falls and the stack tips.\n\nNow I'm checking the timing carefully: the ball passes under block2's footprint before block2 actually lands, so block2 might come down on top of the ball instead of past it \u2014 the geometry depends on exact heights and fall times, and it's borderline. I'm considering increasing inter-block friction to 1.0 to strengthen the drag-induced topple, and also thinking about using a larger 9 cm ball so it can strike both block1 and the lower portion of block2 after it drops, though the overlap in spans is still uncertain and needs more thought.\n\nI'll settle on friction 1.0 between blocks and a heavy 10 kg ball at 2.5 m/s. To give the stack time to stand before impact, I'll position the ball further back, around 2.5 m behind, so it hits roughly 1 second in, with spin set around 41.7 rad/s for a radius of 6 cm rolling without slipping. I'll account for some speed loss from rolling friction as a minor detail.\n\n",
+        "input_tokens": 11256,
+        "output_tokens": 3188,
+        "cost_usd": 0.108784,
+        "stop_reason": "end_turn",
+        "served_model": "claude-opus-5-5",
+        "seconds": 34.63
+      },
+      "current_passed": false,
+      "sent_file": true,
+      "new_file_passed": true,
+      "problem": null
+    },
+    {
+      "turn": "round2",
+      "verdict": {
+        "what_happens": "The five-block stack stands still for 1 s while a 10 kg ball rolls toward it. At 1.00 s the ball hits block1 and drives it forward, and the stack topples. block1 and block2 tumble forward, and block3 to block5 tip over backward onto the floor. By about 1.9 s all five blocks lie on their sides, turned 90\u00b0, at rest.",
+        "works": true,
+        "problem": "",
+        "works_bool": true
+      },
+      "usage": {
+        "text": "## What happened in the run\n\nThe five-block stack stands perfectly still for the first second while the 10 kg ball rolls toward it.\n\nAt 1.00 s the ball strikes `block1` and drives it forward along the floor. The stack comes apart:\n- `block1` and `block2` are thrown forward, tumbling, and end up near x = 1.73 m.\n- `block3`, `block4` and `block5` tip over and fall back toward the side the ball came from.\n\nBy about 1.9 s everything has settled. All five blocks lie on their sides, each turned 90\u00b0, and the ball rests nearby.\n\nThe stack stands until the bottom block is pushed, then topples, which is what the brief asks for.\n\n```json\n{\"what_happens\": \"The five-block stack stands still for 1 s while a 10 kg ball rolls toward it. At 1.00 s the ball hits block1 and drives it forward, and the stack topples. block1 and block2 tumble forward, and block3 to block5 tip over backward onto the floor. By about 1.9 s all five blocks lie on their sides, turned 90\u00b0, at rest.\", \"works\": true, \"problem\": \"\"}\n```",
+        "thinking": "The stack holds until the ball hits block1 at 1.00s, driving it forward and toppling the whole stack \u2014 all blocks end up lying on the floor turned 90\u00b0, with blocks 3-5 falling backward toward -x and blocks 1-2 falling forward. That gives a proper topple.\n\n",
+        "input_tokens": 19464,
+        "output_tokens": 459,
+        "cost_usd": 0.087036,
+        "stop_reason": "end_turn",
+        "served_model": "claude-opus-5-5",
+        "seconds": 6.3
+      },
+      "current_passed": true,
+      "sent_file": false
+    }
+  ],
+  "files": [
+    {
+      "loaded": false,
+      "problem": "1 problem in this world. Nothing was built.\n\n-- UNKNOWN PART ------------------------------------- line 22: ball.rests\n\nI was expecting the name of a part written above this line, but I found:\n\n    block1\n\nA position can only refer to parts already written, so a world reads top to bottom.\n\nHint: did you mean block?\n",
+      "expect": [
+        "ball touches block1"
+      ],
+      "label": "written0",
+      "turn": "write0"
+    },
+    {
+      "passed": false,
+      "checks": {
+        "five blocks stacked at the start": true,
+        "stack stands until the bottom block is pushed (at least 0.2 s)": true,
+        "stack topples (top block ends two block-heights lower)": false
+      },
+      "values": {
+        "push_time_s": 1.0340000000000007,
+        "top_block_drop_m": 0.0008,
+        "block_height_m": 0.16
+      },
+      "loaded": true,
+      "problem": null,
+      "diverged": null,
+      "load_log": [
+        "reset to keyframe 'start'"
+      ],
+      "expect": [
+        "ball touches block1"
+      ],
+      "label": "written1",
+      "turn": "write1"
+    },
+    {
+      "passed": true,
+      "checks": {
+        "five blocks stacked at the start": true,
+        "stack stands until the bottom block is pushed (at least 0.2 s)": true,
+        "stack topples (top block ends two block-heights lower)": true
+      },
+      "values": {
+        "push_time_s": 1.0120000000000007,
+        "top_block_drop_m": 0.6801,
+        "block_height_m": 0.16
+      },
+      "loaded": true,
+      "problem": null,
+      "diverged": null,
+      "load_log": [
+        "reset to keyframe 'start'"
+      ],
+      "expect": [
+        "ball touches block1"
+      ],
+      "label": "round1",
+      "turn": "round1"
+    }
+  ],
+  "load_attempts": 2,
+  "loads": true,
+  "passes_first": false,
+  "rounds": 2,
+  "passes_final": true,
+  "passed_at_round": 1,
+  "claims_works": true,
+  "claim_correct": true,
+  "final_checks": {
+    "five blocks stacked at the start": true,
+    "stack stands until the bottom block is pushed (at least 0.2 s)": true,
+    "stack topples (top block ends two block-heights lower)": true
+  },
+  "final_problem": null,
+  "problems_seen": 1,
+  "seconds": 66.8,
+  "tokens": {
+    "input": 43152,
+    "output": 5937,
+    "total": 49089
+  },
+  "cost_usd": 0.291348,
+  "served_models": [
+    "claude-opus-5-5"
+  ],
+  "finished_at": "20261006T221302Z"
+}

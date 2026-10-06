@@ -1,0 +1,42 @@
+The door starts open. A preloaded hinge spring pulls it closed against its lower stop and keeps it there, while damping prevents sustained swinging.
+
+```xml
+<mujoco model="self_closing_door">
+  <compiler angle="radian"/>
+  <option timestep="0.002" integrator="implicitfast" gravity="0 0 -9.81"/>
+  <visual>
+    <headlight ambient="0.4 0.4 0.4" diffuse="0.7 0.7 0.7"/>
+  </visual>
+  <worldbody>
+    <light name="overhead" pos="0 -2 4" dir="0 0 -1"/>
+    <camera name="overview" pos="3 -4 3" xyaxes="0.8 0.6 0 -0.249 0.332 0.910"/>
+    <geom name="floor" type="plane" size="4 4 0.1" pos="0 0 0" rgba="0.72 0.74 0.77 1" friction="0.8 0.01 0.001"/>
+    <body name="frame" pos="0 0 0">
+      <geom name="frame_left" type="box" pos="-0.52 0 1.04" size="0.04 0.08 1.04" rgba="0.25 0.28 0.32 1"/>
+      <geom name="frame_right" type="box" pos="0.52 0 1.04" size="0.04 0.08 1.04" rgba="0.25 0.28 0.32 1"/>
+      <geom name="frame_top" type="box" pos="0 0 2.12" size="0.56 0.08 0.04" rgba="0.25 0.28 0.32 1"/>
+    </body>
+    <body name="door" pos="-0.45 0 1.03">
+      <joint name="hinge" type="hinge" pos="0 0 0" axis="0 0 1" limited="true" range="0 1.5" stiffness="45" springref="-0.08" damping="18" armature="0.02" solreflimit="0.004 1" solimplimit="0.99 0.99 0.001"/>
+      <geom name="door_panel" type="box" pos="0.45 0 0" size="0.45 0.025 1" mass="12" rgba="0.48 0.24 0.10 1"/>
+      <geom name="door_handle" type="sphere" pos="0.78 -0.065 0" size="0.03" mass="0.08" rgba="0.85 0.72 0.32 1"/>
+      <geom name="door_hinge_upper" type="cylinder" pos="0 0 0.72" size="0.022 0.065" mass="0.03" rgba="0.55 0.57 0.6 1"/>
+      <geom name="door_hinge_lower" type="cylinder" pos="0 0 -0.72" size="0.022 0.065" mass="0.03" rgba="0.55 0.57 0.6 1"/>
+    </body>
+  </worldbody>
+  <keyframe>
+    <key name="start" qpos="1.2" qvel="0"/>
+  </keyframe>
+</mujoco>
+```
+
+```expect
+door reaches its lower stop
+```
+
+---
+thinking (summarized):
+
+**Calculating hinge parameters**
+
+I'm considering a hinge for a visual cylinder body door with a radius of 0.025. I wonder how this affects the floor design and structure. Also, the mass of the hinges is fairly minor at 0.03, so I think it’s negligible in the broader context. It's interesting to think about how even small factors can play a role in overall design, but I also want to ensure that I'm approaching this correctly.

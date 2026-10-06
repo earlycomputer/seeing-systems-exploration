@@ -1,0 +1,115 @@
+{
+  "world": "opus-5.5__door__language__s1",
+  "run_dir": "langrun/results_1g/control_runs/opus-5.5__door__language__s1/20261006T220541Z",
+  "started_at": "20261006T220541Z",
+  "experiment": "1g-control",
+  "checked": false,
+  "control": true,
+  "model": "opus-5.5",
+  "model_label": "Opus 5.5",
+  "model_id": "claude-opus-5-5",
+  "effort": "high",
+  "brief": "door",
+  "brief_text": "a door swings shut and stays shut",
+  "set": "1d",
+  "kind": "library",
+  "test": "door",
+  "arm": "language",
+  "seed": 1,
+  "dry_run": false,
+  "turns": [
+    {
+      "turn": "write0",
+      "usage": {
+        "text": "This builds the door directly as a top-level thing, so its body is named `door` and it turns on `hinge`. The door starts 70\u00b0 open. A spring pulls it toward \u221210\u00b0, just past the 0\u00b0 stop, so the spring keeps pressing the door against the stop. Damping makes it shut without a big rebound, and the preload holds it shut.\n\n```world\nworld  a door swings shut and stays shut\n\nfloor\n  size      6 m\n  friction  0.8, spinning 0.005, rolling 0.002\n\nframe\n  is a    box 8 by 8 by 214 cm\n  stands  on floor, 1 m along\n  colour  wood\n\ndoor\n  is a           box 4 by 80 by 200 cm, 15 kg\n  raised         2 cm, 1 m along, 8 cm outside frame's left side\n  turns on       hinge, about z, at its right side\n  swings         from 0\u00b0 to 110\u00b0\n  spring         20 N\u00b7m/rad toward \u221210\u00b0\n  damping        5 N\u00b7m\u00b7s/rad\n  starts turned  70\u00b0\n  colour         wood\n\nexpect\n  door reaches its lower stop\n```\n\nThe door's moment of inertia about the hinge edge is about 3.2 kg\u00b7m\u00b2. With the 20 N\u00b7m/rad spring, it should reach 0\u00b0 in roughly half a second. After that it should settle against the stop well within the 6 s run, and the \u221210\u00b0 spring target keeps it held at 0\u00b0. I haven't run this in MuJoCo, so the timing and the size of any rebound off the stop are estimates.",
+        "thinking": "I'm thinking the door should be named `door` with pieces door_frame and door_panel, and the panel turns on a hinge named `hinge`, so each top-level part becomes a MuJoCo body with its pieces as named geoms.\n\nFor the design: a fixed frame post and a door panel box (4\u00d780\u00d7200cm, 15kg) that turns on the z-axis hinge at its right edge, swinging between 0\u00b0 and 110\u00b0 with damping to settle. To make it \"stay shut,\" I'm giving the spring a slight negative target angle like \u221210\u00b0 instead of 0\u00b0, so it preloads against the stop rather than resting with zero force exactly at the limit.\n\nWorking out the dynamics: the door's moment of inertia about its edge is about 3.2 kg\u00b7m\u00b2, so with spring stiffness 20 N\u00b7m/rad I get a natural frequency around 2.5 rad/s and critical damping near 16 \u2014 I'll use something lower like 4-6 for an underdamped swing that closes in roughly half a second and settles within a few seconds, accepting a small bounce off the stop. For geometry, I'm placing an 8\u00d78\u00d7214cm frame post on the floor and positioning the door panel raised 2cm with its hinge edge in the gap beside the post, matching how the library expects hinge placement.\n\nChecking clearance: rotating the door 70\u00b0 about its hinge edge, the corners near the hinge only move a couple centimeters, well clear of the frame post sitting 8cm away, so no collision there. Since the door's bottom is raised 2cm it also won't scrape the floor, and the joint limit itself serves as the stop.\n\nFor positioning, I'll align both frame and door along a shared coordinate (say 1m along), with the frame sitting on the floor and the door raised 2cm and offset 8cm outside the frame's left side, noting the door should rest at its lower stop.\n\nNow I need to fill in the remaining properties: marking it as a door that's a kind of box, specifying it turns on and swings via a spring with damping, setting its starting state and colour, giving it a mass of 15 kg, and a damping value of 5.\n\n",
+        "input_tokens": 5214,
+        "output_tokens": 1948,
+        "cost_usd": 0.059816,
+        "stop_reason": "end_turn",
+        "served_model": "claude-opus-5-5",
+        "seconds": 20.46
+      },
+      "problem": null
+    },
+    {
+      "turn": "round1",
+      "verdict": {
+        "what_happens": "The door starts 70\u00b0 open and the hinge spring swings it shut; it hits the 0\u00b0 stop at 0.70 s at about 121\u00b0/s, rebounds less than 1\u00b0, settles at 0\u00b0 by 1.25 s, and stays still and shut through 6 s.",
+        "works": true,
+        "problem": "",
+        "works_bool": true
+      },
+      "usage": {
+        "text": "The door starts open at 70\u00b0 and stands still for an instant. The spring then swings it shut, faster as it goes. It reaches the 0\u00b0 stop at 0.70 s, moving at about 121\u00b0/s, and presses 0.8\u00b0 into the soft stop. It rebounds only slightly, to about 0.7\u00b0 open. By 1.25 s it is settled at 0\u00b0 and still, and it stays shut for the rest of the 6 s run.\n\n```json\n{\"what_happens\": \"The door starts 70\u00b0 open and the hinge spring swings it shut; it hits the 0\u00b0 stop at 0.70 s at about 121\u00b0/s, rebounds less than 1\u00b0, settles at 0\u00b0 by 1.25 s, and stays still and shut through 6 s.\", \"works\": true, \"problem\": \"\"}\n```",
+        "thinking": "The door swings from 70\u00b0 closed to 0\u00b0 by 0.70 s, overshoots slightly to a 0.7\u00b0 rebound, then settles flat by 1.25 s and holds steady through 6 s\u2014looks good.\n\n",
+        "input_tokens": 7882,
+        "output_tokens": 308,
+        "cost_usd": 0.037688,
+        "stop_reason": "end_turn",
+        "served_model": "claude-opus-5-5",
+        "seconds": 4.05
+      },
+      "current_passed": true,
+      "sent_file": false
+    }
+  ],
+  "files": [
+    {
+      "passed": true,
+      "checks": {
+        "door starts within its hinge's range": true,
+        "door starts open (at least 20 degrees)": true,
+        "door shut for the last second (within 2 degrees)": true,
+        "door still at the end": true
+      },
+      "values": {
+        "start_deg": 70.0,
+        "hinge_range_deg": [
+          0.0,
+          110.0
+        ],
+        "last_second_max_deg": 0.0,
+        "end_rate_rad_s": 0.0
+      },
+      "loaded": true,
+      "problem": null,
+      "diverged": null,
+      "load_log": [
+        "reset to keyframe 'start'"
+      ],
+      "expect": [
+        "door reaches its lower stop"
+      ],
+      "label": "written0",
+      "turn": "write0"
+    }
+  ],
+  "load_attempts": 1,
+  "loads": true,
+  "passes_first": true,
+  "rounds": 1,
+  "passes_final": true,
+  "passed_at_round": 0,
+  "claims_works": true,
+  "claim_correct": true,
+  "final_checks": {
+    "door starts within its hinge's range": true,
+    "door starts open (at least 20 degrees)": true,
+    "door shut for the last second (within 2 degrees)": true,
+    "door still at the end": true
+  },
+  "final_problem": null,
+  "problems_seen": 0,
+  "seconds": 24.9,
+  "tokens": {
+    "input": 13096,
+    "output": 2256,
+    "total": 15352
+  },
+  "cost_usd": 0.097504,
+  "served_models": [
+    "claude-opus-5-5"
+  ],
+  "finished_at": "20261006T220606Z"
+}
