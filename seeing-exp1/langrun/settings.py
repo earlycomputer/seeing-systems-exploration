@@ -22,6 +22,15 @@ RESULTS_DIR = LANGRUN_DIR / "results"
 RUNS_DIR = RESULTS_DIR / "runs"
 SPEND_LEDGER = RESULTS_DIR / "spend.jsonl"
 DRYRUN_DIR = ROOT / ".dryrun" / "langrun"
+
+# Experiment 1g, the rerun with expectations checked (`--checked`): the same loop, briefs, models and seeds, but each
+# world also says what should happen (the language's `expect` block, or an ```expect block beside the MJCF), and each
+# round's readback starts with those expectations checked against the run (langrun/expect.py). Jono chose it on
+# 2026-10-06 ("Rerun" on the decision card, about $15).
+CHECKED_RESULTS_DIR = LANGRUN_DIR / "results_1g"
+CHECKED_RUNS_DIR = CHECKED_RESULTS_DIR / "runs"
+CHECKED_SPEND_LEDGER = CHECKED_RESULTS_DIR / "spend.jsonl"
+CHECKED_DRYRUN_DIR = ROOT / ".dryrun" / "langrun_1g"
 PROMPTS = LANGRUN_DIR / "prompts"
 FIXTURES = LANGRUN_DIR / "fixtures"
 
