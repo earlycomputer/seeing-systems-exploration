@@ -1,0 +1,213 @@
+-- The parts library, written in the world language itself.
+--
+-- A part says what it needs, then builds itself from pieces: primitives (box, cube, sphere, rod, plank, post,
+-- ring, point) or other parts. Each piece is placed by relations to the floor or to pieces written above it.
+-- Nothing here is Python: a new part is a new block in this file.
+--
+-- Directions: along is x (beyond, ahead of, behind; a thing's near end faces back along x, its far end
+-- forward), to the left is y (left side, right side), up is z (top, bottom).
+
+part open box
+  needs  length
+  needs  width
+  needs  walls
+  needs  wall thickness, else 2 cm
+  needs  base thickness, else 2 cm
+  needs  near wall height, else walls
+
+  base
+    is a  box length by width by base thickness
+    on    floor
+  near wall
+    is a  box wall thickness by width by near wall height
+    on    floor, centred on base's near end
+  far wall
+    is a  box wall thickness by width by walls
+    on    floor, centred on base's far end
+  left wall
+    is a  box length by wall thickness by walls
+    on    floor, centred on base's left side
+  right wall
+    is a  box length by wall thickness by walls
+    on    floor, centred on base's right side
+
+
+part ramp
+  needs  high end
+  needs  low end
+  needs  width
+  needs  thickness, else 4 cm
+
+  top
+    is a  point
+    at    high end
+  foot
+    is a  point
+    at    low end
+  deck
+    is a  plank from top to foot, width wide, thickness thick
+  leg
+    is a  post 6 cm square, from floor to top
+
+
+part door
+  needs  width
+  needs  height
+  needs  thickness
+  needs  mass
+  needs  swings
+  needs  spring
+  needs  damping
+  needs  starts open
+
+  frame
+    is a  box 8 by 8 cm by height + 14 cm
+    on    floor, 12 cm to the right
+  panel
+    is a           box thickness by width by height, mass
+    raised         2 cm
+    8 cm outside frame's left side
+    turns on       hinge, about z, at its right side
+    swings         swings
+    spring         spring
+    damping        damping
+    starts turned  starts open
+
+
+part catapult
+  needs  pivot height
+  needs  arm length
+  needs  arm mass
+  needs  swings
+  needs  spring
+  needs  damping
+  needs  armature, else 0.01 kg·m²
+
+  stand
+    is a  box 16 by 24 by pivot height − 6 cm
+    on    floor
+  pivot
+    is a  point
+    at    pivot height up
+  arm
+    is a      box arm length by 6 by 4 cm, arm mass
+    its far end at pivot, level with pivot
+    turns on  catapult hinge, about y, at pivot
+    swings    swings
+    spring    spring
+    damping   damping
+    armature  armature
+  scoop base
+    is a         box 16 by 16 by 1 cm, 20 g
+    on           arm, at arm's near end
+    attached to  arm
+  scoop back
+    is a         box 1 by 16 by 10 cm, 10 g
+    on           arm, outside scoop base's near end
+    attached to  arm
+
+
+part pendulum
+  needs  pivot height
+  needs  length
+  needs  bob size
+  needs  bob mass
+  needs  rod thickness
+  needs  rod mass
+  needs  starts swung back
+  needs  damping, else nothing
+
+  pivot
+    is a  point
+    at    pivot height up
+  bob
+    is a           sphere bob size, bob mass
+    length below pivot
+    turns on       pivot, about y, at pivot
+    damping        damping
+    starts turned  starts swung back
+  rod
+    is a         rod rod thickness thick, from pivot to bob's top
+    weighs       rod mass
+    attached to  bob
+  stand arm
+    is a  box 6 by 30 by 4 cm
+    on    rod, its left side at pivot
+  stand post
+    is a  post 6 cm square, from floor to stand arm's top
+    centred on stand arm's right side
+
+
+part hoop
+  needs  rim height
+  needs  rim size, else 45.72 cm
+  needs  tube, else 8 mm
+
+  rim
+    is a    ring rim size across, tube thick
+    at      rim height up
+    colour  orange
+  bracket
+    is a    box 14.1 by 10 by 2.4 cm
+    31.05 cm beyond rim, 1 cm below rim
+    colour  orange
+  backboard
+    is a    box 3 by 180 by 105 cm
+    outside bracket's far end, 37.5 cm above rim
+    colour  glass
+  square
+    is a    box 1 mm by 59 by 45 cm
+    outside backboard's near end, 14.5 cm above rim
+    touches nothing
+    colour  black
+  pole base
+    is a    box 80 by 80 by 5 cm
+    on      floor, 120 cm beyond rim
+    colour  dark grey
+  pole
+    is a    box 20 by 20 cm by rim height + 35 cm
+    on      floor, 120 cm beyond rim
+    colour  grey
+  arm
+    is a    box 68.9 by 12 by 12 cm
+    outside backboard's far end, 25 cm above rim
+    colour  grey
+
+
+part table
+  needs  surface
+  needs  height
+  needs  legs, else 6 cm
+
+  top
+    is a  box surface by 3 cm
+    raised height − 3 cm
+  near left leg
+    is a  post legs square, from floor to top's bottom
+    at top's near end, at top's left side
+  near right leg
+    is a  post legs square, from floor to top's bottom
+    at top's near end, at top's right side
+  far left leg
+    is a  post legs square, from floor to top's bottom
+    at top's far end, at top's left side
+  far right leg
+    is a  post legs square, from floor to top's bottom
+    at top's far end, at top's right side
+
+
+part raised bucket
+  needs  table height
+  needs  size
+  needs  walls
+
+  table
+    is a    table
+    surface size by size
+    height  table height
+  bucket
+    is an   open box
+    length  size
+    width   size
+    walls   walls
+    on      table
