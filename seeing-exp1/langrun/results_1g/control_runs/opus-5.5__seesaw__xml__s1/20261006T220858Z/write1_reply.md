@@ -1,0 +1,45 @@
+MuJoCo read the hinge range `-0.3 0.3` as degrees, so it limited the plank to ±0.3° while the keyframe started it at 0.3 rad (17.19°). Adding `<compiler angle="radian"/>` makes the range ±0.3 rad as intended, so the plank now starts exactly at its limit with the ball end down. Nothing else changes.
+
+```xml
+<mujoco model="seesaw_catapult">
+  <compiler angle="radian"/>
+  <option timestep="0.002" gravity="0 0 -9.81"/>
+
+  <worldbody>
+    <light name="sun" pos="0 0 5" dir="0 0 -1" directional="true"/>
+    <geom name="floor" type="plane" size="5 5 0.1" rgba="0.8 0.8 0.8 1" friction="1 0.005 0.005"/>
+
+    <!-- visual-only fulcrum -->
+    <geom name="fulcrum" type="box" pos="0 0 0.19" size="0.05 0.12 0.19" contype="0" conaffinity="0" rgba="0.4 0.3 0.2 1"/>
+
+    <!-- seesaw: pivot at z=0.4, ball end at +x, weight lands on -x end -->
+    <body name="seesaw" pos="0 0 0.4">
+      <joint name="pivot" type="hinge" axis="0 1 0" limited="true" range="-0.3 0.3" damping="0.02"/>
+      <geom name="plank" type="box" size="1.0 0.1 0.01" mass="0.5" rgba="0.6 0.4 0.2 1"/>
+      <geom name="lip" type="box" pos="0.99 0 0.04" size="0.01 0.1 0.03" mass="0.02" rgba="0.5 0.3 0.1 1"/>
+    </body>
+
+    <!-- 1 kg dropped weight -->
+    <body name="weight" pos="-0.85 0 3.0">
+      <freejoint name="weight_free"/>
+      <geom name="weight_geom" type="sphere" size="0.06" mass="1" condim="6" friction="1 0.005 0.005" rgba="0.2 0.2 0.8 1"/>
+    </body>
+
+    <!-- 100 g thrown ball, resting on the low end against the lip -->
+    <body name="ball" pos="0.9128 0 0.16998">
+      <freejoint name="ball_free"/>
+      <geom name="ball" type="sphere" size="0.04" mass="0.1" condim="6" friction="1 0.005 0.005" rgba="0.9 0.2 0.2 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start" qpos="0.3  -0.85 0 3.0 1 0 0 0  0.9128 0 0.16998 1 0 0 0" qvel="0  0 0 0 0 0 0  0 0 0 0 0 0"/>
+  </keyframe>
+</mujoco>
+```
+
+---
+thinking (summarized):
+
+I'm setting the rotation units to radians, using 0.3 as the keyframe value with a range of -0.3 to 0.3, skipping Euler angles since they're unnecessary here.
+

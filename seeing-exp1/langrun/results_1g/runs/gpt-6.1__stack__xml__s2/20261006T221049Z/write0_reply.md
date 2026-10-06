@@ -1,0 +1,71 @@
+A motor-driven pusher crosses a short gap, strikes the bottom block, and disrupts the initially stationary stack.
+
+```xml
+<mujoco model="five_block_topple">
+  <compiler angle="radian"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100"/>
+  <size njmax="1000" nconmax="200"/>
+
+  <visual>
+    <headlight ambient="0.4 0.4 0.4" diffuse="0.7 0.7 0.7" specular="0.2 0.2 0.2"/>
+  </visual>
+
+  <worldbody>
+    <light name="main_light" pos="-1 -2 3" dir="0.3 0.5 -1"/>
+    <camera name="overview" pos="1.8 -2.6 1.5" xyaxes="0.822 0.569 0 -0.215 0.311 0.926"/>
+
+    <geom name="floor" type="plane" pos="0 0 0" size="3 3 0.1" friction="0.65 0.01 0.001" condim="3" rgba="0.75 0.78 0.82 1"/>
+
+    <body name="block1" pos="0 0 0.06">
+      <freejoint name="block1_free"/>
+      <geom name="block1_box" type="box" size="0.06 0.06 0.06" mass="0.5" friction="0.65 0.01 0.001" condim="3" solref="0.01 1" rgba="0.85 0.25 0.18 1"/>
+    </body>
+
+    <body name="block2" pos="0 0 0.18">
+      <freejoint name="block2_free"/>
+      <geom name="block2_box" type="box" size="0.06 0.06 0.06" mass="0.5" friction="0.65 0.01 0.001" condim="3" solref="0.01 1" rgba="0.95 0.55 0.15 1"/>
+    </body>
+
+    <body name="block3" pos="0 0 0.30">
+      <freejoint name="block3_free"/>
+      <geom name="block3_box" type="box" size="0.06 0.06 0.06" mass="0.5" friction="0.65 0.01 0.001" condim="3" solref="0.01 1" rgba="0.90 0.78 0.20 1"/>
+    </body>
+
+    <body name="block4" pos="0 0 0.42">
+      <freejoint name="block4_free"/>
+      <geom name="block4_box" type="box" size="0.06 0.06 0.06" mass="0.5" friction="0.65 0.01 0.001" condim="3" solref="0.01 1" rgba="0.25 0.65 0.35 1"/>
+    </body>
+
+    <body name="block5" pos="0 0 0.54">
+      <freejoint name="block5_free"/>
+      <geom name="block5_box" type="box" size="0.06 0.06 0.06" mass="0.5" friction="0.65 0.01 0.001" condim="3" solref="0.01 1" rgba="0.20 0.45 0.85 1"/>
+    </body>
+
+    <body name="pusher" pos="-0.33 0 0.04">
+      <joint name="pusher_slide" type="slide" axis="1 0 0" limited="true" range="0 0.70" damping="0.5"/>
+      <geom name="pusher_box" type="box" size="0.045 0.09 0.035" mass="3" friction="0.65 0.01 0.001" condim="3" solref="0.01 1" rgba="0.25 0.28 0.32 1"/>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <motor name="push_motor" joint="pusher_slide" gear="1" ctrllimited="true" ctrlrange="0 25"/>
+  </actuator>
+
+  <keyframe>
+    <key name="start" qpos="0 0 0.06 1 0 0 0 0 0 0.18 1 0 0 0 0 0 0.30 1 0 0 0 0 0 0.42 1 0 0 0 0 0 0.54 1 0 0 0 0" ctrl="25"/>
+  </keyframe>
+</mujoco>
+```
+
+```expect
+pusher touches block1
+block5 touches floor
+pusher reaches its upper stop
+```
+
+---
+thinking (summarized):
+
+**Evaluating block interactions**
+
+I'm thinking through the setup with block4 on block3, and block5 on block4. If they’re arranged like a tall stack, it gets tricky! The simultaneous sides might be causing pressure. I’m wondering if just block1 is the only one touching the pusher while block5 is the one contacting the floor — that could be a risky position. It’s definitely an interesting configuration to analyze!
