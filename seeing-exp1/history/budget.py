@@ -13,7 +13,9 @@ LEDGERS = {"exp1e": ROOT / "history" / "results" / "spend.jsonl", "exp1f": ROOT 
            "exp1g": ROOT / "langrun" / "results_1g" / "spend.jsonl"}
 # 1g, the rerun with expectations checked: Jono chose "Rerun" on 2026-10-06, "about $15, bringing the total to about
 # $100". It stops here.
-CEILING_1G_USD = 18.0
+# Then Jono: "No need to stop at $18. Be thorough" (2026-10-06 21:59), so 1g grew to four seeds and a control
+# (estimated about $55 in all) and stops at $70.
+CEILING_1G_USD = 70.0
 
 
 def spent() -> dict:
@@ -27,7 +29,7 @@ def check() -> None:
         raise BudgetExceeded(f"spent ${total:.2f} across experiments 1 to 1f of the ${SPEND_CAP_USD:.0f} cap; "
                              "raising it needs a human first")
     if s["exp1g"] >= CEILING_1G_USD:
-        raise BudgetExceeded(f"1g has spent ${s['exp1g']:.2f}, past the ${CEILING_1G_USD:.0f} ceiling for Jono's ~$15; going on needs Jono")
+        raise BudgetExceeded(f"1g has spent ${s['exp1g']:.2f}, past the ${CEILING_1G_USD:.0f} ceiling; going on needs Jono")
     joint = s["exp1e"] + s["exp1f"]
     if joint >= JOINT_CEILING_USD:
         raise BudgetExceeded(f"1e and 1f have spent ${joint:.2f}, the ${JOINT_CEILING_USD:.0f} Jono approved; going on needs Jono")

@@ -1,0 +1,72 @@
+```xml
+<mujoco model="basketball_floor_launch">
+  <compiler angle="radian"/>
+  <option timestep="0.002"/>
+
+  <visual>
+    <global offwidth="1280" offheight="720"/>
+  </visual>
+
+  <worldbody>
+    <light name="court_light" pos="2 -3 7" dir="0 0.4 -1" diffuse="0.8 0.8 0.8"/>
+    <camera name="overview" pos="2 -9 4.4" xyaxes="1 0 0 0 0.33 0.944" fovy="50"/>
+
+    <geom name="floor" type="plane" pos="0 0 0" size="10 6 0.1" friction="0.7 0.005 0.001" rgba="0.65 0.52 0.35 1"/>
+
+    <!-- Size-7 basketball: 0.754 m circumference and 0.624 kg mass. -->
+    <body name="ball" pos="0 0 0.12">
+      <freejoint name="ball_free"/>
+      <geom name="ball" type="sphere" size="0.12" mass="0.624" friction="0.8 0.005 0.001" rgba="0.95 0.30 0.025 1"/>
+    </body>
+
+    <!-- Rim center is 4 m horizontally from launch and 3.05 m above the floor. -->
+    <!-- Capsules approximate a 0.4572 m clear-diameter rim with 20 mm steel tubing. -->
+    <body name="hoop" pos="4 0 3.05">
+      <geom name="rim_00" type="capsule" fromto="0.238600 0 0 0.234015 0.046549 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_01" type="capsule" fromto="0.234015 0.046549 0 0.220438 0.091308 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_02" type="capsule" fromto="0.220438 0.091308 0 0.198389 0.132559 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_03" type="capsule" fromto="0.198389 0.132559 0 0.168716 0.168716 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_04" type="capsule" fromto="0.168716 0.168716 0 0.132559 0.198389 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_05" type="capsule" fromto="0.132559 0.198389 0 0.091308 0.220438 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_06" type="capsule" fromto="0.091308 0.220438 0 0.046549 0.234015 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_07" type="capsule" fromto="0.046549 0.234015 0 0 0.238600 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_08" type="capsule" fromto="0 0.238600 0 -0.046549 0.234015 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_09" type="capsule" fromto="-0.046549 0.234015 0 -0.091308 0.220438 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_10" type="capsule" fromto="-0.091308 0.220438 0 -0.132559 0.198389 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_11" type="capsule" fromto="-0.132559 0.198389 0 -0.168716 0.168716 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_12" type="capsule" fromto="-0.168716 0.168716 0 -0.198389 0.132559 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_13" type="capsule" fromto="-0.198389 0.132559 0 -0.220438 0.091308 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_14" type="capsule" fromto="-0.220438 0.091308 0 -0.234015 0.046549 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_15" type="capsule" fromto="-0.234015 0.046549 0 -0.238600 0 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_16" type="capsule" fromto="-0.238600 0 0 -0.234015 -0.046549 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_17" type="capsule" fromto="-0.234015 -0.046549 0 -0.220438 -0.091308 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_18" type="capsule" fromto="-0.220438 -0.091308 0 -0.198389 -0.132559 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_19" type="capsule" fromto="-0.198389 -0.132559 0 -0.168716 -0.168716 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_20" type="capsule" fromto="-0.168716 -0.168716 0 -0.132559 -0.198389 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_21" type="capsule" fromto="-0.132559 -0.198389 0 -0.091308 -0.220438 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_22" type="capsule" fromto="-0.091308 -0.220438 0 -0.046549 -0.234015 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_23" type="capsule" fromto="-0.046549 -0.234015 0 0 -0.238600 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_24" type="capsule" fromto="0 -0.238600 0 0.046549 -0.234015 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_25" type="capsule" fromto="0.046549 -0.234015 0 0.091308 -0.220438 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_26" type="capsule" fromto="0.091308 -0.220438 0 0.132559 -0.198389 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_27" type="capsule" fromto="0.132559 -0.198389 0 0.168716 -0.168716 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_28" type="capsule" fromto="0.168716 -0.168716 0 0.198389 -0.132559 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_29" type="capsule" fromto="0.198389 -0.132559 0 0.220438 -0.091308 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_30" type="capsule" fromto="0.220438 -0.091308 0 0.234015 -0.046549 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+      <geom name="rim_31" type="capsule" fromto="0.234015 -0.046549 0 0.238600 0 0" size="0.01" rgba="0.9 0.12 0.025 1"/>
+
+      <geom name="backboard" type="box" pos="0.406 0 0.375" size="0.025 0.9 0.525" rgba="0.88 0.92 0.96 1"/>
+      <geom name="bracket" type="box" pos="0.315 0 0" size="0.076 0.04 0.012" rgba="0.9 0.12 0.025 1"/>
+    </body>
+  </worldbody>
+
+  <!-- Ballistic launch aimed through the rim on descent at approximately 1.4 s. -->
+  <keyframe>
+    <key name="start" qpos="0 0 0.12 1 0 0 0" qvel="2.857142857 0 8.959857143 0 0 0"/>
+  </keyframe>
+</mujoco>
+```
+
+```expect
+ball drops through hoop
+```

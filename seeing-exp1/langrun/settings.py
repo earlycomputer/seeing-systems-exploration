@@ -31,6 +31,12 @@ CHECKED_RESULTS_DIR = LANGRUN_DIR / "results_1g"
 CHECKED_RUNS_DIR = CHECKED_RESULTS_DIR / "runs"
 CHECKED_SPEND_LEDGER = CHECKED_RESULTS_DIR / "spend.jsonl"
 CHECKED_DRYRUN_DIR = ROOT / ".dryrun" / "langrun_1g"
+# 1g's control (`--control`): the fixed language and the history readback, with the same "at rest under 5 cm/s" line
+# but no expectations, so 1g against its control differs only in checking expectations. Jono asked for thoroughness
+# ("No need to stop at $18. Be thorough", 2026-10-06), so both run four seeds.
+CONTROL_RUNS_DIR = CHECKED_RESULTS_DIR / "control_runs"
+CONTROL_DRYRUN_DIR = ROOT / ".dryrun" / "langrun_1g_control"
+SEEDS_1G = (0, 1, 2, 3)
 PROMPTS = LANGRUN_DIR / "prompts"
 FIXTURES = LANGRUN_DIR / "fixtures"
 

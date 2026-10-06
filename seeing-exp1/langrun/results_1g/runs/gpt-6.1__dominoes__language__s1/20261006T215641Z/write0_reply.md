@@ -1,0 +1,35 @@
+```world
+world  ten falling dominoes
+
+floor
+  size      6 m
+  friction  0.9, spinning 0.005, rolling 0.001
+
+domino
+  is a             box 2 by 5 by 15 cm, 150 g
+  stands           on floor
+  moves            freely
+  friction         0.9, spinning 0.005, rolling 0.001
+  bounce           dead
+  colour           wood
+  repeated         10 times, 5 cm apart along
+  first one spins  4 rad/s about y
+
+expect
+  domino1 touches domino2
+  domino2 touches domino3
+  domino3 touches domino4
+  domino4 touches domino5
+  domino5 touches domino6
+  domino6 touches domino7
+  domino7 touches domino8
+  domino8 touches domino9
+  domino9 touches domino10
+```
+
+---
+thinking (summarized):
+
+**Clarifying rotation expectations**
+
+It seems like I’m figuring out that if a positive spin on the y-axis means the local z-axis rotates to the +x direction, then that makes sense. But I shouldn’t mention a specific angle like 15 degrees—there might be some confusion there. I should focus on ensuring expectations accurately reflect the situation without being too detailed. I’ll just provide the code needed without unnecessary information.

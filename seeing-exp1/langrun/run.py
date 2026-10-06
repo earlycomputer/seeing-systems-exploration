@@ -31,7 +31,8 @@ from typed.compiler import render
 from typed.lang import LIBRARY, compile_program, parse
 from worlds.tests import MissingName, run as run_world
 from langrun import expect, heldout, lint
-from langrun.settings import (ARMS, BRIEFS, CHECKED_DRYRUN_DIR, CHECKED_RUNS_DIR, CHECKED_SPEND_LEDGER, DRYRUN_DIR, FIXTURES,
+from langrun.settings import (ARMS, BRIEFS, CHECKED_DRYRUN_DIR, CHECKED_RUNS_DIR, CHECKED_SPEND_LEDGER, CONTROL_DRYRUN_DIR,
+                              CONTROL_RUNS_DIR, DRYRUN_DIR, FIXTURES,
                               LANGUAGE_NAMES, MAX_LOAD_RETRIES, MAX_ROUNDS, PROMPTS, RUNS_DIR, SIM_SECONDS, SPEND_LEDGER)
 
 SYSTEM = {"xml": "You build MuJoCo scenes that do what their briefs say, and you check them honestly.",
@@ -128,7 +129,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--effort", default="high")
     ap.add_argument("--checked", action="store_true", help="experiment 1g: expectations checked against each run")
+    ap.add_argument("--control", action="store_true", help="1g's control: the rest line, no expectations")
     args = ap.parse_args(argv)
+    if args.checked and args.control:
+        ap.error("--checked and --control are different conditions")
 
     spec = MODELS[args.model]
     dry = spec.provider == "dry"
@@ -136,17 +140,19 @@ def main(argv: list[str] | None = None) -> int:
     stamp = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
     if args.checked:
         out = (CHECKED_DRYRUN_DIR / "runs" if dry else CHECKED_RUNS_DIR) / wid / stamp
+    elif args.control:
+        out = (CONTROL_DRYRUN_DIR / "runs" if dry else CONTROL_RUNS_DIR) / wid / stamp
     else:
         out = (DRYRUN_DIR / "runs" if dry else RUNS_DIR) / wid / stamp
     out.mkdir(parents=True, exist_ok=True)
     B, arm = BRIEFS[args.brief], args.arm
     test = args.brief
     script = dry_script(args.model, args.brief, arm) if dry else None
-    exp = "1g" if args.checked else "1f"
+    exp = "1g" if args.checked else "1g-control" if args.control else "1f"
     chat = open_chat(args.model, SYSTEM[arm], args.effort, tag=f"{exp}/{wid}", script=script,
-                     ledger=CHECKED_SPEND_LEDGER if args.checked else SPEND_LEDGER)
+                     ledger=CHECKED_SPEND_LEDGER if args.checked or args.control else SPEND_LEDGER)
 
-    rec = {"world": wid, "run_dir": str(out.relative_to(ROOT)), "started_at": stamp, "experiment": exp, "checked": args.checked,
+    rec = {"world": wid, "run_dir": str(out.relative_to(ROOT)), "started_at": stamp, "experiment": exp, "checked": args.checked, "control": args.control,
            "model": args.model, "model_label": spec.label, "model_id": spec.model_id, "effort": args.effort,
            "brief": args.brief, "brief_text": B["brief"], "set": B["set"], "kind": B["kind"], "test": test, "arm": arm,
            "seed": args.seed, "dry_run": dry, "turns": [], "files": []}
@@ -180,6 +186,8 @@ def main(argv: list[str] | None = None) -> int:
                        guide=guide.strip(), example=(PROMPTS / "example.world").read_text().strip())
     if args.checked:
         first = first.rstrip() + "\n\n" + prompt(f"expect_{arm}")
+    elif args.control:
+        first = first.rstrip() + "\n\n" + prompt("rest")
     (out / "author_prompt.md").write_text(first)
     message, current = [text(first)], None
     for attempt in range(MAX_LOAD_RETRIES + 1):

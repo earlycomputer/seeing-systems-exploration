@@ -19,16 +19,18 @@ from config import SPEND_CAP_USD
 from loop.models import MODELS
 from history import budget
 from langrun import run as run_world
-from langrun.settings import (ARMS, BRIEFS, CHECKED_DRYRUN_DIR, CHECKED_RUNS_DIR, DRYRUN_DIR, MODELS as MATRIX_MODELS, RUNS_DIR,
+from langrun.settings import (ARMS, BRIEFS, CHECKED_DRYRUN_DIR, CHECKED_RUNS_DIR, CONTROL_DRYRUN_DIR, CONTROL_RUNS_DIR, DRYRUN_DIR, MODELS as MATRIX_MODELS, RUNS_DIR,
                               SEEDS)
 
 # Rough, for --plan only: 1d's cost per new world, raised for the language's longer prompt.
 EST_USD = {("opus-5.5", "xml"): 0.30, ("opus-5.5", "language"): 0.45, ("gpt-6.1", "xml"): 0.08, ("gpt-6.1", "language"): 0.12}
 
 
-def done(model: str, w: tuple, checked: bool = False) -> bool:
+def done(model: str, w: tuple, checked: bool = False, control: bool = False) -> bool:
     dry = MODELS[model].provider == "dry"
-    if checked:
+    if control:
+        root = CONTROL_DRYRUN_DIR / "runs" if dry else CONTROL_RUNS_DIR
+    elif checked:
         root = CHECKED_DRYRUN_DIR / "runs" if dry else CHECKED_RUNS_DIR
     else:
         root = DRYRUN_DIR / "runs" if dry else RUNS_DIR
@@ -46,10 +48,11 @@ def main() -> int:
     ap.add_argument("--rerun", action="store_true")
     ap.add_argument("--plan", action="store_true")
     ap.add_argument("--checked", action="store_true", help="experiment 1g: expectations checked against each run")
+    ap.add_argument("--control", action="store_true", help="1g's control: the rest line, no expectations")
     args = ap.parse_args()
 
     todo = [(m, (b, a, s)) for m in args.models for s in args.seeds for b in args.briefs for a in args.arms
-            if args.rerun or not done(m, (b, a, s), args.checked)]
+            if args.rerun or not done(m, (b, a, s), args.checked, args.control)]
     est = sum(EST_USD.get((m, w[1]), 0.0) for m, w in todo)
     s = budget.spent()
     print(f"{len(todo)} worlds to run; rough cost ${est:.2f}; spent so far: " +
@@ -62,7 +65,7 @@ def main() -> int:
     def one(m, w):
         b, a, sd = w
         return run_world.main(["--model", m, "--brief", b, "--arm", a, "--seed", str(sd), "--effort", args.effort]
-                              + (["--checked"] if args.checked else []))
+                              + (["--checked"] if args.checked else []) + (["--control"] if args.control else []))
 
     failures = []
     with ThreadPoolExecutor(max_workers=args.jobs) as pool:
@@ -75,8 +78,8 @@ def main() -> int:
             except BaseException as e:  # keep going; a failed call is reported, not fatal
                 failures.append((m, w, repr(e)))
                 print(f"FAILED {run_world.world_id(m, *w)}: {e!r}", file=sys.stderr)
-    print(f"done: {len(todo) - len(failures)} ok, {len(failures)} failed; {'1g' if args.checked else '1f'} spent "
-          f"${budget.spent()['exp1g' if args.checked else 'exp1f']:.2f}")
+    print(f"done: {len(todo) - len(failures)} ok, {len(failures)} failed; {'1g' if args.checked or args.control else '1f'} spent "
+          f"${budget.spent()['exp1g' if args.checked or args.control else 'exp1f']:.2f}")
     return 1 if failures else 0
 
 

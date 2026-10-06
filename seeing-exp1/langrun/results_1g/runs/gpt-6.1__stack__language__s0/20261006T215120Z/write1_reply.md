@@ -1,0 +1,29 @@
+```world
+world  push the bottom block
+
+floor
+  size      6 m
+  friction  0.05, spinning 0.005, rolling 0.002
+
+block
+  is a      box 12 by 24 by 22 cm, 500 g
+  moves     freely
+  stacked   5 high
+  friction  0.8, spinning 0.005, rolling 0.002
+  bounce    dead
+  colour    wood
+  stands    on floor
+
+pusher
+  is a      box 20 by 30 by 12 cm, 8 kg
+  moves     freely
+  friction  0.05, spinning 0.005, rolling 0.002
+  bounce    dead
+  colour    orange
+  sits      on floor, 1 m behind block
+  launched  1.5 m/s along
+
+expect
+  pusher touches block1
+  block5 touches floor
+```
