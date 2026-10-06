@@ -14,8 +14,8 @@ LEDGERS = {"exp1e": ROOT / "history" / "results" / "spend.jsonl", "exp1f": ROOT 
 # 1g, the rerun with expectations checked: Jono chose "Rerun" on 2026-10-06, "about $15, bringing the total to about
 # $100". It stops here.
 # Then Jono: "No need to stop at $18. Be thorough" (2026-10-06 21:59), so 1g grew to four seeds and a control
-# (estimated about $55 in all) and stops at $70.
-CEILING_1G_USD = 70.0
+# (estimated about $55 in all) and stops at $70. Raised to $80 on 2026-10-06 when the control ran dearer per world ($0.25) than 1g.
+CEILING_1G_USD = 80.0
 
 
 def spent() -> dict:

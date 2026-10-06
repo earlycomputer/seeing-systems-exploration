@@ -1,0 +1,52 @@
+```xml
+<mujoco model="self_closing_door">
+  <compiler angle="radian"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast"/>
+  <visual>
+    <headlight ambient="0.4 0.4 0.4" diffuse="0.7 0.7 0.7"/>
+  </visual>
+
+  <worldbody>
+    <light name="overhead" pos="1 -2 4" dir="-0.2 0.4 -1"/>
+    <camera name="overview" pos="3 -4 2.8" xyaxes="0.8 0.6 0 -0.2 0.267 0.943"/>
+
+    <geom name="floor" type="plane" pos="0 0 0" size="4 4 0.1" rgba="0.65 0.67 0.69 1"/>
+    <geom name="hinge_jamb" type="box" pos="-0.10 0 1.05" size="0.05 0.09 1.05" rgba="0.32 0.34 0.37 1"/>
+    <geom name="latch_jamb" type="box" pos="1.00 0 1.05" size="0.05 0.09 1.05" rgba="0.32 0.34 0.37 1"/>
+    <geom name="header" type="box" pos="0.45 0 2.16" size="0.60 0.09 0.06" rgba="0.32 0.34 0.37 1"/>
+
+    <!-- The stop touches the rear face of the door at hinge angle zero. -->
+    <geom name="closed_stop" type="box" pos="0.855 -0.055 1.05" size="0.095 0.020 0.95" friction="0.6 0.01 0.001" solref="0.006 1" solimp="0.99 0.99 0.001" rgba="0.24 0.26 0.29 1"/>
+
+    <geom name="lower_hinge_barrel" type="cylinder" pos="0 0 0.35" size="0.022 0.10" contype="0" conaffinity="0" rgba="0.65 0.67 0.70 1"/>
+    <geom name="upper_hinge_barrel" type="cylinder" pos="0 0 1.75" size="0.022 0.10" contype="0" conaffinity="0" rgba="0.65 0.67 0.70 1"/>
+
+    <body name="door" pos="0 0 1.05">
+      <!-- A slightly preloaded, damped spring closes the door and holds it against the stop. -->
+      <joint name="hinge" type="hinge" pos="0 0 0" axis="0 0 1" limited="true" range="0 1.745329252" stiffness="35" springref="-0.052359878" damping="18" solreflimit="0.006 1" solimplimit="0.99 0.99 0.001"/>
+      <geom name="door_panel" type="box" pos="0.45 0 0" size="0.45 0.035 1.0" mass="20" friction="0.6 0.01 0.001" solref="0.006 1" solimp="0.99 0.99 0.001" rgba="0.52 0.29 0.13 1"/>
+      <geom name="handle_mount" type="capsule" fromto="0.78 0.035 0 0.78 0.075 0" size="0.018" mass="0.05" contype="0" conaffinity="0" rgba="0.75 0.77 0.80 1"/>
+      <geom name="handle" type="capsule" fromto="0.66 0.075 0 0.80 0.075 0" size="0.015" mass="0.10" contype="0" conaffinity="0" rgba="0.75 0.77 0.80 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start" qpos="1.396263402" qvel="0"/>
+  </keyframe>
+</mujoco>
+```
+
+---
+thinking (summarized):
+
+**Designing autonomous door mechanics**
+
+I need to create a design for MJCF door swings that can shut and stay closed autonomously, without using any tools. I'm considering a spring-damped hinge, starting at 80 degrees with its equilibrium joint set to zero. I’m figuring out the spring stiffness and damping values, while ensuring the door's movement is precise. After testing, I want to achieve critical damping, so it closes softly without oscillation while ensuring it doesn't hit the frame until a minimal speed.
+
+**Optimizing door function**
+
+I need the door swings to operate visibly, avoiding sluggish movement. With underdamping set at 40 and some adjustments to the spring tension, I want to ensure the door stops without impact-related noise while remaining close to rest. Adding a hinge range of 0 to 110 degrees, I need a slight negative preload on the spring to ensure it latches correctly. The motor might require careful torque control to avoid drifting at the joint limit, aiming for a softly settling door without the need for a physical latch.
+
+**Verifying reference rotation**
+
+I need to confirm if the MuJoCo spring reference rotation uses degrees for angles as the default setting in the compiler. It’s important that I clarify this detail, as the angle measurements can have significant effects on simulations or models. I'll check the documentation or any relevant resources to ensure I'm accurate in my understanding. Getting this right will help avoid potential issues down the line!

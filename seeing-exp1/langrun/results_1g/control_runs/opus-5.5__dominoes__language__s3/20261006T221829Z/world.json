@@ -1,0 +1,145 @@
+{
+  "world": "opus-5.5__dominoes__language__s3",
+  "run_dir": "langrun/results_1g/control_runs/opus-5.5__dominoes__language__s3/20261006T221829Z",
+  "started_at": "20261006T221829Z",
+  "experiment": "1g-control",
+  "checked": false,
+  "control": true,
+  "model": "opus-5.5",
+  "model_label": "Opus 5.5",
+  "model_id": "claude-opus-5-5",
+  "effort": "high",
+  "brief": "dominoes",
+  "brief_text": "ten dominoes stand in a row; the first is tipped over and knocks down the rest, and every domino ends tilted at least 15 degrees from upright",
+  "set": "1d",
+  "kind": "primitives",
+  "test": "dominoes",
+  "arm": "language",
+  "seed": 3,
+  "dry_run": false,
+  "turns": [
+    {
+      "turn": "write0",
+      "usage": {
+        "text": "Ten 1 by 5 by 10 cm dominoes stand 5 cm apart. The first gets a 12 rad/s forward spin about y.\n\n**Why that spin should tip it.** When it pivots on its front bottom edge, it keeps about a quarter of that spin, roughly 3 rad/s. About 1.2 rad/s is needed to lift its centre over the edge, so there is a good margin. I worked this out by hand and haven't run it.\n\n**Why each should end tilted at least 15\u00b0.** Each domino has a 4 cm gap to the next, so it falls and leans on its neighbour at no less than about 24\u00b0. The last one falls onto the floor. I expect the leaners to settle lower than 24\u00b0, since the dominoes they rest on are also tilted.\n\n```world\nworld  ten dominoes\n\nfloor\n  size      4 m\n  friction  0.6, spinning 0.005, rolling 0.002\n\ndomino\n  is a              box 1 by 5 by 10 cm, 20 g\n  colour            wood\n  friction          0.5, spinning 0.005, rolling 0.002\n  moves             freely\n  repeated          10 times, 5 cm apart along\n  first one spins   12 rad/s about y\n  stands            on floor, 50 cm along\n\nexpect\n  domino1 touches domino2\n  domino9 touches domino10\n```",
+        "thinking": "I'm sketching domino dimensions\u2014thin rectangular blocks spaced about half their height apart so they topple in sequence\u2014and figuring out how to give the first domino an initial spin to kick off the chain reaction.\n\nWorking through the torque directions, I realize the forward friction force at the bottom actually creates a torque opposing the spin, not reinforcing it. Tracing through the geometry more carefully, as the domino tips forward the far bottom edge digs into the floor while the near edge lifts, so the normal force there also works against the spin\u2014meaning I need to rethink whether pure spin alone is enough to tip it, or whether the pivot naturally shifts to that far edge and changes the dynamics.\n\nSolving this gives w' \u2265 1.35, so w \u2265 5.4 rad/s minimum \u2014 I'll use something like 10-12 rad/s for a safe margin, even though friction could complicate the real behavior. Now I'm reconsidering with more realistic domino dimensions (closer to actual 48x24x7.5mm proportions, maybe 1cm thick, 5cm wide, 10cm tall) to check if the stability math still holds with reasonable spacing.\n\nNow I'm working out the collapse geometry for the full chain: since each domino leans against the next rather than falling flat, I need to figure out the resting angle based on the gap between dominoes relative to their height, which seems to work out to something like 23.6\u00b0 for a 4cm effective gap, though the chain compresses further as the last domino hits the floor directly.\n\nFor the physical setup I'm setting friction coefficients around 0.5-0.6 for wood dominoes, mass 20g each, spaced 5cm apart along a 0.5m floor segment with floor friction 0.6. I'm also deciding whether to include an explicit touch condition like \"domino9 touches domino10\" as a simple expectation check, since that seems sufficient rather than verifying every contact in the chain.\n\n",
+        "input_tokens": 5284,
+        "output_tokens": 2260,
+        "cost_usd": 0.066336,
+        "stop_reason": "end_turn",
+        "served_model": "claude-opus-5-5",
+        "seconds": 25.06
+      },
+      "problem": null
+    },
+    {
+      "turn": "round1",
+      "verdict": {
+        "what_happens": "domino1 is spun forward, tips and strikes domino2 at 0.11 s; each domino knocks the next in order until domino9 hits domino10 at 0.60 s. All come to rest by 0.82 s: dominoes 1-9 lie in an overlapping stack at 79-80\u00b0 from upright, and domino10 lies flat at 90\u00b0.",
+        "works": true,
+        "problem": "",
+        "works_bool": true
+      },
+      "usage": {
+        "text": "The world does what the brief says. domino1 starts tipping straight away and hits domino2 at 0.11 s. Each domino then strikes the next in order, roughly every 0.05 to 0.1 s, until domino9 hits domino10 at 0.60 s. Everything is still by 0.82 s. At the end, dominoes 1 to 9 lie in an overlapping stack at 79\u201380\u00b0 from upright, each resting on its neighbour and the floor, and domino10 lies flat at 90\u00b0. Every domino is well past the 15\u00b0 the brief asks for.\n\nThis is much flatter than the 24\u00b0 or more I predicted, because the dominoes settled much lower onto each other than I estimated. It doesn't change the result.\n\n```json\n{\"what_happens\": \"domino1 is spun forward, tips and strikes domino2 at 0.11 s; each domino knocks the next in order until domino9 hits domino10 at 0.60 s. All come to rest by 0.82 s: dominoes 1-9 lie in an overlapping stack at 79-80\u00b0 from upright, and domino10 lies flat at 90\u00b0.\", \"works\": true, \"problem\": \"\"}\n```",
+        "thinking": "All the dominoes fell, each rotating at least 79\u00b0 in order through the chain, confirming it works. I'll note my earlier estimate of around 24\u00b0 tilt was off\u2014they actually slid flatter and ended up near 79\u00b0, which is fine.\n\n",
+        "input_tokens": 13489,
+        "output_tokens": 431,
+        "cost_usd": 0.062576,
+        "stop_reason": "end_turn",
+        "served_model": "claude-opus-5-5",
+        "seconds": 6.18
+      },
+      "current_passed": true,
+      "sent_file": false
+    }
+  ],
+  "files": [
+    {
+      "passed": true,
+      "checks": {
+        "ten dominoes on the floor at the start, the other nine upright": true,
+        "only the first domino is set moving": true,
+        "they fall in order, each after the one before": true,
+        "every domino ends tilted at least 15 degrees": true
+      },
+      "values": {
+        "tilt_start_deg": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "tilt_end_deg": [
+          79.7,
+          78.7,
+          78.7,
+          78.7,
+          78.7,
+          78.7,
+          78.8,
+          79.1,
+          80.2,
+          90.0
+        ],
+        "first_moves_s": [
+          0.006,
+          0.124,
+          0.222,
+          0.296,
+          0.358,
+          0.412,
+          0.464,
+          0.514,
+          0.56,
+          0.608
+        ]
+      },
+      "loaded": true,
+      "problem": null,
+      "diverged": null,
+      "load_log": [
+        "reset to keyframe 'start'"
+      ],
+      "expect": [
+        "domino1 touches domino2",
+        "domino9 touches domino10"
+      ],
+      "label": "written0",
+      "turn": "write0"
+    }
+  ],
+  "load_attempts": 1,
+  "loads": true,
+  "passes_first": true,
+  "rounds": 1,
+  "passes_final": true,
+  "passed_at_round": 0,
+  "claims_works": true,
+  "claim_correct": true,
+  "final_checks": {
+    "ten dominoes on the floor at the start, the other nine upright": true,
+    "only the first domino is set moving": true,
+    "they fall in order, each after the one before": true,
+    "every domino ends tilted at least 15 degrees": true
+  },
+  "final_problem": null,
+  "problems_seen": 0,
+  "seconds": 33.3,
+  "tokens": {
+    "input": 18773,
+    "output": 2691,
+    "total": 21464
+  },
+  "cost_usd": 0.128912,
+  "served_models": [
+    "claude-opus-5-5"
+  ],
+  "finished_at": "20261006T221902Z"
+}

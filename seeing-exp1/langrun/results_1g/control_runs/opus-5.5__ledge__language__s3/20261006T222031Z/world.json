@@ -1,0 +1,121 @@
+{
+  "world": "opus-5.5__ledge__language__s3",
+  "run_dir": "langrun/results_1g/control_runs/opus-5.5__ledge__language__s3/20261006T222031Z",
+  "started_at": "20261006T222031Z",
+  "experiment": "1g-control",
+  "checked": false,
+  "control": true,
+  "model": "opus-5.5",
+  "model_label": "Opus 5.5",
+  "model_id": "claude-opus-5-5",
+  "effort": "high",
+  "brief": "ledge",
+  "brief_text": "a ball rolls along a table, off its edge, and lands in a bucket on the floor whose centre is 60 cm beyond the table's edge",
+  "set": "held-out",
+  "kind": "primitives",
+  "test": "ledge",
+  "arm": "language",
+  "seed": 3,
+  "dry_run": false,
+  "turns": [
+    {
+      "turn": "write0",
+      "usage": {
+        "text": "The ball starts 30 cm from the table's edge already rolling at 1.56 m/s, so it leaves the edge at full speed. It falls 73 cm in about 0.39 s and lands about 60 cm past the edge, at the bucket's centre. On the way down it passes the bucket's near wall with roughly 13 cm to spare.\n\n```world\nworld  ball off the table into a bucket\n\nfloor\n  size      6 m\n  friction  0.8, spinning 0.005, rolling 0.002\n\n-- a solid table block, 1 m long and 75 cm high; its far edge is 50 cm along\ntable\n  is a      box 100 by 60 by 75 cm\n  friction  0.8, spinning 0.001, rolling 0.0002\n  colour    wood\n  stands    on floor, 0 cm along\n\n-- the bucket's centre is 110 cm beyond the table's centre, so 60 cm beyond its edge\nbucket\n  is an     open box\n  length    40 cm\n  width     40 cm\n  walls     30 cm\n  friction  0.8, spinning 0.01, rolling 0.01\n  bounce    dead\n  colour    grey\n  on floor, 110 cm beyond table\n\n-- the ball starts 30 cm before the edge, already rolling forward (spin = speed / radius)\nball\n  is a      sphere 3 cm radius, 100 g\n  rolls\n  bounce    dead\n  friction  0.8, spinning 0.001, rolling 0.0002\n  colour    orange\n  moves     freely\n  rests     on table, 20 cm along\n  launched  1.56 m/s along\n  spins     52 rad/s about y\n\nexpect\n  ball touches table\n  ball comes to rest in bucket\n```\n\nThese figures are worked out by hand and have not been run yet:\n\n- **Flight:** the ball loses only about 0.01 m/s rolling on the low-friction table. It is fast enough that it leaves the edge rather than tipping over it.\n- **Landing:** inside the bucket, the higher rolling friction (0.01) and dead bounce should stop the ball well within the 6 s run.\n- **Table:** I built it as a solid block rather than the library's legged `table` part, because I wasn't sure how that part's top is positioned. The bucket is placed relative to the table's centre, so its position holds wherever the table ends up along x.",
+        "thinking": "I'm working out the table dimensions syntax, figuring out how the \"120 by 60 cm\" surface size combines with a thickness value, similar to how the catapult's box dimensions were specified with height offsets.\n\nGiven the uncertainty around how part positions and \"beyond\" offsets work, I decide it's safer to build the table as a simple fixed box rather than a multi-part table-with-legs construct. For the bucket, I'm reasoning through using an open box placed relative to the table's far edge using a centre-offset \"beyond\" clause, computing where its centre should land based on the table's box position.\n\nNow I'm working through the actual physics: with the table at 0.75 m height, ball radius 3 cm, the bucket's wall height and base thickness, and computing the inner opening of the bucket from its 40 cm length and 2 cm wall thickness, so the ball launched off the table edge has room to clear the near wall and land inside.\n\nCalculating the drop: ball falls from 0.78 m to around 0.05 m near the bucket floor, giving fall time ~0.386 s, needing horizontal velocity ~1.55 m/s to cover 0.6 m. Checking the near wall clearance at 0.44 m horizontal distance, the ball's center is still well above the 0.25 m wall top, confirming it clears safely before landing inside the bucket.\n\nI'll bump the wall height to 30 cm for safety margin since it still clears the ball comfortably. For the ball's initial motion, I'm setting it rolling at 1.55 m/s with matching angular velocity, and to minimize friction-induced slowdown before it reaches the bucket, I'll start it closer to the table edge, around 30 cm away.\n\nOver that short distance the rolling friction loss is manageable if I set a low friction coefficient on the ball itself, though I need to balance this against ensuring the ball eventually settles inside the bucket rather than coasting too long \u2014 so I'm considering giving the bucket's floor a higher friction value to help it come to rest once inside.\n\nWith the bounce effectively dead on impact (no restitution), the ball's downward velocity gets absorbed, and its horizontal momentum combined with matching spin lets it transition into pure rolling almost immediately. It then rolls the short remaining distance to the far wall, where another dead-ish contact absorbs the impact rather than bouncing it back, after which it should settle into rolling or resting within the bucket.\n\nI'm working out the positional offsets for table, ball, and bucket, settling on absolute \"along\" values and skipping ambiguous \"to the left\" clauses. For the bucket, I'm treating it as an open box needing length, width, and wall pieces, positioned on the floor beyond the table, with the ball launched at 1.56 m/s.\n\nChecking the rolling condition, I confirm \u03c9=v/r gives +52 rad/s about y for rolling in +x, verified by computing the contact point velocity using the cross product. I expect the ball to land in the bucket and come to rest there, with mass set to 100 g and colors still to assign.\n\n",
+        "input_tokens": 5245,
+        "output_tokens": 3619,
+        "cost_usd": 0.09336,
+        "stop_reason": "end_turn",
+        "served_model": "claude-opus-5-5",
+        "seconds": 40.31
+      },
+      "problem": null
+    },
+    {
+      "turn": "round1",
+      "verdict": {
+        "what_happens": "The ball rolls 30 cm along the table at about 1.56 m/s and leaves the edge at 0.19 s. It flies over the bucket's near wall and lands on the bucket base at 0.58 s around x \u2248 1.10 m, 60 cm beyond the table edge. It hops slightly, rolls into the far wall and comes to rest inside the bucket at (1.26, 0, 0.05) m by 0.86 s, staying there to 6 s.",
+        "works": true,
+        "problem": "",
+        "works_bool": true
+      },
+      "usage": {
+        "text": "**What happens in the run:** The ball starts on the table at x = 0.20 m and rolls forward at 1.56 m/s. It leaves the table edge at 0.19 s. It falls in an arc, keeping about 1.55 m/s horizontally, and clears the bucket's near wall with room to spare. It first touches the bucket's base at 0.58 s, near x \u2248 1.10 m, which is 60 cm beyond the table's edge. After a couple of small hops on the base, it rolls into the far wall at 0.83 s. It comes to rest inside the bucket at (1.26, 0, 0.05) m by 0.86 s and stays there to the end of the 6 s run. The brief is met, so no corrected world is needed.\n\n```json\n{\"what_happens\": \"The ball rolls 30 cm along the table at about 1.56 m/s and leaves the edge at 0.19 s. It flies over the bucket's near wall and lands on the bucket base at 0.58 s around x \u2248 1.10 m, 60 cm beyond the table edge. It hops slightly, rolls into the far wall and comes to rest inside the bucket at (1.26, 0, 0.05) m by 0.86 s, staying there to 6 s.\", \"works\": true, \"problem\": \"\"}\n```",
+        "thinking": "The ball leaves the table at 0.19s near x\u22480.5, landing at 0.58s at roughly x\u22481.10, right at the bucket's center. After a few small bounces it settles against the far inner wall around x\u22481.26, accounting for the ball's radius\u2014confirming the trajectory works correctly.\n\n",
+        "input_tokens": 9804,
+        "output_tokens": 573,
+        "cost_usd": 0.050676,
+        "stop_reason": "end_turn",
+        "served_model": "claude-opus-5-5",
+        "seconds": 7.44
+      },
+      "current_passed": true,
+      "sent_file": false
+    }
+  ],
+  "files": [
+    {
+      "passed": true,
+      "checks": {
+        "ball starts on the table": true,
+        "bucket's centre 60 cm beyond the table's edge (50 to 70 cm)": true,
+        "bucket stands on the floor": true,
+        "ball leaves the table and comes down": true,
+        "ball at rest at the end": true,
+        "ball ends in the bucket": true
+      },
+      "values": {
+        "beyond_edge_m": 0.6,
+        "table_top_z": 0.75,
+        "ball_end": [
+          1.259,
+          -0.0,
+          0.05
+        ],
+        "end_speed": 0.0
+      },
+      "loaded": true,
+      "problem": null,
+      "diverged": null,
+      "load_log": [
+        "reset to keyframe 'start'"
+      ],
+      "expect": [
+        "ball touches table",
+        "ball comes to rest in bucket"
+      ],
+      "label": "written0",
+      "turn": "write0"
+    }
+  ],
+  "load_attempts": 1,
+  "loads": true,
+  "passes_first": true,
+  "rounds": 1,
+  "passes_final": true,
+  "passed_at_round": 0,
+  "claims_works": true,
+  "claim_correct": true,
+  "final_checks": {
+    "ball starts on the table": true,
+    "bucket's centre 60 cm beyond the table's edge (50 to 70 cm)": true,
+    "bucket stands on the floor": true,
+    "ball leaves the table and comes down": true,
+    "ball at rest at the end": true,
+    "ball ends in the bucket": true
+  },
+  "final_problem": null,
+  "problems_seen": 0,
+  "seconds": 48.1,
+  "tokens": {
+    "input": 15049,
+    "output": 4192,
+    "total": 19241
+  },
+  "cost_usd": 0.144036,
+  "served_models": [
+    "claude-opus-5-5"
+  ],
+  "finished_at": "20261006T222120Z"
+}

@@ -1,0 +1,115 @@
+{
+  "world": "opus-5.5__shot__language__s3",
+  "run_dir": "langrun/results_1g/control_runs/opus-5.5__shot__language__s3/20261006T221600Z",
+  "started_at": "20261006T221600Z",
+  "experiment": "1g-control",
+  "checked": false,
+  "control": true,
+  "model": "opus-5.5",
+  "model_label": "Opus 5.5",
+  "model_id": "claude-opus-5-5",
+  "effort": "high",
+  "brief": "shot",
+  "brief_text": "a regulation basketball is launched from the floor and drops through a hoop at 3.05 m, 4 m away",
+  "set": "1d",
+  "kind": "library",
+  "test": "shot",
+  "arm": "language",
+  "seed": 3,
+  "dry_run": false,
+  "turns": [
+    {
+      "turn": "write0",
+      "usage": {
+        "text": "The ball is a regulation size 7 basketball (23.9 cm across, 620 g). It is set on the floor with the hoop's rim centred 4 m ahead at 3.05 m. I solved the launch so the ball's centre passes the rim centre while coming down at about 50\u00b0: 3.19 m/s along and 8.49 m/s up. It reaches the rim about 1.25 s after launch, at the top of an arc about 3.8 m high. The ball's centre clears both the near and far edges of the rim by about 17.5 cm, against the 12.3 cm needed for the ball and the rim tube. After passing through, it drops under the bracket and backboard.\n\n```world\nworld  basketball shot from the floor\n\nfloor\n  size      12 m\n  friction  0.8, spinning 0.005, rolling 0.002\n\nball\n  is a      sphere 23.9 cm across, 620 g\n  rolls\n  is        hollow, lively\n  friction  0.8, spinning 0.01, rolling 0.004\n  colour    orange\n  moves     freely\n  rests     on floor\n  launched  3.19 m/s along, 8.49 m/s up\n\nhoop\n  is a        hoop\n  rim height  3.05 m\n  its rim 4 m beyond ball\n\nexpect\n  ball drops through hoop\n```",
+        "thinking": "I'm working out the physical setup: a regulation size-7 basketball (about 11.9 cm radius, 620 g) starting at floor level, needing to travel 4 m horizontally and rise to a rim height of 3.05 m, factoring in the rim's 45.72 cm diameter for clearance.\n\nI want the trajectory to drop steeply through the hoop, so the ball's center needs to climb roughly 2.93 m from its resting position to the rim's center height before descending into it.\n\nChecking clearance, the rim's inner opening is only about 0.46 m wide while the ball is 0.24 m across, so a shallow entry angle would clip the rim\u2014I calculate I need at least a 31\u00b0 descent angle, and I'm targeting something steeper like 50\u00b0 for a clean swish. Working through the kinematics with horizontal distance of 4 m and vertical rise of 2.93 m, I'm solving for the flight time and launch velocity that satisfy both the entry angle requirement and the position constraints.\n\nSolving numerically, I get a flight time around 1.25 seconds, with horizontal velocity about 3.19 m/s and vertical velocity about 8.49 m/s, putting the peak trajectory height at roughly 3.79 m. Now I'm double-checking the shot doesn't clip the backboard, which sits mounted behind the rim\u2014working out exactly where the ball's horizontal position falls relative to the backboard's near and far edges at the moment it passes through the rim center.\n\nTracking the ball a bit further, I'm computing where it crosses the backboard's vertical plane and how much it has dropped by then, then comparing the ball's top edge to the backboard's bottom edge height to see whether it actually clears underneath.\n\nI'm checking clearance against the far rim as the ball descends through the hoop \u2014 using the trajectory angle to find perpendicular distance from the rim tube's edge, confirming it's safely larger than the ball radius plus tube radius at both the near and far side.\n\nThen I'm checking the bracket mounted past the rim: computing the ball's drop in height as it travels that extra 12-24 cm horizontally, and comparing the ball's top edge to the bracket's bottom surface to see if there's enough clearance underneath it.\n\nAfter the ball lands and rolls toward the pole base, it doesn't really matter for this check. I'm also reconsidering whether the ring measurement is outer vs center diameter, and whether the 16-segment discretization changes the effective interior radius slightly, but these are minor factors. The 5cm margin at 50\u00b0 entry angle seems adequate, though I could bump it to 52\u00b0 for extra safety.\n\nI'm also checking whether MuJoCo's contact solver might introduce a tiny impulse at the start since the ball begins exactly touching the floor with upward velocity \u2014 likely negligible, but I should use the correct radius value, around 11.95 cm for a basketball with 23.9 cm diameter.\n\nRecomputing the trajectory more precisely: with vx around 3.19 m/s and vz around 8.49 m/s, the ball reaches z \u2248 3.05 m at x = 4 m, which checks out consistently across both calculation passes.\n\nI should verify the ball doesn't clip the rim near its peak \u2014 the peak occurs around x=2.76 m, well before the hoop, so it's already descending when it reaches the rim area at x\u22483.77-4 m. I also need to confirm clearance under the backboard: tracking forward to x\u22484.262 m, the center height drops to about 2.705 m while the backboard bottom sits near 2.90 m, so the ball's top edge at 2.825 m stays under it \u2014 looks like it clears.\n\nI also check the distance from the backboard corner at (4.381, 2.90) to the ball center, finding it exceeds the ball's radius, confirming the ball passes underneath cleanly. There's also a support pole at x 5.1\u20135.3 which the ball will eventually strike and bounce off during the 6-second simulation. I should make sure the hoop object is properly named with its rim component, give the ball proper physical properties (hollow, orange, lively bounce, rolling), and then write out the full world definition.\n\n",
+        "input_tokens": 5257,
+        "output_tokens": 3789,
+        "cost_usd": 0.096808,
+        "stop_reason": "end_turn",
+        "served_model": "claude-opus-5-5",
+        "seconds": 39.94
+      },
+      "problem": null
+    },
+    {
+      "turn": "round1",
+      "verdict": {
+        "what_happens": "The basketball is launched from the floor at 3.19 m/s along and 8.49 m/s up, peaks at 3.78 m, and at 1.25 s passes through the rim's centre (about x 3.98, z 3.06) while descending at about 50\u00b0, touching neither rim, bracket nor backboard. It then hits the hoop's pole and pole base, bounces on the floor, and rolls back past its start, still moving at 1.38 m/s at 6 s.",
+        "works": true,
+        "problem": "",
+        "works_bool": true
+      },
+      "usage": {
+        "text": "**What happens:** The ball leaves the floor at 3.19 m/s along and 8.49 m/s up. It peaks at 3.78 m at 0.87 s. At 1.25 s it is at (3.98, 0, 3.06), going down at about 50\u00b0. That is essentially the rim's centre, which sits 4 m ahead at 3.05 m. It touches neither the rim, the bracket nor the backboard on the way through.\n\nIt then falls under the backboard and strikes the hoop's pole at 1.56 s, which agrees with the pole face being about 1.1 m past the rim. It glances off the pole base, bounces on the floor and rolls back past its launch point. It is still rolling at 1.38 m/s at 6 s, but the brief doesn't ask for it to stop.\n\n```json\n{\"what_happens\": \"The basketball is launched from the floor at 3.19 m/s along and 8.49 m/s up, peaks at 3.78 m, and at 1.25 s passes through the rim's centre (about x 3.98, z 3.06) while descending at about 50\u00b0, touching neither rim, bracket nor backboard. It then hits the hoop's pole and pole base, bounces on the floor, and rolls back past its start, still moving at 1.38 m/s at 6 s.\", \"works\": true, \"problem\": \"\"}\n```",
+        "thinking": "At 1.25s the ball is descending right through the rim center at x=4, z=3.05, passing cleanly without touching the rim, then going under the backboard, hitting the pole, and rolling back\u2014so it does go through the hoop successfully, still in motion but that's fine. I should double check the rim position is actually at x=4 since the setup just says the hoop's rim is 4 m beyond the ball.\n\n",
+        "input_tokens": 11360,
+        "output_tokens": 662,
+        "cost_usd": 0.05868,
+        "stop_reason": "end_turn",
+        "served_model": "claude-opus-5-5",
+        "seconds": 7.86
+      },
+      "current_passed": true,
+      "sent_file": false
+    }
+  ],
+  "files": [
+    {
+      "passed": true,
+      "checks": {
+        "rim at 3.05 m (within 5%)": true,
+        "hoop 4 m away (within 5%)": true,
+        "regulation ball (radius 0.12 m within 5%)": true,
+        "launched from the floor": true,
+        "drops through the hoop": true
+      },
+      "values": {
+        "rim_z": 3.05,
+        "distance": 4.0,
+        "ball_radius": 0.1195,
+        "start_height_above_floor": 0.0,
+        "rim_inner_radius": 0.2241
+      },
+      "loaded": true,
+      "problem": null,
+      "diverged": null,
+      "load_log": [
+        "reset to keyframe 'start'"
+      ],
+      "expect": [
+        "ball drops through hoop"
+      ],
+      "label": "written0",
+      "turn": "write0"
+    }
+  ],
+  "load_attempts": 1,
+  "loads": true,
+  "passes_first": true,
+  "rounds": 1,
+  "passes_final": true,
+  "passed_at_round": 0,
+  "claims_works": true,
+  "claim_correct": true,
+  "final_checks": {
+    "rim at 3.05 m (within 5%)": true,
+    "hoop 4 m away (within 5%)": true,
+    "regulation ball (radius 0.12 m within 5%)": true,
+    "launched from the floor": true,
+    "drops through the hoop": true
+  },
+  "final_problem": null,
+  "problems_seen": 0,
+  "seconds": 48.2,
+  "tokens": {
+    "input": 16617,
+    "output": 4451,
+    "total": 21068
+  },
+  "cost_usd": 0.155488,
+  "served_models": [
+    "claude-opus-5-5"
+  ],
+  "finished_at": "20261006T221648Z"
+}
