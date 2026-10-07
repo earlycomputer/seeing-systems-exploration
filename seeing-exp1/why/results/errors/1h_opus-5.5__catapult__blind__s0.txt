@@ -1,0 +1,109 @@
+3 of 5 expectations hold in a 6 s run.
+
+- holds: pendulum touches cart (first touch after the start at 0.51 s)
+- holds: cart touches weight (first touch after the start at 0.75 s)
+- holds: weight touches seesaw (first touch after the start at 1.15 s)
+
+-- NOT TRUE: SEESAW REACHES ITS LOWER STOP -------------------------- expectation
+
+You expected:
+
+      seesaw reaches its lower stop
+
+but in the run, at its lower stop (0°) at 0.06 s, which is before the line above it (1.15 s).
+
+It was lost at 0.06 s, when `seesaw reaches its lower stop` happened at 0.06 s, before `weight touches seesaw` at 1.15 s.
+
+How it got there. Only what touched seesaw can have changed it, so this walks back through touch from 0.06 s (seesaw up to 0.06 s, ball up to 0.06 s); anything outside that is left out:
+
+   0.00 s  seesaw_plank starts against ball_sphere   (at 34°, still)
+   0.00 s  seesaw_stopper starts against ball_sphere   (at 34°, still)
+   0.06 s  seesaw reaches its lower stop (0.2°)   (at 0°, turning -593°/s)
+
+These lines set up everything above:
+
+   31|     <body name="seesaw" pos="0.88 0 0.5">
+   32|       <joint name="seesaw_hinge" type="hinge" axis="0 1 0" pos="0 0 0" limited="true" range="0.2 0.6" damping="0"/>
+   33|       <geom name="seesaw_plank" type="box" pos="0.145 0 0" size="0.505 0.06 0.015" mass="0.4" rgba="0.7 0.6 0.3 1"/>
+   34|       <geom name="seesaw_pocket_outer" type="box" pos="-0.345 0 0.045" size="0.01 0.06 0.03" mass="0.02" rgba="0.5 0.4 0.2 1"/>
+   35|       <geom name="seesaw_pocket_inner" type="box" pos="-0.155 0 0.045" size="0.01 0.06 0.03" mass="0.02" rgba="0.5 0.4 0.2 1"/>
+   36|       <geom name="seesaw_stopper" type="box" pos="0.64 0 0.035" size="0.01 0.06 0.02" mass="0.02" rgba="0.5 0.4 0.2 1"/>
+   37|     </body>
+    ...
+   39|     <body name="ball" pos="1.4006 0 0.1983">
+   40|       <freejoint name="ball_free"/>
+   41|       <geom name="ball_sphere" type="sphere" size="0.03" mass="0.05" condim="6" friction="1 0.01 0.002" rgba="0.9 0.7 0.1 1"/>
+   42|     </body>
+    ...
+   54|     <key name="start" qpos="1.318116 0 0.62 0 0.91 1 0 0 0 0.6 1.4006 0 0.1983 1 0 0 0"/>
+
+
+-- NOT TRUE: BALL COMES TO REST IN CUP ------------------------------ expectation
+
+You expected:
+
+      ball comes to rest in cup
+
+but in the run, ball comes to rest at (-0.45, 0.00, 0.03) m, outside cup.
+
+It was lost at 1.17 s, when ball came down on floor 1.84 m short of cup, which spans 1.56 to 2.00 m along (-0.28 m along, 0.03 m up, 4.87 m/s heading -73°). It came to rest 1.14 s later; the run after 1.17 s only carried it there.
+
+How it got there. Only what touched ball can have changed it, so this walks back through touch from 1.17 s (ball up to 1.17 s, seesaw up to 0.07 s); anything outside that is left out:
+
+   0.00 s  seesaw_plank starts against ball_sphere   (at 34°, still)
+   0.00 s  seesaw_stopper starts against ball_sphere   (at 34°, still)
+   0.00 s  weight_sphere first touches shelf   (0.62 m along, 0.91 m up, at rest)
+   0.06 s  seesaw reaches its lower stop (0.2°)   (at 0°, turning -593°/s)
+   0.06 s  seesaw_plank leaves ball_sphere   (at -1°, turning -474°/s)
+   0.07 s  seesaw_stopper leaves ball_sphere   (at -3°, turning -74°/s)
+   0.57 s  ball is at its highest, 1.81 m up   (0.69 m along, 1.81 m up, 1.61 m/s heading -1°)
+   0.93 s  weight_sphere leaves shelf   (0.67 m along, 0.90 m up, 0.53 m/s heading -42°)
+   1.07 s  weight_sphere first touches backstop   (0.73 m along, 0.75 m up, 1.67 m/s heading -81°)
+   1.09 s  weight_sphere leaves backstop   (0.73 m along, 0.72 m up, 1.38 m/s heading -82°)
+   1.17 s  ball_sphere first touches floor   (-0.28 m along, 0.03 m up, 4.87 m/s heading -73°)
+
+These lines set up everything above:
+
+    8|     <geom name="shelf" type="box" pos="0.52 0 0.84" size="0.12 0.1 0.02" rgba="0.6 0.4 0.2 1"/>
+    9|     <geom name="shelf_post" type="box" pos="0.45 0 0.41" size="0.02 0.02 0.41" contype="0" conaffinity="0" rgba="0.4 0.4 0.4 1"/>
+   10|     <geom name="backstop" type="box" pos="0.79 0 0.85" size="0.01 0.1 0.15" rgba="0.6 0.4 0.2 1"/>
+   11|     <geom name="backstop_post" type="box" pos="0.79 0.12 0.425" size="0.01 0.01 0.425" contype="0" conaffinity="0" rgba="0.4 0.4 0.4 1"/>
+    ...
+   26|     <body name="weight" pos="0.62 0 0.91">
+   27|       <freejoint name="weight_free"/>
+   28|       <geom name="weight_sphere" type="sphere" size="0.05" mass="1.5" rgba="0.2 0.2 0.2 1"/>
+   29|     </body>
+    ...
+   31|     <body name="seesaw" pos="0.88 0 0.5">
+   32|       <joint name="seesaw_hinge" type="hinge" axis="0 1 0" pos="0 0 0" limited="true" range="0.2 0.6" damping="0"/>
+   33|       <geom name="seesaw_plank" type="box" pos="0.145 0 0" size="0.505 0.06 0.015" mass="0.4" rgba="0.7 0.6 0.3 1"/>
+   34|       <geom name="seesaw_pocket_outer" type="box" pos="-0.345 0 0.045" size="0.01 0.06 0.03" mass="0.02" rgba="0.5 0.4 0.2 1"/>
+   35|       <geom name="seesaw_pocket_inner" type="box" pos="-0.155 0 0.045" size="0.01 0.06 0.03" mass="0.02" rgba="0.5 0.4 0.2 1"/>
+   36|       <geom name="seesaw_stopper" type="box" pos="0.64 0 0.035" size="0.01 0.06 0.02" mass="0.02" rgba="0.5 0.4 0.2 1"/>
+   37|     </body>
+    ...
+   39|     <body name="ball" pos="1.4006 0 0.1983">
+   40|       <freejoint name="ball_free"/>
+   41|       <geom name="ball_sphere" type="sphere" size="0.03" mass="0.05" condim="6" friction="1 0.01 0.002" rgba="0.9 0.7 0.1 1"/>
+   42|     </body>
+    ...
+   44|     <body name="cup" pos="0 0 0">
+   45|       <geom name="cup_base" type="box" pos="1.777 0 0.11" size="0.22 0.22 0.11" rgba="0.3 0.6 0.3 1"/>
+   46|       <geom name="cup_wall_left" type="box" pos="1.567 0 0.29" size="0.01 0.22 0.07" rgba="0.3 0.6 0.3 1"/>
+   47|       <geom name="cup_wall_right" type="box" pos="1.987 0 0.29" size="0.01 0.22 0.07" rgba="0.3 0.6 0.3 1"/>
+   48|       <geom name="cup_wall_front" type="box" pos="1.777 -0.21 0.29" size="0.22 0.01 0.07" rgba="0.3 0.6 0.3 1"/>
+   49|       <geom name="cup_wall_back" type="box" pos="1.777 0.21 0.29" size="0.22 0.01 0.07" rgba="0.3 0.6 0.3 1"/>
+   50|     </body>
+    ...
+   54|     <key name="start" qpos="1.318116 0 0.62 0 0.91 1 0 0 0 0.6 1.4006 0 0.1983 1 0 0 0"/>
+
+Which numbers move it. Now ball comes down 1.84 m short of cup. I ran the world again with each of the 60 numbers on those lines changed alone to 1.1, 0.9, 1.5, 0.5 times itself (240 runs, 27 s; 34 numbers on fixed things left unforked). These moved it most, the ones that make it hold first:
+
+   31| <body name="seesaw" pos="0.88 0 0.5">
+       0.5 -> 0.55: comes down 2.44 m short of cup; 0.45: comes down 0.80 m short of cup; 0.75: comes down 0.16 m short of cup; 0.25: HOLDS
+   33| <geom name="seesaw_plank" type="box" pos="0.145 0 0" size="0.505 0.06 0.015" mass="0.4" rgba="0.7 0.6 0.3 1"/>
+       0.505 -> 0.5555: HOLDS; 0.4545: comes down 1.76 m short of cup; 0.7575: gets within 0.16 m of cup; 0.2525: comes down 0.18 m short of cup
+   54| <key name="start" qpos="1.318116 0 0.62 0 0.91 1 0 0 0 0.6 1.4006 0 0.1983 1 0 0 0"/>
+       0.1983 -> 0.2181: comes down 1.83 m short of cup; 0.1785: comes down 2.16 m short of cup; 0.2974: HOLDS; 0.09915: comes down 0.16 m short of cup
+
+Each fork changes one number and leaves the rest; two changes together can behave differently.

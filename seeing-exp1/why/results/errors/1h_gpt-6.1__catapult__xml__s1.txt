@@ -1,0 +1,98 @@
+4 of 5 expectations hold in a 6 s run.
+
+- holds: pendulum touches cart (first touch after the start at 0.55 s)
+- holds: cart touches weight (first touch after the start at 0.57 s)
+- holds: weight touches seesaw (first touch after the start at 0.97 s)
+- holds: ball comes to rest in cup (ball at rest inside cup at the end)
+
+-- NOT TRUE: SEESAW REACHES ITS LOWER STOP -------------------------- expectation
+
+You expected:
+
+      seesaw reaches its lower stop
+
+but in the run, it never reaches its lower stop (-30°); it gets within 1°.
+
+It was lost at 1.08 s, when seesaw came nearest its lower stop (-29.7938°) at 1.08 s, 1° from it, touching ball_sphere, seesaw_lower_stop_block, weight_sphere (at -29°, turning -81°/s).
+
+How it got there. Only what touched seesaw can have changed it, so this walks back through touch from 1.08 s (seesaw up to 1.08 s, ball up to 1.08 s, weight up to 1.08 s, cart up to 0.58 s, pendulum up to 0.58 s); anything outside that is left out:
+
+   0.00 s  weight_sphere starts against weight_shelf_deck   (-0.99 m along, 1.11 m up, at rest)
+   0.00 s  seesaw_beam starts against ball_sphere   (at 0°, still)
+   0.11 s  seesaw_ball_right_lip first touches ball_sphere   (at 0°, still)
+   0.55 s  pendulum_bob first touches cart_ram   (at -0°, turning -131°/s)
+     ...  3 more touches
+   0.63 s  weight_sphere leaves weight_shelf_deck   (-0.90 m along, 1.11 m up, 1.62 m/s heading +3°)
+   0.64 s  weight is at its highest, 1.12 m up   (-0.88 m along, 1.12 m up, 1.62 m/s heading -0°)
+   0.81 s  weight_sphere first touches weight_chute_front   (-0.61 m along, 0.97 m up, 1.82 m/s heading -55°)
+   0.85 s  weight_sphere leaves weight_chute_front   (-0.61 m along, 0.92 m up, 1.50 m/s heading -81°)
+   0.97 s  seesaw_beam first touches weight_sphere   (at -0°, turning -92°/s)
+   1.00 s  seesaw_beam leaves weight_sphere   (at -8°, turning -273°/s)
+   1.07 s  seesaw_weight_end_lip first touches weight_sphere   (at -26°, turning -275°/s)
+   1.08 s  seesaw_beam first touches seesaw_lower_stop_block   (at -29°, turning -81°/s)
+   1.08 s  seesaw_beam leaves ball_sphere   (at -29°, turning -81°/s)
+   1.08 s  seesaw_ball_right_lip leaves ball_sphere   (at -29°, turning -81°/s)
+
+These lines set up everything above:
+
+   22|     <body name="weight_shelf" pos="0 0 0">
+   23|       <geom name="weight_shelf_deck" type="box" pos="-1.03 -0.30 1.01" size="0.14 0.14 0.02" friction="0.12 0.005 0.001" solref="0.006 1" rgba="0.45 0.48 0.52 1"/>
+   24|       <geom name="weight_shelf_outer_leg" type="box" pos="-1.03 -0.475 0.505" size="0.10 0.02 0.505" rgba="0.45 0.48 0.52 1"/>
+   25|       <geom name="weight_shelf_inner_leg" type="box" pos="-1.03 -0.125 0.505" size="0.10 0.02 0.505" rgba="0.45 0.48 0.52 1"/>
+   26|     </body>
+    ...
+   28|     <body name="weight_chute" pos="0 0 0">
+   29|       <geom name="weight_chute_back" type="box" pos="-0.915 -0.30 0.825" size="0.015 0.135 0.15" friction="0.10 0.005 0.001" solref="0.008 1" rgba="0.40 0.44 0.48 1"/>
+   30|       <geom name="weight_chute_front" type="box" pos="-0.50 -0.30 1.00" size="0.025 0.135 0.25" friction="0.10 0.005 0.001" solref="0.012 1" rgba="0.40 0.44 0.48 1"/>
+   31|       <geom name="weight_chute_outer_side" type="box" pos="-0.705 -0.435 0.90" size="0.22 0.015 0.225" friction="0.10 0.005 0.001" solref="0.008 1" rgba="0.40 0.44 0.48 1"/>
+   32|       <geom name="weight_chute_inner_side" type="box" pos="-0.705 -0.165 0.90" size="0.22 0.015 0.225" friction="0.10 0.005 0.001" solref="0.008 1" rgba="0.40 0.44 0.48 1"/>
+   33|     </body>
+    ...
+   40|     <body name="seesaw_lower_stop" pos="-0.705 0 0.075">
+   41|       <geom name="seesaw_lower_stop_block" type="box" size="0.065 0.43 0.075" friction="0.8 0.02 0.005" solref="0.004 1" solimp="0.95 0.99 0.001" rgba="0.22 0.25 0.28 1"/>
+   42|     </body>
+    ...
+   54|     <body name="pendulum" pos="-1.81 -0.30 2.14">
+   55|       <joint name="pendulum_hinge" type="hinge" axis="0 1 0" damping="0.01" armature="0.002"/>
+   56|       <geom name="pendulum_rod" type="capsule" fromto="0 0 0 0 0 -1" size="0.018" mass="0.08" friction="0.15 0.005 0.001" rgba="0.55 0.38 0.20 1"/>
+   57|       <geom name="pendulum_bob" type="sphere" pos="0 0 -1" size="0.13" mass="2.0" friction="0.15 0.005 0.001" solref="0.004 1" solimp="0.95 0.99 0.001" rgba="0.75 0.22 0.16 1"/>
+   58|     </body>
+    ...
+   60|     <body name="cart" pos="-1.62 -0.30 0.10">
+   61|       <joint name="cart_slide" type="slide" axis="1 0 0" range="0 0.32" damping="1.5" armature="0.005" solreflimit="0.004 1" solimplimit="0.95 0.99 0.001"/>
+   62|       <geom name="cart_base" type="box" size="0.14 0.10 0.075" mass="0.40" friction="0.2 0.005 0.001" rgba="0.92 0.63 0.13 1"/>
+   63|       <geom name="cart_mast" type="box" pos="0 0 0.55" size="0.035 0.045 0.50" mass="0.10" friction="0.15 0.005 0.001" rgba="0.92 0.63 0.13 1"/>
+   64|       <geom name="cart_ram" type="box" pos="0.22 0 1.045" size="0.28 0.07 0.09" mass="0.30" friction="0.12 0.005 0.001" solref="0.004 1" solimp="0.95 0.99 0.001" rgba="0.92 0.63 0.13 1"/>
+   65|     </body>
+    ...
+   67|     <body name="seesaw" pos="0 0 0.55">
+   68|       <joint name="seesaw_hinge" type="hinge" axis="0 1 0" range="-0.52 0" damping="0.035" armature="0.002" solreflimit="0.004 1" solimplimit="0.95 0.99 0.001"/>
+   69|       <geom name="seesaw_beam" type="box" size="0.80 0.45 0.02" mass="0.14" friction="0.7 0.005 0.001" condim="3" solref="0.008 1" solimp="0.95 0.99 0.001" rgba="0.30 0.65 0.32 1"/>
+   70|       <geom name="seesaw_weight_end_lip" type="box" pos="-0.79 -0.30 0.085" size="0.012 0.105 0.065" mass="0.015" friction="0.7 0.005 0.001" solref="0.012 1" rgba="0.24 0.53 0.26 1"/>
+   71|       <geom name="seesaw_ball_right_lip" type="box" pos="0.77 0.30 0.06" size="0.015 0.09 0.04" mass="0.008" friction="0 0 0" condim="1" solref="0.006 1" rgba="0.24 0.53 0.26 1"/>
+   72|       <geom name="seesaw_ball_outer_lip" type="box" pos="0.70 0.215 0.055" size="0.07 0.01 0.035" mass="0.005" friction="0 0 0" condim="1" solref="0.006 1" rgba="0.24 0.53 0.26 1"/>
+   73|       <geom name="seesaw_ball_inner_lip" type="box" pos="0.70 0.385 0.055" size="0.07 0.01 0.035" mass="0.005" friction="0 0 0" condim="1" solref="0.006 1" rgba="0.24 0.53 0.26 1"/>
+   74|     </body>
+    ...
+   76|     <body name="weight" pos="-0.995 -0.30 1.115">
+   77|       <freejoint name="weight_free"/>
+   78|       <geom name="weight_sphere" type="sphere" size="0.085" mass="2.0" friction="0.7 0.005 0.001" condim="3" solref="0.012 1" solimp="0.95 0.99 0.001" rgba="0.34 0.31 0.43 1"/>
+   79|     </body>
+    ...
+   81|     <body name="ball" pos="0.70 0.30 0.625">
+   82|       <freejoint name="ball_free"/>
+   83|       <geom name="ball_sphere" type="sphere" size="0.055" mass="0.03" friction="0.15 0.001 0.001" condim="3" solref="0.008 1" solimp="0.95 0.99 0.001" rgba="0.97 0.85 0.18 1"/>
+   84|     </body>
+    ...
+   99|     <key name="start" time="0" qpos="1.1592794807274085 0 0 -0.995 -0.30 1.115 1 0 0 0 0.70 0.30 0.625 1 0 0 0"/>
+
+Which numbers move it. Now seesaw gets within 1° of its lower stop. I ran the world again with each of the 60 numbers on those lines changed alone to 1.1, 0.9, 1.5, 0.5 times itself (240 runs, 25 s; 158 numbers on fixed things left unforked). These moved it most, the ones that make it hold first:
+
+   68| <joint name="seesaw_hinge" type="hinge" axis="0 1 0" range="-0.52 0" damping="0.035" armature="0.002" solreflimit="0.004 1" solimplimit="0.95 0.99 0.001"/>
+       -0.52 -> -0.572: gets within 4° of its lower stop; -0.468: HOLDS; -0.78: gets within 16° of its lower stop; -0.26: HOLDS
+   54| <body name="pendulum" pos="-1.81 -0.30 2.14">
+       -1.81 -> -1.991: gets within 1° of its lower stop; -1.629: gets within 1° of its lower stop; -2.715: gets within 30° of its lower stop; -0.905: gets within 30° of its lower stop
+   54| <body name="pendulum" pos="-1.81 -0.30 2.14">
+       -0.30 -> -0.33: gets within 1° of its lower stop; -0.27: gets within 1° of its lower stop; -0.45: gets within 30° of its lower stop; -0.15: gets within 1° of its lower stop
+
+Each fork changes one number and leaves the rest; two changes together can behave differently.

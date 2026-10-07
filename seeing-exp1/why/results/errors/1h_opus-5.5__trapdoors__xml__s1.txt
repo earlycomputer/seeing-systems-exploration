@@ -1,0 +1,114 @@
+4 of 6 expectations hold in a 6 s run.
+
+- holds: ball1 drops through hoop1 (through at 0.40 s, 0 cm from its centre)
+- holds: block touches flap2 (first touch after the start at 1.07 s)
+- holds: flap2 reaches its lower stop (at its lower stop (-90°) at 1.41 s)
+- holds: ball2 comes to rest in cup (ball2 at rest inside cup at the end)
+
+-- NOT TRUE: FLAP1 REACHES ITS LOWER STOP --------------------------- expectation
+
+You expected:
+
+      flap1 reaches its lower stop
+
+but in the run, it never reaches its lower stop (0°); it gets within 0°.
+
+It was lost at 0.00 s, when flap1 starts at its lower stop (0°), so reaching it is not something that happens; its largest swing away is 43°.
+
+How it got there. Only what touched flap1 can have changed it, so this walks back through touch from 0.00 s (flap1 up to 0.00 s); anything outside that is left out:
+
+  Nothing touched flap1 before then.
+
+These lines set up everything above:
+
+   20|     <body name="flap1" pos="0 0 1.0">
+   21|       <joint name="flap1_hinge" type="hinge" pos="0 0 0" axis="0 1 0" limited="true" range="0 0.7" damping="0.001"/>
+   22|       <geom name="flap1_plate" type="box" pos="0.15 0 0" size="0.15 0.06 0.01" mass="0.1" rgba="0.2 0.4 0.8 1"/>
+   23|       <geom name="flap1_lip" type="box" pos="0.30 0 0.03" size="0.01 0.06 0.02" mass="0.01" rgba="0.2 0.4 0.8 1"/>
+   24|       <geom name="flap1_arm" type="box" pos="-0.105 0 0" size="0.105 0.03 0.01" mass="0.04" rgba="0.2 0.4 0.8 1"/>
+   25|       <geom name="flap1_finger" type="box" pos="-0.20 0 -0.055" size="0.01 0.03 0.045" mass="0.02" friction="0.1 0.005 0.0001" rgba="0.2 0.4 0.8 1"/>
+   26|       <geom name="flap1_weight" type="box" pos="-0.12 0 0.03" size="0.03 0.03 0.02" mass="0.19" rgba="0.1 0.1 0.4 1"/>
+   27|     </body>
+
+Which numbers move it. Now flap1 starts at its lower stop. I ran the world again with each of the 34 numbers on those lines changed alone to 1.1, 0.9, 1.5, 0.5 times itself (136 runs, 14 s). These moved it most, the ones that make it hold first:
+
+   21| <joint name="flap1_hinge" type="hinge" pos="0 0 0" axis="0 1 0" limited="true" range="0 0.7" damping="0.001"/>
+       0.7 -> 0.77: starts at its lower stop; 0.63: starts at its lower stop; 1.05: HOLDS; 0.35: starts at its lower stop
+   22| <geom name="flap1_plate" type="box" pos="0.15 0 0" size="0.15 0.06 0.01" mass="0.1" rgba="0.2 0.4 0.8 1"/>
+       0.15 -> 0.165: starts at its lower stop; 0.135: starts at its lower stop; 0.225: starts at its lower stop; 0.075: HOLDS
+   22| <geom name="flap1_plate" type="box" pos="0.15 0 0" size="0.15 0.06 0.01" mass="0.1" rgba="0.2 0.4 0.8 1"/>
+       0.15 -> 0.165: starts at its lower stop; 0.135: starts at its lower stop; 0.225: starts at its lower stop; 0.075: HOLDS
+
+Each fork changes one number and leaves the rest; two changes together can behave differently.
+
+
+-- NOT TRUE: BALL2 DROPS THROUGH HOOP2 ------------------------------ expectation
+
+You expected:
+
+      ball2 drops through hoop2
+
+but in the run, through at 1.34 s, 0 cm from its centre, which is before the line above it (1.41 s).
+
+It was lost at 1.34 s, when `ball2 drops through hoop2` happened at 1.34 s, before `flap2 reaches its lower stop` at 1.41 s.
+
+How it got there. Only what touched ball2 can have changed it, so this walks back through touch from 1.34 s (ball2 up to 1.34 s, flap2 up to 1.25 s, block up to 1.25 s, flap1 up to 0.46 s, ball1 up to 0.46 s); anything outside that is left out:
+
+   0.00 s  flap2_plate first touches ball2_geom   (at 0°, turning +2°/s)
+   0.01 s  block_geom first touches ramp_geom   (-0.15 m along, 0.92 m up, at rest)
+   0.04 s  flap1_finger first touches block_geom   (at -0°, still)
+   0.46 s  ball1_geom first touches flap1_plate   (0.20 m along, 1.03 m up, 3.83 m/s heading -90°)
+   0.46 s  flap1_finger leaves block_geom   (at 0°, turning +87°/s)
+   0.89 s  block_geom leaves ramp_geom   (-0.36 m along, 0.86 m up, 1.01 m/s heading -17°)
+   1.07 s  block_geom first touches flap2_ext   (-0.54 m along, 0.65 m up, 2.06 m/s heading -64°)
+   1.07 s  flap2_plate leaves ball2_geom   (at -0°, turning -43°/s)
+   1.10 s  block_geom first touches flap2_wall   (-0.56 m along, 0.61 m up, 1.27 m/s heading -64°)
+   1.11 s  block_geom leaves flap2_ext   (-0.57 m along, 0.59 m up, 1.15 m/s heading -80°)
+   1.24 s  flap2_plate touches ball2_geom again   (at -39°, turning -258°/s)
+   1.25 s  flap2_plate leaves ball2_geom   (at -41°, turning -266°/s)
+
+These lines set up everything above:
+
+   15|     <body name="ball1" pos="0.2 0 2.05">
+   16|       <freejoint name="ball1_free"/>
+   17|       <geom name="ball1_geom" type="sphere" size="0.03" mass="0.1" rgba="0.8 0.1 0.1 1"/>
+   18|     </body>
+    ...
+   20|     <body name="flap1" pos="0 0 1.0">
+   21|       <joint name="flap1_hinge" type="hinge" pos="0 0 0" axis="0 1 0" limited="true" range="0 0.7" damping="0.001"/>
+   22|       <geom name="flap1_plate" type="box" pos="0.15 0 0" size="0.15 0.06 0.01" mass="0.1" rgba="0.2 0.4 0.8 1"/>
+   23|       <geom name="flap1_lip" type="box" pos="0.30 0 0.03" size="0.01 0.06 0.02" mass="0.01" rgba="0.2 0.4 0.8 1"/>
+   24|       <geom name="flap1_arm" type="box" pos="-0.105 0 0" size="0.105 0.03 0.01" mass="0.04" rgba="0.2 0.4 0.8 1"/>
+   25|       <geom name="flap1_finger" type="box" pos="-0.20 0 -0.055" size="0.01 0.03 0.045" mass="0.02" friction="0.1 0.005 0.0001" rgba="0.2 0.4 0.8 1"/>
+   26|       <geom name="flap1_weight" type="box" pos="-0.12 0 0.03" size="0.03 0.03 0.02" mass="0.19" rgba="0.1 0.1 0.4 1"/>
+   27|     </body>
+    ...
+   29|     <body name="ramp" pos="-0.2105 0 0.8622" quat="0.99144 0 -0.13053 0">
+   30|       <geom name="ramp_geom" type="box" size="0.13 0.05 0.01" friction="0.02 0.005 0.0001" rgba="0.5 0.5 0.5 1"/>
+   31|     </body>
+    ...
+   33|     <body name="block" pos="-0.152 0 0.9194" quat="0.99144 0 -0.13053 0">
+   34|       <freejoint name="block_free"/>
+   35|       <geom name="block_geom" type="box" size="0.03 0.03 0.03" mass="0.2" friction="0.02 0.005 0.0001" rgba="0.1 0.7 0.2 1"/>
+   36|     </body>
+    ...
+   38|     <body name="flap2" pos="-0.20 0 0.60">
+   39|       <joint name="flap2_hinge" type="hinge" pos="0 0 0" axis="0 1 0" limited="true" range="-1.5708 0" damping="0.001"/>
+   40|       <geom name="flap2_plate" type="box" pos="-0.11 0.10 0" size="0.11 0.16 0.01" mass="0.08" rgba="0.2 0.4 0.8 1"/>
+   41|       <geom name="flap2_ext" type="box" pos="-0.32 0 0" size="0.10 0.06 0.01" mass="0.04" rgba="0.2 0.4 0.8 1"/>
+   42|       <geom name="flap2_wall" type="box" pos="-0.41 0 0.07" size="0.01 0.06 0.06" mass="0.03" rgba="0.2 0.4 0.8 1"/>
+   43|       <geom name="flap2_arm" type="box" pos="0.04 0.10 0" size="0.04 0.06 0.01" mass="0.01" rgba="0.2 0.4 0.8 1"/>
+   44|       <geom name="flap2_weight" type="box" pos="0.12 0.10 0" size="0.04 0.06 0.03" mass="0.58" rgba="0.1 0.1 0.4 1"/>
+   45|     </body>
+    ...
+   54|     <body name="ball2" pos="-0.40 0.20 0.64">
+   55|       <freejoint name="ball2_free"/>
+   56|       <geom name="ball2_geom" type="sphere" size="0.03" mass="0.1" condim="6" friction="0.8 0.01 0.002" rgba="0.8 0.1 0.6 1"/>
+   57|     </body>
+    ...
+   59|     <body name="hoop2" pos="-0.40 0.20 0.30">
+   60|       <geom name="hoop2_xp" type="box" pos="0.08 0 0" size="0.01 0.09 0.01" rgba="0.9 0.5 0.1 1"/>
+   61|       <geom name="hoop2_xn" type="box" pos="-0.08 0 0" size="0.01 0.09 0.01" rgba="0.9 0.5 0.1 1"/>
+   62|       <geom name="hoop2_yp" type="box" pos="0 0.08 0" size="0.09 0.01 0.01" rgba="0.9 0.5 0.1 1"/>
+   63|       <geom name="hoop2_yn" type="box" pos="0 -0.08 0" size="0.09 0.01 0.01" rgba="0.9 0.5 0.1 1"/>
+   64|     </body>

@@ -1,0 +1,84 @@
+4 of 5 expectations hold in a 6 s run.
+
+- holds: pendulum touches cart (first touch after the start at 0.48 s)
+- holds: cart touches weight (first touch after the start at 0.52 s)
+- holds: weight touches seesaw (first touch after the start at 0.76 s)
+- holds: seesaw reaches its lower stop (at its lower stop (15°) at 0.82 s)
+
+-- NOT TRUE: BALL COMES TO REST IN CUP ------------------------------ expectation
+
+You expected:
+
+      ball comes to rest in cup
+
+but in the run, ball comes to rest at (0.57, 0.54, 0.27) m, outside cup.
+
+It was lost at 1.41 s, when ball came down on seesaw_arm 0.14 m to the side of cup, which spans 0.41 to 0.73 m along (0.57 m along, 0.28 m up, 2.33 m/s heading -89°). It came to rest 0.24 s later; the run after 1.41 s only carried it there.
+
+How it got there. Only what touched ball can have changed it, so this walks back through touch from 1.41 s (ball up to 1.41 s, seesaw up to 1.41 s, weight up to 1.41 s, cart up to 0.58 s, pendulum up to 0.56 s); anything outside that is left out:
+
+   0.01 s  weight_block first touches table_top   (0.35 m along, 0.69 m up, 0.08 m/s heading -90°)
+   0.02 s  seesaw_arm first touches ball_geom   (at 35°, still)
+   0.03 s  seesaw_lip first touches ball_geom   (at 35°, still)
+   0.48 s  pendulum_bob first touches cart_body   (at -1°, turning -246°/s)
+     ...  10 more touches
+   0.82 s  seesaw reaches its lower stop (15°)   (at 15°, turning -524°/s)
+   0.82 s  seesaw_arm leaves ball_geom   (at 13°, turning -420°/s)
+   0.83 s  seesaw_lip leaves ball_geom   (at 11°, turning -72°/s)
+   0.84 s  weight_block leaves seesaw_tray_side_wall   (0.63 m along, 0.43 m up, 0.70 m/s heading -31°)
+   0.86 s  weight_block touches seesaw_arm again   (0.62 m along, 0.43 m up, 0.63 m/s heading +7°)
+   0.93 s  seesaw reaches its lower stop (15°)   (at 15°, turning +9°/s)
+   1.12 s  ball is at its highest, 0.70 m up   (0.57 m along, 0.70 m up, 0.14 m/s heading -3°)
+   1.20 s  weight_block leaves seesaw_arm   (0.50 m along, 0.42 m up, 0.29 m/s heading +3°)
+   1.28 s  weight_block touches seesaw_arm again   (0.50 m along, 0.42 m up, 0.19 m/s heading -51°)
+   1.41 s  seesaw_arm touches ball_geom again   (at 15°, turning +4°/s)
+
+These lines set up everything above:
+
+    9|     <geom name="table_top" type="box" pos="0.248 0 0.63" size="0.128 0.1 0.02" friction="0.4 0.005 0.0001" rgba="0.6 0.4 0.2 1"/>
+    ...
+   14|     <body name="pendulum" pos="0 0 1.41">
+   15|       <joint name="pendulum_hinge" type="hinge" axis="0 1 0" pos="0 0 0"/>
+   16|       <geom name="pendulum_arm" type="capsule" fromto="0 0 0 0 0 -0.65" size="0.012" mass="0.05" rgba="0.3 0.3 0.8 1"/>
+   17|       <geom name="pendulum_bob" type="sphere" pos="0 0 -0.7" size="0.05" mass="1.0" rgba="0.2 0.2 0.9 1"/>
+   18|     </body>
+   19|     <body name="cart" pos="0.156 0 0.712">
+   20|       <joint name="cart_slide" type="slide" axis="1 0 0" limited="true" range="-0.02 0.13"/>
+   21|       <geom name="cart_body" type="box" size="0.1 0.07 0.06" mass="1.5" rgba="0.9 0.5 0.1 1"/>
+   22|     </body>
+   23|     <body name="weight" pos="0.346 0 0.6905">
+   24|       <freejoint name="weight_free"/>
+   25|       <geom name="weight_block" type="box" size="0.04 0.04 0.04" mass="1.0" friction="0.4 0.005 0.0001" rgba="0.2 0.2 0.2 1"/>
+   26|     </body>
+   27|     <body name="seesaw" pos="0.566 0.16 0.33">
+   28|       <joint name="seesaw_hinge" type="hinge" axis="-1 0 0" pos="0 0 0" limited="true" range="0.2618 0.6109"/>
+   29|       <geom name="seesaw_arm" type="box" pos="0 0.05 0" size="0.05 0.37 0.01" mass="0.15" rgba="0.2 0.7 0.2 1"/>
+   30|       <geom name="seesaw_tray" type="box" pos="0 -0.21 0" size="0.13 0.11 0.01" mass="0.04" rgba="0.2 0.6 0.2 1"/>
+   31|       <geom name="seesaw_tray_inner_wall" type="box" pos="0 -0.09 0.035" size="0.13 0.008 0.025" mass="0.005" rgba="0.1 0.5 0.1 1"/>
+   32|       <geom name="seesaw_tray_side_wall" type="box" pos="0.13 -0.21 0.035" size="0.008 0.11 0.025" mass="0.005" rgba="0.1 0.5 0.1 1"/>
+   33|       <geom name="seesaw_lip" type="box" pos="0 0.415 0.03" size="0.04 0.008 0.02" mass="0.01" rgba="0.1 0.5 0.1 1"/>
+   34|     </body>
+   35|     <body name="ball" pos="0.566 0.4919 0.1415">
+   36|       <freejoint name="ball_free"/>
+   37|       <geom name="ball_geom" type="sphere" size="0.025" mass="0.03" condim="6" friction="0.8 0.01 0.003" rgba="0.9 0.1 0.1 1"/>
+   38|     </body>
+   39|     <body name="cup" pos="0 0 0">
+   40|       <geom name="cup_floor" type="box" pos="0.566 0.7875 0.005" size="0.16 0.1825 0.005" rgba="0.3 0.3 0.9 1"/>
+   41|       <geom name="cup_wall_near" type="box" pos="0.566 0.61 0.06" size="0.16 0.005 0.06" rgba="0.3 0.3 0.9 1"/>
+   42|       <geom name="cup_wall_far" type="box" pos="0.566 0.965 0.06" size="0.16 0.005 0.06" rgba="0.3 0.3 0.9 1"/>
+   43|       <geom name="cup_wall_left" type="box" pos="0.411 0.7875 0.06" size="0.005 0.1825 0.06" rgba="0.3 0.3 0.9 1"/>
+   44|       <geom name="cup_wall_right" type="box" pos="0.721 0.7875 0.06" size="0.005 0.1825 0.06" rgba="0.3 0.3 0.9 1"/>
+   45|     </body>
+    ...
+   48|     <key name="start" qpos="1.427448 0 0.346 0 0.6905 1 0 0 0 0.610865 0.566 0.4919 0.1415 1 0 0 0"/>
+
+Which numbers move it. Now ball comes down 0.14 m to the side of cup. I ran the world again with each of the 60 numbers on those lines changed alone to 1.1, 0.9, 1.5, 0.5 times itself (240 runs, 30 s; 52 numbers on fixed things left unforked). These moved it most, the ones that make it hold first:
+
+   28| <joint name="seesaw_hinge" type="hinge" axis="-1 0 0" pos="0 0 0" limited="true" range="0.2618 0.6109"/>
+       0.2618 -> 0.288: comes down 0.07 m to the side of cup; 0.2356: comes down 0.17 m to the side of cup; 0.3927: HOLDS; 0.1309: comes down 0.38 m to the side of cup
+   27| <body name="seesaw" pos="0.566 0.16 0.33">
+       0.33 -> 0.363: comes down 0.12 m to the side of cup; 0.297: comes down 0.12 m to the side of cup; 0.495: comes down 0.11 m to the side of cup; 0.165: HOLDS
+   28| <joint name="seesaw_hinge" type="hinge" axis="-1 0 0" pos="0 0 0" limited="true" range="0.2618 0.6109"/>
+       0.6109 -> 0.672: comes down 0.15 m to the side of cup; 0.5498: comes down 0.10 m to the side of cup; 0.9163: comes down 0.13 m to the side of cup; 0.3054: HOLDS
+
+Each fork changes one number and leaves the rest; two changes together can behave differently.

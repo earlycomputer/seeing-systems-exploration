@@ -1,0 +1,45 @@
+0 of 1 expectations hold in a 6 s run.
+
+
+-- NOT TRUE: BALL COMES TO REST IN CUP ------------------------------ expectation
+
+You expected:
+
+      ball comes to rest in cup
+
+but in the run, ball comes to rest at (1.63, 0.00, 0.06) m, outside cup.
+
+It was lost at 1.48 s, when ball came down on cup_near 0.06 m short of cup, which spans 2.19 to 3.11 m along (2.13 m along, 0.11 m up, 3.05 m/s heading -57°). It came to rest 1.66 s later; the run after 1.48 s only carried it there.
+
+How it got there. Only what touched ball can have changed it, so this walks back through touch from 1.48 s (ball up to 1.48 s); anything outside that is left out:
+
+   0.02 s  ball first touches ramp_deck   (0.14 m along, 1.04 m up, 0.11 m/s heading -83°)
+   1.26 s  ball leaves ramp_deck   (1.61 m along, 0.53 m up, 2.45 m/s heading -18°)
+   1.48 s  ball first touches cup_near   (2.13 m along, 0.11 m up, 3.05 m/s heading -57°)
+
+These lines set up everything above:
+
+    5|     <geom name="ramp_deck" type="box" pos="0.8000 0 0.7250" euler="0 18.9704 0" size="0.8459 0.2 0.02"/>
+    ...
+    7|     <body name="ball" pos="0.1398 0 1.0376">
+    8|       <freejoint/>
+    9|       <geom name="ball" type="sphere" size="0.06" mass="0.2" condim="6" friction="0.8 0.01 0.004" solref="0.01 1"/>
+   10|     </body>
+   11|     <body name="cup" pos="2.6500 0 0">
+   12|       <geom name="cup_base" type="box" pos="0 0 0.01" size="0.450 0.300 0.01"/>
+   13|       <geom name="cup_near" type="box" pos="-0.450 0 0.150" size="0.01 0.300 0.150"/>
+   14|       <geom name="cup_far" type="box" pos="0.450 0 0.150" size="0.01 0.300 0.150"/>
+   15|       <geom name="cup_left" type="box" pos="0 0.300 0.150" size="0.450 0.01 0.150"/>
+   16|       <geom name="cup_right" type="box" pos="0 -0.300 0.150" size="0.450 0.01 0.150"/>
+   17|     </body>
+
+Which numbers move it. Now ball comes down 0.06 m short of cup. I ran the world again with each of the 39 numbers on those lines changed alone to 1.1, 0.9, 1.5, 0.5 times itself (156 runs, 16 s). These moved it most, the ones that make it hold first:
+
+    5| <geom name="ramp_deck" type="box" pos="0.8000 0 0.7250" euler="0 18.9704 0" size="0.8459 0.2 0.02"/>
+       0.8459 -> 0.9305: comes down 0.06 m short of cup; 0.7613: comes down 0.11 m short of cup; 1.269: HOLDS; 0.4229: comes down 2.05 m short of cup
+   11| <body name="cup" pos="2.6500 0 0">
+       2.6500 -> 2.915: comes down 0.28 m short of cup; 2.385: HOLDS; 3.975: comes down 1.34 m short of cup; 1.325: comes down 0.39 m past cup
+   13| <geom name="cup_near" type="box" pos="-0.450 0 0.150" size="0.01 0.300 0.150"/>
+       -0.450 -> -0.495: comes down 0.06 m short of cup; -0.405: comes down 0.05 m short of cup; -0.675: HOLDS; -0.225: HOLDS
+
+Each fork changes one number and leaves the rest; two changes together can behave differently.
