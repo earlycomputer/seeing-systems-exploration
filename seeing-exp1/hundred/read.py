@@ -38,7 +38,7 @@ def final_file(rec: dict, run_dir: Path) -> tuple[str, str] | None:
     return None
 
 
-def read_one(rec: dict, run_dir: Path, reader: str, out_dir: Path, dry: bool) -> dict | None:
+def read_one(rec: dict, run_dir: Path, reader: str, out_dir: Path, dry: bool, full: bool = False) -> dict | None:
     got = final_file(rec, run_dir)
     if got is None:
         return None
@@ -52,7 +52,7 @@ def read_one(rec: dict, run_dir: Path, reader: str, out_dir: Path, dry: bool) ->
     chat = open_chat("dry-run" if dry else reader, "You predict what physics simulations will do.", "high",
                      tag=f"1h/read/{rec['world']}/{reader}", script=script, ledger=None if dry else SPEND_LEDGER)
     if not dry:
-        budget.check()
+        budget.check(pilot=not full)
     r = chat.send([text(p)])
     try:
         said = [bool(x) for x in json.loads(extract_block(r.text, "json") or "null")]
@@ -71,6 +71,8 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--dry", action="store_true")
     ap.add_argument("--jobs", type=int, default=6)
+    ap.add_argument("--readers", nargs="+", default=list(MODELS), choices=list(MODELS))
+    ap.add_argument("--full", action="store_true", help="past the pilot: 1h's own ceiling, not the pilot's")
     args = ap.parse_args(argv)
     runs = (DRYRUN_DIR / "runs") if args.dry else RUNS_DIR
     out_dir = (DRYRUN_DIR / "reads") if args.dry else READS_DIR
@@ -80,12 +82,12 @@ def main(argv: list[str] | None = None) -> int:
         rec = json.loads(Path(f).read_text())
         if rec.get("dry_run") != args.dry:
             continue
-        for reader in MODELS:
+        for reader in args.readers:
             if not (out_dir / f"{rec['world']}__{reader}.json").exists():
                 todo.append((rec, Path(f).parent, reader))
     print(f"{len(todo)} reads to do")
     with ThreadPoolExecutor(max_workers=args.jobs) as pool:
-        done = list(pool.map(lambda t: read_one(*t, out_dir, args.dry), todo))
+        done = list(pool.map(lambda t: read_one(*t, out_dir, args.dry, args.full), todo))
     print(f"{sum(d is not None for d in done)} read; {sum(d is None for d in done)} had no built final file")
     return 0
 

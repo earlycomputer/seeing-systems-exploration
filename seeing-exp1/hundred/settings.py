@@ -48,5 +48,6 @@ QUIZ_WORLDS = 40  # final runs quizzed, chosen by seeded draw among worlds that 
 QUIZ_SEED = 0
 RAW_HZ = 10  # raw-state rows per second in the quiz's raw representation; contacts within each 0.1 s are all listed
 
-# 1h's own ceiling. Not yet approved: the program cap in config.py (shared by every experiment) must also allow it.
-CEILING_1H_USD = 90.0
+# 1h's own ceiling past the pilot. Jono, 2026-10-07 01:02, on running the other 15 briefs with GPT-6.1 only (90 worlds
+# plus reads, "about $12"): "go for it". The pilot spent $46.15, so 1h stops here.
+CEILING_1H_USD = 62.0
