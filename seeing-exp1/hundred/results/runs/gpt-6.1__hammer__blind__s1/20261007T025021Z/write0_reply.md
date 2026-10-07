@@ -1,0 +1,142 @@
+```xml
+<mujoco model="passive_ramp_hammer_gap_hoop">
+  <compiler angle="degree" autolimits="true" inertiafromgeom="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100" tolerance="1e-10" cone="elliptic"/>
+  <size njmax="2000" nconmax="400"/>
+
+  <visual>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.75 0.75 0.75" specular="0.2 0.2 0.2"/>
+    <map znear="0.01" zfar="30"/>
+  </visual>
+
+  <worldbody>
+    <light name="overhead_light" pos="0 -2 5" dir="0 0 -1" directional="true"/>
+    <camera name="overview" pos="3.6 -4.5 3.0" xyaxes="0.78 0.62 0 -0.30 0.38 0.875"/>
+    <geom name="floor" type="plane" size="5 5 0.1" friction="1 0.01 0.01" condim="6" rgba="0.18 0.21 0.24 1"/>
+
+    <!-- The ball's initial contact point is 0.800 m along the ramp from its downhill end. -->
+    <body name="ball" pos="-0.579555 -0.831805 1.087942">
+      <freejoint name="ball_free"/>
+      <geom name="ball_sphere" type="sphere" size="0.055" mass="0.075" friction="0.6 0.002 0.0002" condim="6" solref="0.008 1" rgba="1 0.75 0.08 1"/>
+    </body>
+
+    <body name="ramp" pos="-0.579555 -0.639034 0.909782" quat="0.976296007 -0.216439614 0 0">
+      <geom name="ramp_surface" type="box" size="0.14 0.55 0.025" friction="0.6 0.002 0.00005" condim="6" solref="0.008 1" rgba="0.36 0.43 0.50 1"/>
+      <geom name="ramp_left_rail" type="box" pos="-0.155 -0.09 0.06" size="0.015 0.46 0.06" friction="0.4 0.002 0.00005" condim="6" rgba="0.52 0.59 0.65 1"/>
+      <geom name="ramp_right_rail" type="box" pos="0.155 -0.09 0.06" size="0.015 0.46 0.06" friction="0.4 0.002 0.00005" condim="6" rgba="0.52 0.59 0.65 1"/>
+    </body>
+
+    <!-- The ball drives this support sideways, out of the hammer's swing plane. -->
+    <body name="prop" pos="-0.579555 0 0.679709">
+      <joint name="prop_slide" type="slide" axis="0 1 0" range="0 0.52" damping="0.02" frictionloss="0.005" armature="0.0001" solreflimit="0.008 1"/>
+      <geom name="prop_support" type="box" size="0.13 0.07 0.16" mass="0.035" friction="0.015 0.001 0.0001" condim="3" solref="0.008 1" rgba="0.95 0.35 0.12 1"/>
+    </body>
+
+    <body name="hammer" pos="0 0 1.10">
+      <joint name="hammer_hinge" type="hinge" axis="0 1 0" range="-100 78" damping="0.065" frictionloss="0.012" armature="0.0001"/>
+      <geom name="hammer_handle" type="capsule" fromto="0 0 0 0 0 -0.60" size="0.022" mass="0.045" friction="0.015 0.001 0.0001" condim="3" solref="0.008 1" rgba="0.45 0.25 0.10 1"/>
+      <geom name="hammer_head" type="sphere" pos="0 0 -0.60" size="0.105" mass="0.32" friction="0.015 0.001 0.0001" condim="3" solref="0.008 1" rgba="0.68 0.70 0.74 1"/>
+      <geom name="hammer_hub" type="cylinder" quat="0.707106781 0.707106781 0 0" size="0.04 0.055" mass="0.025" contype="0" conaffinity="0" rgba="0.68 0.70 0.74 1"/>
+    </body>
+
+    <!-- Its nose starts before the 0.24 m gap between the two platforms. -->
+    <body name="peg" pos="0.15 0 0.50">
+      <joint name="peg_slide" type="slide" axis="1 0 0" range="0 0.62" damping="0.03" frictionloss="0.005" armature="0.0001" solreflimit="0.008 1"/>
+      <geom name="peg_impact_cap" type="box" size="0.07 0.075 0.045" mass="0.085" friction="0.15 0.002 0.0001" condim="3" solref="0.008 1" rgba="0.85 0.18 0.18 1"/>
+      <geom name="peg_shaft" type="capsule" fromto="0.02 0 0 0.30 0 0" size="0.025" mass="0.035" friction="0.15 0.002 0.0001" condim="3" solref="0.008 1" rgba="0.74 0.76 0.80 1"/>
+      <geom name="peg_nose" type="sphere" pos="0.30 0 0" size="0.035" mass="0.020" friction="0.15 0.002 0.0001" condim="3" solref="0.008 1" rgba="0.85 0.18 0.18 1"/>
+    </body>
+
+    <body name="block" pos="0.85 0 0.50">
+      <freejoint name="block_free"/>
+      <geom name="block_payload" type="box" size="0.055 0.055 0.055" mass="0.10" friction="0.35 0.01 0.001" condim="6" solref="0.008 1" rgba="0.08 0.78 0.70 1"/>
+    </body>
+
+    <body name="hammer_frame" pos="0 0 0">
+      <geom name="hammer_frame_left_post" type="box" pos="0 -0.24 0.55" size="0.045 0.045 0.55" rgba="0.30 0.34 0.39 1"/>
+      <geom name="hammer_frame_right_post" type="box" pos="0 0.24 0.55" size="0.045 0.045 0.55" rgba="0.30 0.34 0.39 1"/>
+      <geom name="hammer_frame_axle" type="capsule" fromto="0 -0.29 1.10 0 0.29 1.10" size="0.018" contype="0" conaffinity="0" rgba="0.65 0.68 0.72 1"/>
+    </body>
+
+    <body name="striker_platform" pos="0.27 0 0.175">
+      <geom name="striker_platform_base" type="box" size="0.25 0.12 0.175" rgba="0.32 0.38 0.44 1"/>
+    </body>
+
+    <body name="payload_ledge" pos="0.92 0 0">
+      <geom name="payload_ledge_top" type="box" pos="0 0 0.415" size="0.16 0.17 0.03" friction="0.25 0.005 0.0001" condim="3" solref="0.008 1" rgba="0.42 0.49 0.56 1"/>
+      <geom name="payload_ledge_left_leg" type="box" pos="0 -0.135 0.1925" size="0.035 0.025 0.1925" rgba="0.32 0.38 0.44 1"/>
+      <geom name="payload_ledge_right_leg" type="box" pos="0 0.135 0.1925" size="0.035 0.025 0.1925" rgba="0.32 0.38 0.44 1"/>
+    </body>
+
+    <!-- A low, dissipative tray catches the trigger ball after it removes the prop. -->
+    <body name="ball_tray" pos="-0.579555 0.42 0">
+      <geom name="ball_tray_bottom" type="box" pos="0 0 0.025" size="0.27 0.60 0.025" friction="1.2 0.03 0.015" condim="6" solref="0.01 1" rgba="0.25 0.32 0.38 1"/>
+      <geom name="ball_tray_left_wall" type="box" pos="-0.295 0 0.23" size="0.025 0.65 0.18" friction="1.2 0.03 0.015" condim="6" solref="0.01 1" rgba="0.35 0.43 0.50 1"/>
+      <geom name="ball_tray_right_wall" type="box" pos="0.295 0 0.23" size="0.025 0.65 0.18" friction="1.2 0.03 0.015" condim="6" solref="0.01 1" rgba="0.35 0.43 0.50 1"/>
+      <geom name="ball_tray_back_wall" type="box" pos="0 -0.625 0.23" size="0.27 0.025 0.18" friction="1.2 0.03 0.015" condim="6" solref="0.01 1" rgba="0.35 0.43 0.50 1"/>
+      <geom name="ball_tray_front_wall" type="box" pos="0 0.625 0.23" size="0.27 0.025 0.18" friction="1.2 0.03 0.015" condim="6" solref="0.01 1" rgba="0.35 0.43 0.50 1"/>
+    </body>
+
+    <!-- Horizontal, sixteen-segment drop hoop above the cup's mouth. -->
+    <body name="hoop" pos="1.60 0 0.33">
+      <geom name="hoop_segment_01" type="capsule" fromto="0.46 0 0 0.424985 0.176034 0" size="0.02" friction="0.3 0.005 0.001" solref="0.008 1" rgba="1 0.65 0.12 1"/>
+      <geom name="hoop_segment_02" type="capsule" fromto="0.424985 0.176034 0 0.325269 0.325269 0" size="0.02" friction="0.3 0.005 0.001" solref="0.008 1" rgba="1 0.65 0.12 1"/>
+      <geom name="hoop_segment_03" type="capsule" fromto="0.325269 0.325269 0 0.176034 0.424985 0" size="0.02" friction="0.3 0.005 0.001" solref="0.008 1" rgba="1 0.65 0.12 1"/>
+      <geom name="hoop_segment_04" type="capsule" fromto="0.176034 0.424985 0 0 0.46 0" size="0.02" friction="0.3 0.005 0.001" solref="0.008 1" rgba="1 0.65 0.12 1"/>
+      <geom name="hoop_segment_05" type="capsule" fromto="0 0.46 0 -0.176034 0.424985 0" size="0.02" friction="0.3 0.005 0.001" solref="0.008 1" rgba="1 0.65 0.12 1"/>
+      <geom name="hoop_segment_06" type="capsule" fromto="-0.176034 0.424985 0 -0.325269 0.325269 0" size="0.02" friction="0.3 0.005 0.001" solref="0.008 1" rgba="1 0.65 0.12 1"/>
+      <geom name="hoop_segment_07" type="capsule" fromto="-0.325269 0.325269 0 -0.424985 0.176034 0" size="0.02" friction="0.3 0.005 0.001" solref="0.008 1" rgba="1 0.65 0.12 1"/>
+      <geom name="hoop_segment_08" type="capsule" fromto="-0.424985 0.176034 0 -0.46 0 0" size="0.02" friction="0.3 0.005 0.001" solref="0.008 1" rgba="1 0.65 0.12 1"/>
+      <geom name="hoop_segment_09" type="capsule" fromto="-0.46 0 0 -0.424985 -0.176034 0" size="0.02" friction="0.3 0.005 0.001" solref="0.008 1" rgba="1 0.65 0.12 1"/>
+      <geom name="hoop_segment_10" type="capsule" fromto="-0.424985 -0.176034 0 -0.325269 -0.325269 0" size="0.02" friction="0.3 0.005 0.001" solref="0.008 1" rgba="1 0.65 0.12 1"/>
+      <geom name="hoop_segment_11" type="capsule" fromto="-0.325269 -0.325269 0 -0.176034 -0.424985 0" size="0.02" friction="0.3 0.005 0.001" solref="0.008 1" rgba="1 0.65 0.12 1"/>
+      <geom name="hoop_segment_12" type="capsule" fromto="-0.176034 -0.424985 0 0 -0.46 0" size="0.02" friction="0.3 0.005 0.001" solref="0.008 1" rgba="1 0.65 0.12 1"/>
+      <geom name="hoop_segment_13" type="capsule" fromto="0 -0.46 0 0.176034 -0.424985 0" size="0.02" friction="0.3 0.005 0.001" solref="0.008 1" rgba="1 0.65 0.12 1"/>
+      <geom name="hoop_segment_14" type="capsule" fromto="0.176034 -0.424985 0 0.325269 -0.325269 0" size="0.02" friction="0.3 0.005 0.001" solref="0.008 1" rgba="1 0.65 0.12 1"/>
+      <geom name="hoop_segment_15" type="capsule" fromto="0.325269 -0.325269 0 0.424985 -0.176034 0" size="0.02" friction="0.3 0.005 0.001" solref="0.008 1" rgba="1 0.65 0.12 1"/>
+      <geom name="hoop_segment_16" type="capsule" fromto="0.424985 -0.176034 0 0.46 0 0" size="0.02" friction="0.3 0.005 0.001" solref="0.008 1" rgba="1 0.65 0.12 1"/>
+    </body>
+
+    <body name="cup" pos="1.60 0 0">
+      <geom name="cup_bottom" type="box" pos="0 0 0.055" size="0.55 0.55 0.035" friction="1.2 0.03 0.015" condim="6" solref="0.01 1" rgba="0.12 0.40 0.62 1"/>
+      <geom name="cup_left_wall" type="box" pos="-0.525 0 0.17" size="0.025 0.55 0.12" friction="1.2 0.03 0.015" condim="6" solref="0.01 1" rgba="0.18 0.52 0.76 1"/>
+      <geom name="cup_right_wall" type="box" pos="0.525 0 0.17" size="0.025 0.55 0.12" friction="1.2 0.03 0.015" condim="6" solref="0.01 1" rgba="0.18 0.52 0.76 1"/>
+      <geom name="cup_back_wall" type="box" pos="0 -0.525 0.17" size="0.50 0.025 0.12" friction="1.2 0.03 0.015" condim="6" solref="0.01 1" rgba="0.18 0.52 0.76 1"/>
+      <geom name="cup_front_wall" type="box" pos="0 0.525 0.17" size="0.50 0.025 0.12" friction="1.2 0.03 0.015" condim="6" solref="0.01 1" rgba="0.18 0.52 0.76 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start" qpos="-0.579555 -0.831805 1.087942 1 0 0 0 0 1.308996939 0 0.85 0 0.50 1 0 0 0"/>
+  </keyframe>
+</mujoco>
+```
+
+---
+thinking (summarized):
+
+**Designing domino chain simulation**
+
+I'm thinking about creating a feasible domino chain simulation since the execution tools aren't provided. I need to understand the mechanical design and file constraints. The ball should start 0.8 m up the ramp, but the height is a bit ambiguous. I want to simulate interactions for 6 seconds, focusing on static geometry and physical contacts. I also need to ensure all movements are realistic and reliable, considering keyframes and angles for the hinge and prop support.
+
+**Planning a trigger chain**
+
+I need to develop a trigger chain that works without cheating, which means it should operate naturally and passively. I'm looking at an engineering challenge with a budget of about 29k tokens, and I need to plan effectively. The main action involves coordinating ramps and ball speeds to ensure movement hits props at the right angles. The hammer pendulum will pivot, and I’ll have to calculate its movement accurately under gravity, considering the support for the head. Got to ensure everything aligns perfectly!
+
+**Designing the ramp mechanics**
+
+The ball ramp needs to be positioned just below the head so that when the ball hits the prop, it can slide forward without obstruction. As the prop moves, the head should also shift in the same direction, but I must limit its travel to ensure rapid adjustments. The ball may approach at around 2 m/s and push the prop, which could increase to speeds over 3 later. I need to make sure the geometry is appropriate to avoid the ball hitting the hammer.
+
+**Calculating pendulum dynamics**
+
+I’m working on the pendulum problem with a length of 0.6 m and a drop of 0.445 m. I calculate the speed using the formula which gives me about 2.95 m/s. For the collisions, I consider various effective masses and velocities. I need to track the movements through completely inelastic collisions, noting how both the block and peg interact. It looks like the horizontal speed and drop will give specific travel distances for the blocks. I’ll finalize those calculations.
+
+**Calculating coordinates for hoop shape**
+
+I’m considering how to arrange 16 capsules in a circular layout, using the hoop structure but without a mesh. I need to compute the coordinates based on a ring radius of .46 centered at (1.6, 0). It seems the points are generated based on various angles in degrees, like 22.5, 45, and so on, calculating their (x, y) positions. I’ll work through these angles to finalize the coordinates for each capsule!
+
+**Evaluating bearing specifications**
+
+I’m looking at a bearing setup with different dimensions. The rod fits within hollow boxes, and there are specific size constraints for guides and caps. I notice that the cap is too large to pass through initially, causing a blockage when the components collide. 
+
+To avoid issues, I need to ensure that no guides collide and use a non-collidable visual guide type. I think I can simplify the design with a small rail body instead of additional guides. A slider joint should work well for a physical constraint.

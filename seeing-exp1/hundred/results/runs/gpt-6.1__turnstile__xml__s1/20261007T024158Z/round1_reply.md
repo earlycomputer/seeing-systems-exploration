@@ -1,0 +1,107 @@
+No. Ball1 rolls down the ramp and turns the rotor, which strikes ball2. Ball2 hits and moves the latch, but the latch’s cross-link collides with `ring_left_post`, limiting its travel. Both balls stop, while the block remains supported above the ring and never reaches the box.
+
+The revised file places the ring posts below the opening and shortens the latch’s low-friction support shelf so less travel is needed to release the block.
+
+```xml
+<mujoco model="ramp_rotor_latch_drop">
+  <compiler angle="degree" autolimits="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="80" cone="elliptic"/>
+  <size njmax="1000" nconmax="200"/>
+  <visual>
+    <global azimuth="135" elevation="-24"/>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.65 0.65 0.65" specular="0.2 0.2 0.2"/>
+  </visual>
+
+  <worldbody>
+    <light name="overhead" pos="-0.5 -1.5 4" dir="0.2 0.3 -1" directional="true"/>
+    <camera name="overview" pos="2.7 -3.8 2.7" xyaxes="0.82 0.57 0 -0.24 0.35 0.91"/>
+
+    <geom name="floor" type="plane" pos="0 0 0" size="4 4 0.1" friction="0.8 0.03 0.01" condim="6" rgba="0.20 0.23 0.27 1"/>
+
+    <!-- Ball1 starts one metre along the incline from its downhill end. -->
+    <body name="ramp">
+      <geom name="ramp_incline" type="box" pos="-0.981879 -0.27 1.108464" euler="0 16.699244 0" size="0.6 0.135 0.025" friction="0.45 0.008 0.002" condim="6" rgba="0.48 0.56 0.65 1"/>
+      <geom name="ramp_ball1_runout" type="box" pos="-0.17 -0.27 0.93" size="0.28 0.14 0.03" friction="0.45 0.008 0.002" condim="6" rgba="0.48 0.56 0.65 1"/>
+      <geom name="ramp_ball2_runway" type="box" pos="0.30 0.55 0.93" size="0.22 0.57 0.03" friction="0.45 0.008 0.002" condim="6" rgba="0.48 0.56 0.65 1"/>
+      <geom name="ramp_ball2_left_guide" type="box" pos="0.095 0.775 1.035" size="0.015 0.345 0.075" friction="0.25 0.005 0.002" condim="6" rgba="0.35 0.43 0.53 1"/>
+      <geom name="ramp_ball2_right_guide" type="box" pos="0.505 0.775 1.035" size="0.015 0.345 0.075" friction="0.25 0.005 0.002" condim="6" rgba="0.35 0.43 0.53 1"/>
+      <geom name="ramp_upper_leg" type="box" pos="-1.42 -0.27 0.61" size="0.035 0.10 0.61" rgba="0.30 0.36 0.43 1"/>
+      <geom name="ramp_lower_leg" type="box" pos="-0.39 -0.27 0.45" size="0.035 0.10 0.45" rgba="0.30 0.36 0.43 1"/>
+      <geom name="ramp_runway_leg" type="box" pos="0.30 1.02 0.45" size="0.12 0.035 0.45" rgba="0.30 0.36 0.43 1"/>
+    </body>
+
+    <body name="ball1" pos="-1.336275 -0.27 1.319185">
+      <freejoint name="ball1_free"/>
+      <geom name="ball1_sphere" type="sphere" size="0.075" mass="0.18" friction="0.65 0.015 0.004" condim="6" solref="0.008 1" rgba="0.95 0.28 0.12 1"/>
+    </body>
+
+    <body name="rotor" pos="0 0 1.035">
+      <inertial pos="0 0 0" mass="0.075" diaginertia="0.0014 0.0014 0.0025"/>
+      <joint name="rotor_hinge" type="hinge" axis="0 0 1" range="0 100" damping="0.006" frictionloss="0.001" armature="0.0005"/>
+      <geom name="rotor_hub" type="cylinder" size="0.055 0.045" friction="0.3 0.005 0.001" rgba="0.95 0.70 0.15 1"/>
+      <geom name="rotor_trigger_arm" type="capsule" fromto="0 -0.045 0 0 -0.38 0" size="0.035" friction="0.3 0.005 0.001" solref="0.008 1" rgba="0.95 0.70 0.15 1"/>
+      <geom name="rotor_striker_arm" type="capsule" fromto="0.045 0 0 0.38 0 0" size="0.035" friction="0.3 0.005 0.001" solref="0.008 1" rgba="0.95 0.70 0.15 1"/>
+    </body>
+
+    <body name="ball2" pos="0.30 0.15 1.035">
+      <freejoint name="ball2_free"/>
+      <geom name="ball2_sphere" type="sphere" size="0.075" mass="0.14" friction="0.55 0.01 0.004" condim="6" solref="0.008 1" rgba="0.16 0.65 0.95 1"/>
+    </body>
+
+    <!-- The cross-link is behind the payload, so it moves away rather than underneath it. -->
+    <body name="latch" pos="0.30 0.45 1.065">
+      <inertial pos="0.25 0.14 0.06" mass="0.05" diaginertia="0.001 0.006 0.006"/>
+      <joint name="latch_slide" type="slide" axis="0 1 0" range="0 0.43" damping="0.003" frictionloss="0.0005" armature="0.001"/>
+      <geom name="latch_striker_face" type="box" pos="0 0 0" size="0.175 0.025 0.095" friction="0.02 0.003 0.001" solref="0.008 1" rgba="0.70 0.30 0.75 1"/>
+      <geom name="latch_longitudinal_link" type="box" pos="0 0.15 0.075" size="0.05 0.18 0.02" friction="0.005 0.0005 0.0001" rgba="0.70 0.30 0.75 1"/>
+      <geom name="latch_cross_link" type="box" pos="0.25 0.305 0.075" size="0.37 0.025 0.02" friction="0.005 0.0005 0.0001" rgba="0.70 0.30 0.75 1"/>
+      <geom name="latch_payload_shelf" type="box" pos="0.50 0.23 0.0775" size="0.12 0.065 0.0175" friction="0.005 0.0005 0.0001" solref="0.008 1" rgba="0.70 0.30 0.75 1"/>
+    </body>
+
+    <body name="block" pos="0.80 0.68 1.225">
+      <freejoint name="block_free"/>
+      <geom name="block_payload" type="box" size="0.055 0.055 0.065" mass="0.22" friction="0.005 0.0005 0.0001" condim="6" solref="0.008 1" rgba="0.25 0.85 0.40 1"/>
+    </body>
+
+    <!-- Ring supports extend down to the floor, below the latch's swept volume. -->
+    <body name="ring" pos="0.80 0.68 0.70">
+      <geom name="ring_segment_01" type="capsule" fromto="0.180000 0 0 0.155885 0.090000 0" size="0.018" friction="0.3 0.005 0.001" rgba="0.95 0.78 0.22 1"/>
+      <geom name="ring_segment_02" type="capsule" fromto="0.155885 0.090000 0 0.090000 0.155885 0" size="0.018" friction="0.3 0.005 0.001" rgba="0.95 0.78 0.22 1"/>
+      <geom name="ring_segment_03" type="capsule" fromto="0.090000 0.155885 0 0 0.180000 0" size="0.018" friction="0.3 0.005 0.001" rgba="0.95 0.78 0.22 1"/>
+      <geom name="ring_segment_04" type="capsule" fromto="0 0.180000 0 -0.090000 0.155885 0" size="0.018" friction="0.3 0.005 0.001" rgba="0.95 0.78 0.22 1"/>
+      <geom name="ring_segment_05" type="capsule" fromto="-0.090000 0.155885 0 -0.155885 0.090000 0" size="0.018" friction="0.3 0.005 0.001" rgba="0.95 0.78 0.22 1"/>
+      <geom name="ring_segment_06" type="capsule" fromto="-0.155885 0.090000 0 -0.180000 0 0" size="0.018" friction="0.3 0.005 0.001" rgba="0.95 0.78 0.22 1"/>
+      <geom name="ring_segment_07" type="capsule" fromto="-0.180000 0 0 -0.155885 -0.090000 0" size="0.018" friction="0.3 0.005 0.001" rgba="0.95 0.78 0.22 1"/>
+      <geom name="ring_segment_08" type="capsule" fromto="-0.155885 -0.090000 0 -0.090000 -0.155885 0" size="0.018" friction="0.3 0.005 0.001" rgba="0.95 0.78 0.22 1"/>
+      <geom name="ring_segment_09" type="capsule" fromto="-0.090000 -0.155885 0 0 -0.180000 0" size="0.018" friction="0.3 0.005 0.001" rgba="0.95 0.78 0.22 1"/>
+      <geom name="ring_segment_10" type="capsule" fromto="0 -0.180000 0 0.090000 -0.155885 0" size="0.018" friction="0.3 0.005 0.001" rgba="0.95 0.78 0.22 1"/>
+      <geom name="ring_segment_11" type="capsule" fromto="0.090000 -0.155885 0 0.155885 -0.090000 0" size="0.018" friction="0.3 0.005 0.001" rgba="0.95 0.78 0.22 1"/>
+      <geom name="ring_segment_12" type="capsule" fromto="0.155885 -0.090000 0 0.180000 0 0" size="0.018" friction="0.3 0.005 0.001" rgba="0.95 0.78 0.22 1"/>
+      <geom name="ring_left_post" type="box" pos="-0.24 0 -0.35" size="0.018 0.025 0.35" rgba="0.58 0.49 0.22 1"/>
+      <geom name="ring_right_post" type="box" pos="0.24 0 -0.35" size="0.018 0.025 0.35" rgba="0.58 0.49 0.22 1"/>
+      <geom name="ring_left_connector" type="capsule" fromto="-0.24 0 0 -0.18 0 0" size="0.014" rgba="0.58 0.49 0.22 1"/>
+      <geom name="ring_right_connector" type="capsule" fromto="0.18 0 0 0.24 0 0" size="0.014" rgba="0.58 0.49 0.22 1"/>
+    </body>
+
+    <body name="box" pos="0.80 0.68 0">
+      <geom name="box_bottom" type="box" pos="0 0 0.055" size="0.265 0.265 0.045" friction="0.85 0.025 0.008" condim="6" solref="0.008 1" rgba="0.25 0.48 0.48 1"/>
+      <geom name="box_left_wall" type="box" pos="-0.25 0 0.30" size="0.015 0.265 0.20" friction="0.7 0.02 0.006" condim="6" rgba="0.30 0.58 0.58 1"/>
+      <geom name="box_right_wall" type="box" pos="0.25 0 0.30" size="0.015 0.265 0.20" friction="0.7 0.02 0.006" condim="6" rgba="0.30 0.58 0.58 1"/>
+      <geom name="box_front_wall" type="box" pos="0 -0.25 0.30" size="0.235 0.015 0.20" friction="0.7 0.02 0.006" condim="6" rgba="0.30 0.58 0.58 0.45"/>
+      <geom name="box_back_wall" type="box" pos="0 0.25 0.30" size="0.235 0.015 0.20" friction="0.7 0.02 0.006" condim="6" rgba="0.30 0.58 0.58 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start" qpos="-1.336275 -0.27 1.319185 1 0 0 0 0 0.30 0.15 1.035 1 0 0 0 0 0.80 0.68 1.225 1 0 0 0"/>
+  </keyframe>
+</mujoco>
+```
+
+```json
+{
+  "what_happens": "Ball1 rolls down the ramp and turns the rotor, which strikes ball2. Ball2 pushes the latch, but its cross-link hits a ring support and the latch settles at about 0.08 m displacement. Both balls stop, while the block remains on the latch above the ring throughout the run.",
+  "works": false,
+  "problem": "The latch does not withdraw far enough to release the block, so the block never falls through the ring into the box."
+}
+```

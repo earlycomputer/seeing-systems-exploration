@@ -1,0 +1,103 @@
+<mujoco model="gravity_chain_reaction">
+  <compiler angle="radian" inertiafromgeom="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" iterations="100" cone="elliptic"/>
+  <size njmax="2000" nconmax="400"/>
+  <visual>
+    <headlight ambient="0.45 0.45 0.45" diffuse="0.75 0.75 0.75" specular="0.2 0.2 0.2"/>
+    <global azimuth="135" elevation="-22"/>
+  </visual>
+
+  <worldbody>
+    <light name="overhead_light" pos="1.5 -2 5" dir="0 0 -1" directional="true"/>
+    <camera name="overview" pos="4.8 -6 3.5" xyaxes="0.88 0.48 0 -0.20 0.37 0.91"/>
+
+    <geom name="floor" type="plane" size="8 8 0.1" rgba="0.22 0.25 0.28 1" friction="1.0 0.03 0.03" condim="6" solref="0.008 1"/>
+
+    <!-- The ball's initial contact point is 0.8 m uphill from the ramp's lower edge. -->
+    <body name="ramp" pos="0 -0.663527 1.133422" quat="0.984807753 -0.173648178 0 0">
+      <geom name="ramp_surface" type="box" size="0.22 0.50 0.04" rgba="0.55 0.61 0.67 1" friction="0.8 0.002 0.001" condim="6" solref="0.008 1"/>
+    </body>
+
+    <body name="ramp_stands">
+      <geom name="ramp_stands_upper" type="cylinder" pos="0 -0.95 0.60" size="0.045 0.60" rgba="0.32 0.37 0.42 1"/>
+      <geom name="ramp_stands_lower" type="cylinder" pos="0 -0.30 0.48" size="0.045 0.48" rgba="0.32 0.37 0.42 1"/>
+    </body>
+
+    <body name="ball" pos="0 -0.906103 1.344093">
+      <freejoint name="ball_free"/>
+      <geom name="ball_sphere" type="sphere" size="0.075" mass="0.50" rgba="0.96 0.63 0.08 1" friction="0.7 0.003 0.001" condim="6" solref="0.008 1"/>
+    </body>
+
+    <!-- The light sliding pedestal supports the initially horizontal hammer. -->
+    <body name="prop" pos="0 0 0">
+      <joint name="prop_slide" type="slide" axis="0 1 0" limited="true" range="0 0.80" damping="0.025" frictionloss="0.01"/>
+      <geom name="prop_pedestal" type="box" pos="0 0 0.625" size="0.12 0.06 0.605" mass="0.14" rgba="0.83 0.23 0.16 1" friction="0.005 0.0001 0.0001" solref="0.008 1"/>
+    </body>
+
+    <body name="hammer_mount">
+      <geom name="hammer_mount_left_post" type="cylinder" pos="0.9 -0.22 0.665" size="0.04 0.665" rgba="0.30 0.34 0.39 1"/>
+      <geom name="hammer_mount_right_post" type="cylinder" pos="0.9 0.22 0.665" size="0.04 0.665" rgba="0.30 0.34 0.39 1"/>
+      <geom name="hammer_mount_axle" type="cylinder" pos="0.9 0 1.33" quat="0.707106781 0.707106781 0 0" size="0.045 0.26" rgba="0.20 0.23 0.27 1" contype="0" conaffinity="0"/>
+    </body>
+
+    <body name="hammer" pos="0.9 0 1.33">
+      <joint name="hammer_hinge" type="hinge" axis="0 -1 0" limited="true" range="0 2.15" damping="0.015" frictionloss="0.005"/>
+      <geom name="hammer_handle" type="capsule" fromto="0 0 0 -0.9 0 0" size="0.025" mass="0.15" rgba="0.57 0.35 0.16 1" friction="0.01 0.0001 0.0001" solref="0.008 1"/>
+      <geom name="hammer_head" type="sphere" pos="-0.9 0 0" size="0.10" mass="1.60" rgba="0.17 0.20 0.24 1" friction="0.01 0.0001 0.0001" solref="0.008 1"/>
+    </body>
+
+    <!-- The guide ends at x=1.42; the receiving platform starts at x=1.74. -->
+    <body name="peg_guide">
+      <geom name="peg_guide_base" type="box" pos="1.28 0 0.16" size="0.14 0.13 0.16" rgba="0.34 0.40 0.47 1"/>
+      <geom name="peg_guide_near_rail" type="box" pos="1.28 -0.085 0.39" size="0.14 0.015 0.07" rgba="0.44 0.51 0.59 1"/>
+      <geom name="peg_guide_far_rail" type="box" pos="1.28 0.085 0.39" size="0.14 0.015 0.07" rgba="0.44 0.51 0.59 1"/>
+    </body>
+
+    <body name="peg" pos="0 0 0">
+      <joint name="peg_slide" type="slide" axis="1 0 0" limited="true" range="0 0.95" damping="0.04" frictionloss="0.015"/>
+      <geom name="peg_shaft" type="box" pos="1.20 0 0.43" size="0.20 0.045 0.03" mass="0.10" rgba="0.18 0.57 0.83 1" friction="0.2 0.001 0.001" solref="0.008 1"/>
+      <geom name="peg_striking_head" type="box" pos="1.015 0 0.43" size="0.035 0.07 0.065" mass="0.12" rgba="0.12 0.42 0.68 1" friction="0.2 0.001 0.001" solref="0.008 1"/>
+    </body>
+
+    <body name="launch_platform">
+      <geom name="launch_platform_pedestal" type="box" pos="1.835 0 0.185" size="0.095 0.14 0.185" rgba="0.49 0.44 0.35 1" friction="0.45 0.003 0.001" solref="0.008 1"/>
+    </body>
+
+    <body name="block" pos="1.87 0 0.43">
+      <freejoint name="block_free"/>
+      <geom name="block_payload" type="box" size="0.06 0.06 0.06" mass="0.25" rgba="0.72 0.27 0.77 1" friction="0.8 0.01 0.002" condim="6" solref="0.008 1"/>
+    </body>
+
+    <!-- A horizontal elliptical hoop leaves an unobstructed drop aperture. -->
+    <body name="hoop" pos="0 0 0.275">
+      <geom name="hoop_segment_01" type="capsule" fromto="3.64 0 0 3.566924 0.130112 0" size="0.018" rgba="0.96 0.78 0.12 1"/>
+      <geom name="hoop_segment_02" type="capsule" fromto="3.566924 0.130112 0 3.358823 0.240416 0" size="0.018" rgba="0.96 0.78 0.12 1"/>
+      <geom name="hoop_segment_03" type="capsule" fromto="3.358823 0.240416 0 3.047376 0.314119 0" size="0.018" rgba="0.96 0.78 0.12 1"/>
+      <geom name="hoop_segment_04" type="capsule" fromto="3.047376 0.314119 0 2.68 0.34 0" size="0.018" rgba="0.96 0.78 0.12 1"/>
+      <geom name="hoop_segment_05" type="capsule" fromto="2.68 0.34 0 2.312624 0.314119 0" size="0.018" rgba="0.96 0.78 0.12 1"/>
+      <geom name="hoop_segment_06" type="capsule" fromto="2.312624 0.314119 0 2.001177 0.240416 0" size="0.018" rgba="0.96 0.78 0.12 1"/>
+      <geom name="hoop_segment_07" type="capsule" fromto="2.001177 0.240416 0 1.793076 0.130112 0" size="0.018" rgba="0.96 0.78 0.12 1"/>
+      <geom name="hoop_segment_08" type="capsule" fromto="1.793076 0.130112 0 1.72 0 0" size="0.018" rgba="0.96 0.78 0.12 1"/>
+      <geom name="hoop_segment_09" type="capsule" fromto="1.72 0 0 1.793076 -0.130112 0" size="0.018" rgba="0.96 0.78 0.12 1"/>
+      <geom name="hoop_segment_10" type="capsule" fromto="1.793076 -0.130112 0 2.001177 -0.240416 0" size="0.018" rgba="0.96 0.78 0.12 1"/>
+      <geom name="hoop_segment_11" type="capsule" fromto="2.001177 -0.240416 0 2.312624 -0.314119 0" size="0.018" rgba="0.96 0.78 0.12 1"/>
+      <geom name="hoop_segment_12" type="capsule" fromto="2.312624 -0.314119 0 2.68 -0.34 0" size="0.018" rgba="0.96 0.78 0.12 1"/>
+      <geom name="hoop_segment_13" type="capsule" fromto="2.68 -0.34 0 3.047376 -0.314119 0" size="0.018" rgba="0.96 0.78 0.12 1"/>
+      <geom name="hoop_segment_14" type="capsule" fromto="3.047376 -0.314119 0 3.358823 -0.240416 0" size="0.018" rgba="0.96 0.78 0.12 1"/>
+      <geom name="hoop_segment_15" type="capsule" fromto="3.358823 -0.240416 0 3.566924 -0.130112 0" size="0.018" rgba="0.96 0.78 0.12 1"/>
+      <geom name="hoop_segment_16" type="capsule" fromto="3.566924 -0.130112 0 3.64 0 0" size="0.018" rgba="0.96 0.78 0.12 1"/>
+    </body>
+
+    <body name="cup" pos="2.68 0 0">
+      <geom name="cup_bottom" type="box" pos="0 0 0.025" size="1.085 0.46 0.025" rgba="0.20 0.61 0.43 1" friction="1.0 0.02 0.02" condim="6" solref="0.008 1"/>
+      <geom name="cup_left_wall" type="box" pos="-1.06 0 0.145" size="0.025 0.46 0.095" rgba="0.16 0.48 0.34 1" friction="1.0 0.02 0.02" condim="6" solref="0.008 1"/>
+      <geom name="cup_right_wall" type="box" pos="1.06 0 0.145" size="0.025 0.46 0.095" rgba="0.16 0.48 0.34 1" friction="1.0 0.02 0.02" condim="6" solref="0.008 1"/>
+      <geom name="cup_near_wall" type="box" pos="0 -0.435 0.145" size="1.035 0.025 0.095" rgba="0.20 0.61 0.43 0.65" friction="1.0 0.02 0.02" condim="6" solref="0.008 1"/>
+      <geom name="cup_far_wall" type="box" pos="0 0.435 0.145" size="1.035 0.025 0.095" rgba="0.16 0.48 0.34 1" friction="1.0 0.02 0.02" condim="6" solref="0.008 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start" qpos="0 -0.906103 1.344093 1 0 0 0 0 0 0 1.87 0 0.43 1 0 0 0"/>
+  </keyframe>
+</mujoco>

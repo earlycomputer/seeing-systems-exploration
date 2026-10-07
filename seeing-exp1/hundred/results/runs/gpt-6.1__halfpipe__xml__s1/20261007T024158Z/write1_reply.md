@@ -1,0 +1,126 @@
+```xml
+<mujoco model="halfpipe_chain_reaction">
+  <compiler angle="degree" inertiafromgeom="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="80"/>
+  <size njmax="3000" nconmax="600"/>
+  <visual>
+    <headlight ambient="0.45 0.45 0.45" diffuse="0.75 0.75 0.75" specular="0.15 0.15 0.15"/>
+    <global azimuth="135" elevation="-22"/>
+  </visual>
+
+  <worldbody>
+    <light name="scene_light" pos="0 -3 5" dir="0 0.4 -1"/>
+    <camera name="overview" pos="3.6 -6 3.3" xyaxes="0.93 0.37 0 -0.15 0.38 0.91"/>
+    <geom name="floor" type="plane" size="7 5 0.1" rgba="0.18 0.21 0.24 1" friction="0.8 0.01 0.002" solref="0.015 1"/>
+
+    <!-- The ball's starting contact point is 1 m up the 30-degree ramp. -->
+    <body name="ramp">
+      <geom name="ramp_surface" type="box" pos="-1.539615 0 0.593308" quat="0.965926 0 0.258819 0" size="0.6 0.28 0.04" rgba="0.38 0.55 0.68 1" friction="0.35 0.003 0.0001" solref="0.006 1"/>
+      <geom name="ramp_left_rail" type="box" pos="-1.474615 -0.31 0.705891" quat="0.965926 0 0.258819 0" size="0.6 0.025 0.09" rgba="0.26 0.39 0.49 1" friction="0.35 0.003 0.0001"/>
+      <geom name="ramp_right_rail" type="box" pos="-1.474615 0.31 0.705891" quat="0.965926 0 0.258819 0" size="0.6 0.025 0.09" rgba="0.26 0.39 0.49 1" friction="0.35 0.003 0.0001"/>
+    </body>
+
+    <!-- Chords approximate a circular trough of radius 2 m. -->
+    <body name="halfpipe">
+      <geom name="halfpipe_01" type="box" pos="-0.938781 0 0.256623" quat="0.971342 0 0.237686 0" size="0.0875 0.28 0.035" rgba="0.38 0.55 0.68 1" friction="0.35 0.003 0.0001" solref="0.006 1"/>
+      <geom name="halfpipe_02" type="box" pos="-0.778032 0 0.181666" quat="0.980785 0 0.195090 0" size="0.0875 0.28 0.035" rgba="0.38 0.55 0.68 1" friction="0.35 0.003 0.0001" solref="0.006 1"/>
+      <geom name="halfpipe_03" type="box" pos="-0.611360 0 0.121005" quat="0.988362 0 0.152123 0" size="0.0875 0.28 0.035" rgba="0.38 0.55 0.68 1" friction="0.35 0.003 0.0001" solref="0.006 1"/>
+      <geom name="halfpipe_04" type="box" pos="-0.440044 0 0.075096" quat="0.994056 0 0.108867 0" size="0.0875 0.28 0.035" rgba="0.38 0.55 0.68 1" friction="0.35 0.003 0.0001" solref="0.006 1"/>
+      <geom name="halfpipe_05" type="box" pos="-0.265374 0 0.044297" quat="0.997859 0 0.065403 0" size="0.0875 0.28 0.035" rgba="0.38 0.55 0.68 1" friction="0.35 0.003 0.0001" solref="0.006 1"/>
+      <geom name="halfpipe_06" type="box" pos="-0.088683 0 0.028839" quat="0.999762 0 0.021815 0" size="0.0875 0.28 0.035" rgba="0.38 0.55 0.68 1" friction="0.35 0.003 0.0001" solref="0.006 1"/>
+      <geom name="halfpipe_07" type="box" pos="0.088683 0 0.028839" quat="0.999762 0 -0.021815 0" size="0.0875 0.28 0.035" rgba="0.38 0.55 0.68 1" friction="0.35 0.003 0.0001" solref="0.006 1"/>
+      <geom name="halfpipe_08" type="box" pos="0.265374 0 0.044297" quat="0.997859 0 -0.065403 0" size="0.0875 0.28 0.035" rgba="0.38 0.55 0.68 1" friction="0.35 0.003 0.0001" solref="0.006 1"/>
+      <geom name="halfpipe_09" type="box" pos="0.440044 0 0.075096" quat="0.994056 0 -0.108867 0" size="0.0875 0.28 0.035" rgba="0.38 0.55 0.68 1" friction="0.35 0.003 0.0001" solref="0.006 1"/>
+      <geom name="halfpipe_10" type="box" pos="0.611360 0 0.121005" quat="0.988362 0 -0.152123 0" size="0.0875 0.28 0.035" rgba="0.38 0.55 0.68 1" friction="0.35 0.003 0.0001" solref="0.006 1"/>
+      <geom name="halfpipe_11" type="box" pos="0.778032 0 0.181666" quat="0.980785 0 -0.195090 0" size="0.0875 0.28 0.035" rgba="0.38 0.55 0.68 1" friction="0.35 0.003 0.0001" solref="0.006 1"/>
+      <geom name="halfpipe_12" type="box" pos="0.938781 0 0.256623" quat="0.971342 0 -0.237686 0" size="0.0875 0.28 0.035" rgba="0.38 0.55 0.68 1" friction="0.35 0.003 0.0001" solref="0.006 1"/>
+      <geom name="halfpipe_left_rail" type="box" pos="0 -0.31 0.24" size="1.02 0.025 0.24" rgba="0.26 0.39 0.49 1"/>
+      <geom name="halfpipe_right_rail" type="box" pos="0 0.31 0.24" size="1.02 0.025 0.24" rgba="0.26 0.39 0.49 1"/>
+    </body>
+
+    <body name="ball1" pos="-1.825775 0 0.897664">
+      <freejoint name="ball1_free"/>
+      <geom name="ball1_sphere" type="sphere" size="0.08" mass="2" rgba="0.95 0.25 0.12 1" friction="0.35 0.003 0.0001" solref="0.006 1"/>
+    </body>
+
+    <body name="striker_table">
+      <geom name="striker_table_top" type="box" pos="1.2475 0 0.307949" size="0.1425 0.20 0.02" rgba="0.38 0.40 0.43 1" friction="0.06 0.002 0.0001" solref="0.006 1"/>
+      <geom name="striker_table_leg" type="box" pos="1.2475 0 0.145" size="0.07 0.15 0.145" rgba="0.30 0.32 0.35 1"/>
+      <geom name="striker_table_stop_left" type="box" pos="1.355 -0.15 0.565" size="0.025 0.035 0.235" rgba="0.38 0.40 0.43 1" solref="0.008 1"/>
+      <geom name="striker_table_stop_right" type="box" pos="1.355 0.15 0.565" size="0.025 0.035 0.235" rgba="0.38 0.40 0.43 1" solref="0.008 1"/>
+    </body>
+
+    <body name="block" pos="1.13 0 0.457949">
+      <freejoint name="block_free"/>
+      <geom name="block_box" type="box" size="0.10 0.13 0.13" mass="0.55" rgba="0.95 0.70 0.12 1" friction="0.06 0.002 0.0001" solref="0.006 1"/>
+    </body>
+
+    <body name="pendulum_support">
+      <geom name="pendulum_support_post" type="capsule" fromto="1.36 -0.42 0.03 1.36 -0.42 1.41" size="0.025" rgba="0.32 0.34 0.38 1"/>
+      <geom name="pendulum_support_crossbar" type="capsule" fromto="1.36 -0.42 1.41 1.36 0.42 1.41" size="0.025" rgba="0.32 0.34 0.38 1"/>
+    </body>
+
+    <body name="pendulum" pos="1.36 0 1.41">
+      <joint name="pendulum_hinge" type="hinge" axis="0 1 0" limited="true" range="-65 20" damping="0.025" armature="0.001"/>
+      <geom name="pendulum_arm" type="capsule" fromto="0 0 -0.05 0 0 -0.79" size="0.018" mass="0.04" rgba="0.72 0.75 0.79 1" friction="0.2 0.003 0.0001" solref="0.006 1"/>
+      <geom name="pendulum_bob" type="sphere" pos="0 0 -0.9" size="0.11" mass="0.60" rgba="0.72 0.32 0.82 1" friction="0.2 0.003 0.0001" solref="0.006 1"/>
+    </body>
+
+    <body name="ball2_pedestal">
+      <geom name="ball2_pedestal_stem" type="box" pos="1.64 0 0.23" size="0.018 0.07 0.23" rgba="0.48 0.50 0.54 1" friction="0.25 0.003 0.0001" solref="0.006 1"/>
+    </body>
+
+    <body name="ball2" pos="1.64 0 0.53">
+      <freejoint name="ball2_free"/>
+      <geom name="ball2_sphere" type="sphere" size="0.07" mass="0.10" rgba="0.16 0.78 0.95 1" friction="0.35 0.005 0.0002" solref="0.008 1"/>
+    </body>
+
+    <!-- Horizontal drop hoop, centered over the catching cup. -->
+    <body name="hoop" pos="2.12 0 0.35">
+      <geom name="hoop_01" type="capsule" fromto="0.6 0 0 0.554328 0.229610 0" size="0.016" rgba="0.98 0.82 0.20 1"/>
+      <geom name="hoop_02" type="capsule" fromto="0.554328 0.229610 0 0.424264 0.424264 0" size="0.016" rgba="0.98 0.82 0.20 1"/>
+      <geom name="hoop_03" type="capsule" fromto="0.424264 0.424264 0 0.229610 0.554328 0" size="0.016" rgba="0.98 0.82 0.20 1"/>
+      <geom name="hoop_04" type="capsule" fromto="0.229610 0.554328 0 0 0.6 0" size="0.016" rgba="0.98 0.82 0.20 1"/>
+      <geom name="hoop_05" type="capsule" fromto="0 0.6 0 -0.229610 0.554328 0" size="0.016" rgba="0.98 0.82 0.20 1"/>
+      <geom name="hoop_06" type="capsule" fromto="-0.229610 0.554328 0 -0.424264 0.424264 0" size="0.016" rgba="0.98 0.82 0.20 1"/>
+      <geom name="hoop_07" type="capsule" fromto="-0.424264 0.424264 0 -0.554328 0.229610 0" size="0.016" rgba="0.98 0.82 0.20 1"/>
+      <geom name="hoop_08" type="capsule" fromto="-0.554328 0.229610 0 -0.6 0 0" size="0.016" rgba="0.98 0.82 0.20 1"/>
+      <geom name="hoop_09" type="capsule" fromto="-0.6 0 0 -0.554328 -0.229610 0" size="0.016" rgba="0.98 0.82 0.20 1"/>
+      <geom name="hoop_10" type="capsule" fromto="-0.554328 -0.229610 0 -0.424264 -0.424264 0" size="0.016" rgba="0.98 0.82 0.20 1"/>
+      <geom name="hoop_11" type="capsule" fromto="-0.424264 -0.424264 0 -0.229610 -0.554328 0" size="0.016" rgba="0.98 0.82 0.20 1"/>
+      <geom name="hoop_12" type="capsule" fromto="-0.229610 -0.554328 0 0 -0.6 0" size="0.016" rgba="0.98 0.82 0.20 1"/>
+      <geom name="hoop_13" type="capsule" fromto="0 -0.6 0 0.229610 -0.554328 0" size="0.016" rgba="0.98 0.82 0.20 1"/>
+      <geom name="hoop_14" type="capsule" fromto="0.229610 -0.554328 0 0.424264 -0.424264 0" size="0.016" rgba="0.98 0.82 0.20 1"/>
+      <geom name="hoop_15" type="capsule" fromto="0.424264 -0.424264 0 0.554328 -0.229610 0" size="0.016" rgba="0.98 0.82 0.20 1"/>
+      <geom name="hoop_16" type="capsule" fromto="0.554328 -0.229610 0 0.6 0 0" size="0.016" rgba="0.98 0.82 0.20 1"/>
+      <geom name="hoop_support_left" type="capsule" fromto="0 -0.6 -0.32 0 -0.6 0" size="0.012" rgba="0.65 0.57 0.20 1"/>
+      <geom name="hoop_support_right" type="capsule" fromto="0 0.6 -0.32 0 0.6 0" size="0.012" rgba="0.65 0.57 0.20 1"/>
+    </body>
+
+    <!-- Dissipative bottom and overlapping wall panels retain ball2. -->
+    <body name="cup" pos="2.12 0 0">
+      <geom name="cup_bottom" type="cylinder" pos="0 0 0.025" size="0.77 0.02" rgba="0.15 0.52 0.43 1" friction="1 0.02 0.005" solref="0.02 1" condim="6"/>
+      <geom name="cup_wall_01" type="box" pos="0.735 0 0.165" size="0.025 0.15 0.12" euler="0 0 0" rgba="0.18 0.64 0.51 1" friction="1 0.02 0.005" solref="0.02 1" condim="6"/>
+      <geom name="cup_wall_02" type="box" pos="0.679052 0.281272 0.165" size="0.025 0.15 0.12" euler="0 0 22.5" rgba="0.18 0.64 0.51 1" friction="1 0.02 0.005" solref="0.02 1" condim="6"/>
+      <geom name="cup_wall_03" type="box" pos="0.519723 0.519723 0.165" size="0.025 0.15 0.12" euler="0 0 45" rgba="0.18 0.64 0.51 1" friction="1 0.02 0.005" solref="0.02 1" condim="6"/>
+      <geom name="cup_wall_04" type="box" pos="0.281272 0.679052 0.165" size="0.025 0.15 0.12" euler="0 0 67.5" rgba="0.18 0.64 0.51 1" friction="1 0.02 0.005" solref="0.02 1" condim="6"/>
+      <geom name="cup_wall_05" type="box" pos="0 0.735 0.165" size="0.025 0.15 0.12" euler="0 0 90" rgba="0.18 0.64 0.51 1" friction="1 0.02 0.005" solref="0.02 1" condim="6"/>
+      <geom name="cup_wall_06" type="box" pos="-0.281272 0.679052 0.165" size="0.025 0.15 0.12" euler="0 0 112.5" rgba="0.18 0.64 0.51 1" friction="1 0.02 0.005" solref="0.02 1" condim="6"/>
+      <geom name="cup_wall_07" type="box" pos="-0.519723 0.519723 0.165" size="0.025 0.15 0.12" euler="0 0 135" rgba="0.18 0.64 0.51 1" friction="1 0.02 0.005" solref="0.02 1" condim="6"/>
+      <geom name="cup_wall_08" type="box" pos="-0.679052 0.281272 0.165" size="0.025 0.15 0.12" euler="0 0 157.5" rgba="0.18 0.64 0.51 1" friction="1 0.02 0.005" solref="0.02 1" condim="6"/>
+      <geom name="cup_wall_09" type="box" pos="-0.735 0 0.165" size="0.025 0.15 0.12" euler="0 0 180" rgba="0.18 0.64 0.51 1" friction="1 0.02 0.005" solref="0.02 1" condim="6"/>
+      <geom name="cup_wall_10" type="box" pos="-0.679052 -0.281272 0.165" size="0.025 0.15 0.12" euler="0 0 202.5" rgba="0.18 0.64 0.51 1" friction="1 0.02 0.005" solref="0.02 1" condim="6"/>
+      <geom name="cup_wall_11" type="box" pos="-0.519723 -0.519723 0.165" size="0.025 0.15 0.12" euler="0 0 225" rgba="0.18 0.64 0.51 1" friction="1 0.02 0.005" solref="0.02 1" condim="6"/>
+      <geom name="cup_wall_12" type="box" pos="-0.281272 -0.679052 0.165" size="0.025 0.15 0.12" euler="0 0 247.5" rgba="0.18 0.64 0.51 1" friction="1 0.02 0.005" solref="0.02 1" condim="6"/>
+      <geom name="cup_wall_13" type="box" pos="0 -0.735 0.165" size="0.025 0.15 0.12" euler="0 0 270" rgba="0.18 0.64 0.51 1" friction="1 0.02 0.005" solref="0.02 1" condim="6"/>
+      <geom name="cup_wall_14" type="box" pos="0.281272 -0.679052 0.165" size="0.025 0.15 0.12" euler="0 0 292.5" rgba="0.18 0.64 0.51 1" friction="1 0.02 0.005" solref="0.02 1" condim="6"/>
+      <geom name="cup_wall_15" type="box" pos="0.519723 -0.519723 0.165" size="0.025 0.15 0.12" euler="0 0 315" rgba="0.18 0.64 0.51 1" friction="1 0.02 0.005" solref="0.02 1" condim="6"/>
+      <geom name="cup_wall_16" type="box" pos="0.679052 -0.281272 0.165" size="0.025 0.15 0.12" euler="0 0 337.5" rgba="0.18 0.64 0.51 1" friction="1 0.02 0.005" solref="0.02 1" condim="6"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start"/>
+  </keyframe>
+</mujoco>
+```

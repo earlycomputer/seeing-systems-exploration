@@ -1,0 +1,228 @@
+```world
+world  drop driven crosswise release
+
+floor
+  size      5 m
+  friction  0.8, spinning 0.005, rolling 0.002
+
+box
+  is an     open box
+  length    50 cm
+  width     50 cm
+  walls     25 cm
+  wall thickness  2 cm
+  base thickness  2 cm
+  on        floor, 85 cm along
+  friction  0.8, spinning 0.01, rolling 0.004
+  bounce    dead
+  colour    wood
+
+hoop
+  is a      ring 42 cm across, 1 cm thick
+  at        85 cm along, 0 cm to the left, 85 cm up
+  colour    orange
+
+-- Slider1 is captured between a deck, side guides and retaining lips.
+
+first slide deck
+  is a      box 180 by 26 by 4 cm
+  raised    144 cm
+  at        65 cm along, 40 cm to the right
+  friction  0.005
+  colour    grey
+
+first right guide
+  is a      box 180 by 2 by 5.5 cm
+  raised    148 cm
+  at        65 cm along, 50.5 cm to the right
+  friction  0.005
+  colour    grey
+
+first left guide
+  is a      box 180 by 2 by 5.5 cm
+  raised    148 cm
+  at        65 cm along, 29.5 cm to the right
+  friction  0.005
+  colour    grey
+
+first right retaining lip
+  is a      box 180 by 3 by 1 cm
+  raised    152.5 cm
+  at        65 cm along, 49 cm to the right
+  friction  0.005
+  colour    grey
+
+first left retaining lip
+  is a      box 180 by 3 by 1 cm
+  raised    152.5 cm
+  at        65 cm along, 31 cm to the right
+  friction  0.005
+  colour    grey
+
+first forward stop
+  is a      box 4 by 26 by 30 cm
+  raised    148 cm
+  at        112 cm along, 40 cm to the right
+  bounce    dead
+  colour    grey
+
+-- The inclined impact face rises along x, so a falling ball
+-- pushes its captured carriage forward.
+
+impact low point
+  is a      point
+  at        0 cm along, 40 cm to the right, 154 cm up
+
+impact high point
+  is a      point
+  at        20 cm beyond impact low point, 40 cm to the right, 174 cm up
+
+slider1
+  is a      plank from impact low point to impact high point, 14 cm wide, 1 cm thick
+  weighs    80 g
+  moves     freely
+  friction  0.01
+  bounce    dead
+  colour    orange
+
+first carriage
+  is a      box 24 by 18 by 4 cm, 200 g
+  raised    148 cm
+  at        10 cm along, 40 cm to the right
+  attached to  slider1
+  friction  0.005
+  bounce    dead
+  colour    wood
+
+first pusher
+  is a      box 8 by 12 by 16 cm, 40 g
+  raised    152 cm
+  at        22 cm along, 40 cm to the right
+  attached to  slider1
+  friction  0.005
+  bounce    dead
+  colour    orange
+
+-- Slider2 runs across y. Its bearing strips are outside
+-- the payload's vertical drop corridor.
+
+second near bearing
+  is a      box 3 by 110 by 4 cm
+  raised    144 cm
+  at        51.5 cm along, 35 cm to the left
+  friction  0.002
+  colour    grey
+
+second far bearing
+  is a      box 3 by 110 by 4 cm
+  raised    144 cm
+  at        118.5 cm along, 35 cm to the left
+  friction  0.002
+  colour    grey
+
+second near guide
+  is a      box 2 by 110 by 1.5 cm
+  raised    148 cm
+  at        48.4 cm along, 35 cm to the left
+  friction  0.002
+  colour    grey
+
+second far guide
+  is a      box 2 by 110 by 1.5 cm
+  raised    148 cm
+  at        121.6 cm along, 35 cm to the left
+  friction  0.002
+  colour    grey
+
+second starting stop
+  is a      box 70 by 3 by 5 cm
+  raised    148 cm
+  at        85 cm along, 21 cm to the right
+  bounce    dead
+  colour    grey
+
+second withdrawal stop
+  is a      box 70 by 3 by 5 cm
+  raised    148 cm
+  at        85 cm along, 93 cm to the left
+  bounce    dead
+  colour    grey
+
+slider2
+  is a      box 70 by 36 by 3 cm, 250 g
+  raised    148 cm
+  at        85 cm along, 0 cm to the left
+  moves     freely
+  friction  0.002
+  bounce    dead
+  colour    wood
+
+-- A diagonal cam converts slider1's forward stroke into
+-- slider2's crosswise withdrawal. It clears both sets of guides.
+
+cam near point
+  is a      point
+  at        30 cm along, 15 cm to the right, 162 cm up
+
+cam far point
+  is a      point
+  at        105 cm along, 90 cm to the right, 162 cm up
+
+crosswise cam
+  is a      plank from cam near point to cam far point, 4 cm wide, 14 cm thick
+  weighs    80 g
+  attached to  slider2
+  friction  0.002
+  bounce    dead
+  colour    orange
+
+cam connector
+  is a      box 30 by 6 by 10 cm, 40 g
+  raised    151 cm
+  at        45 cm along, 15 cm to the right
+  attached to  slider2
+  friction  0.002
+  bounce    dead
+  colour    orange
+
+block
+  is a      cube 8 cm, 120 g
+  on        slider2
+  at        85 cm along, 0 cm to the left
+  moves     freely
+  friction  0.002
+  bounce    dead
+  colour    white
+
+-- At this x coordinate, first contact with the inclined face
+-- occurs at ball-centre height 171.78 cm: a 40 cm vertical drop.
+
+ball
+  is a      sphere 5 cm radius, 2 kg
+  at        10 cm along, 40 cm to the right, 211.78 cm up
+  moves     freely
+  rolls
+  friction  0.01, spinning 0.001, rolling 0.001
+  bounce    dead
+  colour    black
+
+expect
+  ball touches slider1
+  block drops through hoop
+  block comes to rest in box
+```
+
+---
+thinking (summarized):
+
+**Calculating slider dimensions**
+
+I’m working on some specific measurements for a slider. I see that I need a width of .09 and an inner overlap of .03 with some tolerance in base overlap. There's also a requirement for a vertical clearance of 5mm. I’m taking care to ensure the slider design prevents tipping and functions smoothly. The track dimensions and stops are crucial for centering everything properly and ensuring movement is effective. I’ll adjust the stop position to improve cam movement.
+
+**Calculating cam movement**
+
+I'm diving into the details for intended withdrawal, which needs to be .23 and considering stopping at .85. I have a front gap of .3 and looking at cam movement after centering the slider. The geometry appears complex; I’ll set up the equations and check contact points. I’m adjusting values like q1 and q2 to ensure everything clears correctly, and it seems to involve fine-tuning other dimensions too. I need to double-check the angles and dimensions for ball contact and ensure it works smoothly.
+
+**Calculating ball drop**
+
+I'm working out the dimensions for a wedge where the low point is at x-.1 and z1.54, and the high point is at z1.74. I’ll need to compute the ball's initial center at z2.11778, which will fall to 1.71778 at x0. I’m figuring out the contact point at x+.03536 and z at 1.68243 on the upper slope. The final height I’m considering for the drop is 40cm, which seems to fit well with my calculations.

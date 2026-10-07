@@ -1,0 +1,101 @@
+The block falls about 0.5 m and hits the wedge, but then directly strikes and launches ball1. The wedge barely tips and never strikes ball1. Ball1 travels down the ramp and knocks the flap down, while ball2 has already started drifting off its shelf. Both balls ultimately settle in the cup. The flap finishes at its joint’s upper stop, not its lower stop.
+
+This does **not** reproduce the required causal chain. The correction below separates the block from ball1’s lane, adds a wedge striker, counterbalances the flap’s initial load, and uses a retaining lip to delay ball2’s release until the flap has swung down. This revision has not been simulated here.
+
+```xml
+<mujoco model="corrected_wedge_flap_release">
+  <compiler angle="radian" autolimits="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100" cone="elliptic" impratio="10"/>
+  <size njmax="2000" nconmax="400"/>
+  <visual>
+    <headlight ambient="0.45 0.45 0.45" diffuse="0.7 0.7 0.7"/>
+  </visual>
+
+  <worldbody>
+    <light name="overhead" pos="0.7 -1.5 2.5" dir="0 0 -1"/>
+    <camera name="overview" pos="2.2 -2.8 2.0" xyaxes="0.88 0.47 0 -0.23 0.43 0.87"/>
+    <geom name="floor" type="plane" size="3 3 0.1" friction="1.2 0.005 0.0001" solref="0.008 1" rgba="0.72 0.74 0.77 1"/>
+
+    <!-- The underside starts exactly 0.5 m above the wedge's horizontal loading ledge. -->
+    <!-- The offset lane prevents the falling block from contacting ball1. -->
+    <body name="block" pos="0.12 0.20 1.125">
+      <freejoint name="block_free"/>
+      <geom name="block_weight" type="box" size="0.03 0.035 0.04" mass="1.5" friction="1.2 0.005 0.0001" solref="0.006 1" rgba="0.72 0.24 0.16 1"/>
+    </body>
+
+    <!-- Entire wedge is free; its narrow foot permits pitching under the offset load. -->
+    <body name="wedge" pos="0 0 0.03">
+      <freejoint name="wedge_free"/>
+      <geom name="wedge_foot" type="box" size="0.04 0.30 0.03" mass="0.12" friction="1.5 0.005 0.0001" solref="0.006 1" rgba="0.78 0.57 0.22 1"/>
+      <geom name="wedge_stem" type="box" pos="0 0 0.164" size="0.025 0.26 0.134" mass="0.06" friction="1.2 0.005 0.0001" solref="0.006 1" rgba="0.78 0.57 0.22 1"/>
+      <geom name="wedge_bottom" type="box" pos="0 0 0.31" size="0.20 0.28 0.012" mass="0.06" friction="1.2 0.005 0.0001" solref="0.006 1" rgba="0.85 0.65 0.28 1"/>
+      <geom name="wedge_left_slope" type="box" pos="-0.1 0 0.43" quat="0.905589 0 -0.424155 0" size="0.156205 0.28 0.012" mass="0.07" friction="1.2 0.005 0.0001" solref="0.006 1" rgba="0.85 0.65 0.28 1"/>
+      <geom name="wedge_right_slope" type="box" pos="0.1 0 0.43" quat="0.905589 0 0.424155 0" size="0.156205 0.28 0.012" mass="0.07" friction="1.2 0.005 0.0001" solref="0.006 1" rgba="0.85 0.65 0.28 1"/>
+      <geom name="wedge_loading_post" type="box" pos="0.12 0.20 0.455" size="0.025 0.035 0.04" mass="0.005" friction="1.2 0.005 0.0001" solref="0.006 1" rgba="0.78 0.57 0.22 1"/>
+      <geom name="wedge_loading_ledge" type="box" pos="0.12 0.20 0.525" size="0.05 0.055 0.03" mass="0.02" friction="1.2 0.005 0.0001" solref="0.006 1" rgba="0.88 0.69 0.30 1"/>
+      <geom name="wedge_striker" type="capsule" fromto="0.10 -0.10 0.47 0.10 0.10 0.47" size="0.025" mass="0.03" friction="0.45 0.001 0.00002" solref="0.006 1" rgba="0.92 0.73 0.33 1"/>
+    </body>
+
+    <body name="ball1" pos="0.245 0 0.485">
+      <freejoint name="ball1_free"/>
+      <geom name="ball1_sphere" type="sphere" size="0.06" mass="0.30" friction="0.35 0.001 0.00002" solref="0.008 1" rgba="0.15 0.42 0.85 1"/>
+    </body>
+
+    <!-- A level starting shelf prevents an independent gravity launch. -->
+    <body name="ramp" pos="0 0 0">
+      <geom name="ramp_start_shelf" type="box" pos="0.29 0 0.415" size="0.07 0.13 0.01" friction="0.35 0.001 0.00002" solref="0.008 1" rgba="0.47 0.51 0.56 1"/>
+      <geom name="ramp_slope" type="box" pos="0.648974 0 0.374566" quat="0.997929 0 0.064264 0" size="0.292414 0.13 0.008" friction="0.35 0.001 0.00002" solref="0.008 1" rgba="0.47 0.51 0.56 1"/>
+      <geom name="ramp_start_rail_left" type="box" pos="0.29 0.142 0.455" size="0.07 0.012 0.035" friction="0.35 0.001 0.00002" rgba="0.35 0.39 0.44 1"/>
+      <geom name="ramp_start_rail_right" type="box" pos="0.29 -0.142 0.455" size="0.07 0.012 0.035" friction="0.35 0.001 0.00002" rgba="0.35 0.39 0.44 1"/>
+      <geom name="ramp_slope_rail_left" type="box" pos="0.65 0.142 0.4145" quat="0.997929 0 0.064264 0" size="0.292414 0.012 0.04" friction="0.35 0.001 0.00002" rgba="0.35 0.39 0.44 1"/>
+      <geom name="ramp_slope_rail_right" type="box" pos="0.65 -0.142 0.4145" quat="0.997929 0 0.064264 0" size="0.292414 0.012 0.04" friction="0.35 0.001 0.00002" rgba="0.35 0.39 0.44 1"/>
+    </body>
+
+    <!-- Negative joint motion swings the flap downward to its lower limit. -->
+    <!-- The counterweight balances the initial ball load; friction suppresses drift. -->
+    <!-- The tall retaining lip carries ball2 until the flap swings past horizontal. -->
+    <body name="flap" pos="0.965 0 0.31">
+      <joint name="flap_hinge" type="hinge" axis="0 -1 0" limited="true" range="-2 0" frictionloss="0.04" damping="0.002" armature="0.00002" solreffriction="0.004 1" solimpfriction="0.99 0.999 0.0001" solreflimit="0.006 1" solimplimit="0.98 0.999 0.001"/>
+      <geom name="flap_striker_panel" type="box" pos="0 0 0.08" size="0.006 0.10 0.08" mass="0.020" friction="0.45 0.001 0.00002" solref="0.006 1" rgba="0.23 0.65 0.35 1"/>
+      <geom name="flap_release_shelf" type="box" pos="0.060 0 0.164" size="0.040 0.10 0.005" mass="0.008" friction="0.35 0.001 0.00002" solref="0.006 1" rgba="0.30 0.75 0.42 1"/>
+      <geom name="flap_retaining_lip" type="box" pos="0.106 0 0.214" size="0.006 0.10 0.045" mass="0.004" friction="0.35 0.001 0.00002" solref="0.006 1" rgba="0.30 0.75 0.42 1"/>
+      <geom name="flap_axle" type="cylinder" quat="0.70710678 0.70710678 0 0" size="0.008 0.20" mass="0.002" friction="0.35 0.001 0.00002" rgba="0.25 0.29 0.31 1"/>
+      <geom name="flap_counterweight_support" type="box" pos="0 0.18 -0.0175" size="0.009 0.009 0.0175" mass="0.001" friction="0.35 0.001 0.00002" rgba="0.25 0.29 0.31 1"/>
+      <geom name="flap_counterweight_arm" type="box" pos="-0.04 0.18 -0.035" size="0.04 0.009 0.009" mass="0.002" friction="0.35 0.001 0.00002" rgba="0.25 0.29 0.31 1"/>
+      <geom name="flap_counterweight" type="sphere" pos="-0.08 0.18 -0.035" size="0.018" mass="0.0306125" friction="0.35 0.001 0.00002" rgba="0.25 0.29 0.31 1"/>
+    </body>
+
+    <body name="ball2" pos="1.030 0 0.514">
+      <freejoint name="ball2_free"/>
+      <geom name="ball2_sphere" type="sphere" size="0.035" mass="0.025" friction="0.65 0.003 0.0001" solref="0.012 1" rgba="0.92 0.73 0.12 1"/>
+    </body>
+
+    <body name="cup" pos="0 0 0">
+      <geom name="cup_bottom" type="box" pos="1.33 0 0.0125" size="0.355 0.215 0.0125" friction="0.8 0.005 0.0002" solref="0.015 1" rgba="0.28 0.44 0.55 1"/>
+      <geom name="cup_left_wall" type="box" pos="0.9825 0 0.045" size="0.0075 0.20 0.020" friction="0.8 0.005 0.0002" solref="0.015 1" rgba="0.28 0.44 0.55 1"/>
+      <geom name="cup_right_wall" type="box" pos="1.6775 0 0.115" size="0.0075 0.20 0.090" friction="0.8 0.005 0.0002" solref="0.015 1" rgba="0.28 0.44 0.55 1"/>
+      <geom name="cup_front_wall" type="box" pos="1.33 -0.2075 0.10" size="0.355 0.0075 0.075" friction="0.8 0.005 0.0002" solref="0.015 1" rgba="0.28 0.44 0.55 1"/>
+      <geom name="cup_back_wall" type="box" pos="1.33 0.2075 0.10" size="0.355 0.0075 0.075" friction="0.8 0.005 0.0002" solref="0.015 1" rgba="0.28 0.44 0.55 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start"/>
+  </keyframe>
+</mujoco>
+```
+
+```json
+{"what_happens":"The block falls about 0.5 m, contacts the wedge, and then directly launches ball1 while the wedge barely tips. Ball1 travels down the ramp and knocks the flap to its upper joint stop. Ball2 starts drifting toward release before ball1 arrives, then falls into the cup, where both balls eventually rest.","works":false,"problem":"The wedge does not strike ball1, ball2 begins drifting toward release before the flap is struck, and the flap finishes at its upper rather than lower joint stop."}
+```
+
+---
+thinking (summarized):
+
+**Evaluating counterweights and ramps**
+
+I’m considering the setup for the counterweight and how it interacts with the ramp rails. I’m noting that with a counterweight at y .18 and the adjustments around the sphere and hinge, there shouldn't be any collision issues during rotation. Ensuring that the mass and positions are right will help avoid surprises later. It seems like everything is aligning for a fine-tuned operation.
+
+**Designing a ball release mechanism**
+
+I’m thinking about how the flap reaches the lower stop and releases ball2. It seems crucial that this release happens at the stop, not before. The original release was .87 before contact, so I need to ensure ball2 only releases when it reaches the lower stop, not during travel. I could design a gate that prevents ball2 from falling until it’s at the lower stop by using a captive ball holder fixed to rails and a lifting pin.
