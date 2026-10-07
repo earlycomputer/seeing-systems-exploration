@@ -15,3 +15,8 @@
   (37,134 chars), the rest one or two. Per error, 4,000 to 9,000 chars on 1h's worlds.
 - Shot (language) ranks the spin line 7th: the miss at the rim moves more with launch speed than with spin, and
   no single forked number fixes it. The error still points at the line.
+- Risk for the debugging run (coordinator, 2026-10-07): "which numbers move it" names a number that makes the
+  check pass, so an agent could tune that number instead of fixing the cause, against Jono's 2026-10-05 steer
+  ("describe how instead of what"; solving for the outcome is out). For 1d's breaks the cause is known, so the run
+  must record whether each fix changed the broken line or passed some other way, per arm. If tuning shows up, try
+  an arm whose error keeps the lines and the cone but drops the forks.
