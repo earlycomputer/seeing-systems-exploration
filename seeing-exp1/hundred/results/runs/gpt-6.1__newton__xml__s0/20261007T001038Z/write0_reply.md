@@ -1,0 +1,86 @@
+```xml
+<mujoco model="pendulum_four_ball_transfer">
+  <compiler angle="radian" inertiafromgeom="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100" tolerance="1e-10"/>
+  <size njmax="1000" nconmax="200"/>
+
+  <visual>
+    <global azimuth="135" elevation="-20"/>
+  </visual>
+
+  <worldbody>
+    <light name="overhead_light" pos="0.3 -1 3" dir="0 0 -1" diffuse="0.8 0.8 0.8"/>
+    <camera name="overview" pos="1.8 -3 1.8" xyaxes="0.894 0.447 0 -0.200 0.400 0.894"/>
+
+    <geom name="floor" type="plane" pos="0 0 0" size="4 3 0.1" rgba="0.22 0.25 0.28 1" condim="6" friction="0.6 0.01 0.01" priority="1" solref="0.008 1" solimp="0.95 0.99 0.001"/>
+
+    <!-- The bob center is 1 m below the pivot at the bottom.
+         A release angle of pi/3 raises it by exactly 0.5 m. -->
+    <body name="pendulum" pos="0 0 1.10">
+      <joint name="pendulum_hinge" type="hinge" axis="0 1 0" damping="0.0005"/>
+      <geom name="pendulum_rod" type="capsule" fromto="0 0 0 0 0 -0.945" size="0.006" mass="0.01" rgba="0.65 0.67 0.70 1" friction="0.15 0.001 0.0001" solref="-30000 -6" solimp="0.95 0.99 0.001"/>
+      <geom name="pendulum_bob" type="sphere" pos="0 0 -1" size="0.05" mass="0.25" rgba="0.90 0.35 0.12 1" condim="6" friction="0.15 0.001 0.0001" solref="-30000 -6" solimp="0.95 0.99 0.001"/>
+    </body>
+
+    <!-- Level rail: top surface z=0.05, with lateral guides. -->
+    <body name="rail" pos="0 0 0">
+      <geom name="rail_bed" type="box" pos="0.415 0 0.025" size="0.365 0.070 0.025" rgba="0.48 0.52 0.56 1" condim="6" friction="0.05 0.001 0.0002" priority="1" solref="0.008 1" solimp="0.95 0.99 0.001"/>
+      <geom name="rail_left_guide" type="box" pos="0.415 0.085 0.12" size="0.365 0.015 0.07" rgba="0.35 0.39 0.43 1" condim="6" friction="0.05 0.001 0.0002" priority="1" solref="0.008 1" solimp="0.95 0.99 0.001"/>
+      <geom name="rail_right_guide" type="box" pos="0.415 -0.085 0.12" size="0.365 0.015 0.07" rgba="0.35 0.39 0.43 1" condim="6" friction="0.05 0.001 0.0002" priority="1" solref="0.008 1" solimp="0.95 0.99 0.001"/>
+    </body>
+
+    <!-- Four identical balls, with center-to-center spacing of 0.15 m. -->
+    <body name="ball1" pos="0.10 0 0.10">
+      <freejoint name="ball1_free"/>
+      <geom name="ball1_sphere" type="sphere" size="0.05" mass="0.25" rgba="0.95 0.75 0.15 1" condim="6" friction="0.15 0.001 0.0001" solref="-30000 -6" solimp="0.95 0.99 0.001"/>
+    </body>
+
+    <body name="ball2" pos="0.25 0 0.10">
+      <freejoint name="ball2_free"/>
+      <geom name="ball2_sphere" type="sphere" size="0.05" mass="0.25" rgba="0.25 0.70 0.95 1" condim="6" friction="0.15 0.001 0.0001" solref="-30000 -6" solimp="0.95 0.99 0.001"/>
+    </body>
+
+    <body name="ball3" pos="0.40 0 0.10">
+      <freejoint name="ball3_free"/>
+      <geom name="ball3_sphere" type="sphere" size="0.05" mass="0.25" rgba="0.35 0.85 0.45 1" condim="6" friction="0.15 0.001 0.0001" solref="-30000 -6" solimp="0.95 0.99 0.001"/>
+    </body>
+
+    <body name="ball4" pos="0.55 0 0.10">
+      <freejoint name="ball4_free"/>
+      <geom name="ball4_sphere" type="sphere" size="0.05" mass="0.25" rgba="0.75 0.40 0.90 1" condim="6" friction="0.15 0.001 0.0001" solref="-30000 -6" solimp="0.95 0.99 0.001"/>
+    </body>
+
+    <!-- Open rail-facing mouth; a flush floor and dissipative contacts
+         catch the final ball without a raised entry threshold. -->
+    <body name="box" pos="0 0 0">
+      <geom name="box_base" type="box" pos="0.99 0 0.025" size="0.21 0.14 0.025" rgba="0.55 0.36 0.20 1" condim="6" friction="1.0 0.02 0.06" priority="2" solref="0.006 1" solimp="0.95 0.99 0.001"/>
+      <geom name="box_back" type="box" pos="1.22 0 0.175" size="0.02 0.16 0.125" rgba="0.65 0.44 0.25 1" condim="6" friction="1.0 0.02 0.06" priority="2" solref="0.006 1" solimp="0.95 0.99 0.001"/>
+      <geom name="box_left" type="box" pos="0.99 0.14 0.175" size="0.21 0.02 0.125" rgba="0.65 0.44 0.25 1" condim="6" friction="1.0 0.02 0.06" priority="2" solref="0.006 1" solimp="0.95 0.99 0.001"/>
+      <geom name="box_right" type="box" pos="0.99 -0.14 0.175" size="0.21 0.02 0.125" rgba="0.65 0.44 0.25 1" condim="6" friction="1.0 0.02 0.06" priority="2" solref="0.006 1" solimp="0.95 0.99 0.001"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start" time="0" qpos="1.047197551196598 0.10 0 0.10 1 0 0 0 0.25 0 0.10 1 0 0 0 0.40 0 0.10 1 0 0 0 0.55 0 0.10 1 0 0 0"/>
+  </keyframe>
+</mujoco>
+```
+
+---
+thinking (summarized):
+
+**Considering design details**
+
+I’m thinking about using floor plus back and sidewalls for a design, while leaving the front wall open to allow for entry. It seems like a receiving bin with an open mouth could work well. I wonder if I could just have front post edges without a full wall. There are several possibilities, and I want to make sure that the design is functional and effective!
+
+**Considering friction impact**
+
+I want to think about how the contact between spheres and the friction coefficient of 0.15 could influence horizontal rotation. It seems like there won't be any initial collisions affecting vertical movement, which might simplify things. All aspects seem pretty straightforward regarding this setup. I need to make sure I'm considering the implications properly, but with equal conditions, it should work out as expected.
+
+**Analyzing pendulum mechanics**
+
+I’m working through the details of a pendulum design. The body includes a capsule rod and a sphere with specific mass considerations. It seems there's a possibility of the rod and balls overlapping at certain points. The rod’s lowest position creates a small gap, and while the body mass and ball mass slightly affect movement, the collision risk appears minimal. Excluding the rail might be a good idea since it doesn’t significantly impede the bob’s motion. Overall, it looks like I’m navigating the physics without major issues!
+
+**Evaluating pendulum interactions**
+
+I’m analyzing the interaction between the pendulum bob and the rail. At a specific surface point, calculations show no overlap until the bob reaches a certain position. If the first impact keeps the x-coordinate below a threshold, there’s no contact. It seems I can eliminate certain exclusions to maintain physical integrity, especially since the bob doesn’t reach the floor. I’m also considering compliance and damping near the ground. Visual materials might be unnecessary, so I’m weighing my options carefully here!

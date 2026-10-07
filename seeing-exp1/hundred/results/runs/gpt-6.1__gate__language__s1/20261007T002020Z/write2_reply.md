@@ -1,0 +1,123 @@
+```world
+world  ramp paddle slider drop
+
+floor
+  size      6 m
+  friction  0.8, spinning 0.005, rolling 0.002
+
+-- The inclined distance from the high end to the low end is exactly 1 m.
+ramp
+  is a       ramp
+  high end   -80 cm along, 10 cm to the right, 180 cm up
+  low end    0 m along, 10 cm to the right, 120 cm up
+  width      20 cm
+  thickness  4 cm
+  friction   0.7, spinning 0.001, rolling 0.0005
+  colour     wood
+
+ball
+  is a      sphere 6.5 cm radius, 650 g
+  moves     freely
+  rolls
+  bounce    dead
+  friction  0.7, spinning 0.001, rolling 0.0005
+  colour    orange
+  rests     on ramp, 0 cm from the top
+
+ledge
+  is a      box 60 by 24 by 8 cm
+  at        40 cm along, 17 cm to the left, 116 cm up
+  friction  0.08, spinning 0.001, rolling 0.001
+  colour    wood
+
+paddle
+  is a           box 3 by 60 by 10 cm, 180 g
+  at             10 cm along, 0 cm to the left, 125.5 cm up
+  turns on       paddle hinge, about z, at its right side
+  swings         from -70° to 0°
+  starts turned  0°
+  damping        0.03 N·m·s/rad
+  bounce         dead
+  friction       0.15
+  colour         orange
+
+-- These guides engage the slider's upper edges, above the paddle.
+slider right guide
+  is a      box 65 by 2 by 4 cm
+  at        40 cm along, 5.8 cm to the left, 133 cm up
+  friction  0.05
+  colour    grey
+
+slider left guide
+  is a      box 65 by 2 by 4 cm
+  at        40 cm along, 28.2 cm to the left, 133 cm up
+  friction  0.05
+  colour    grey
+
+slider keeper
+  is a      box 46 by 24 by 3 cm
+  at        37 cm along, 17 cm to the left, 133.8 cm up
+  friction  0.05
+  colour    grey
+
+-- The stops catch the wide slider but leave the narrower block clear.
+slider right stop
+  is a      box 2 by 3 by 4 cm
+  at        72 cm along, 7.5 cm to the left, 133 cm up
+  bounce    dead
+  colour    grey
+
+slider left stop
+  is a      box 2 by 3 by 4 cm
+  at        72 cm along, 26.5 cm to the left, 133 cm up
+  bounce    dead
+  colour    grey
+
+slider
+  is a      box 45 by 20 by 12 cm, 350 g
+  moves     freely
+  rests     on ledge, 3.5 cm behind ledge, 17 cm to the left
+  friction  0.08, spinning 0.001, rolling 0.001
+  bounce    dead
+  colour    grey
+
+block
+  is a      cube 12 cm, 150 g
+  moves     freely
+  rests     on ledge, 28 cm beyond ledge, 17 cm to the left
+  friction  0.08, spinning 0.001, rolling 0.001
+  bounce    dead
+  colour    wood
+
+hoop
+  is a    ring 140 cm across, 1 cm thick
+  at      125 cm along, 17 cm to the left, 65 cm up
+  colour  orange
+
+box
+  is an           open box
+  length          200 cm
+  width           160 cm
+  walls           30 cm
+  wall thickness  3 cm
+  base thickness  4 cm
+  at              130 cm along, 17 cm to the left
+  friction        0.9, spinning 0.02, rolling 0.01
+  bounce          dead
+  colour          wood
+
+expect
+  ball touches ramp
+  ball touches paddle
+  paddle touches slider
+  slider touches block
+  block drops through hoop
+  block comes to rest in box
+```
+
+---
+thinking (summarized):
+
+**Evaluating game mechanics**
+
+I’m thinking about fixing a situation where a ball needs to be removed from a ramp and a slider or block on the ledge. I'm questioning if the ball's behavior on the ramp, which takes three actions, is the same as on the ledge, where it only goes up. The previous engine seemed to indicate that there's no conflict with the slider since it's only involved when the ball is on the ledge. It's something to keep in mind.

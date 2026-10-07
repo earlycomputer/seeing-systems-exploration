@@ -1,0 +1,117 @@
+```xml
+<mujoco model="gravity_chain_reaction">
+  <compiler angle="degree" inertiafromgeom="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" cone="elliptic" iterations="80"/>
+  <size njmax="2000" nconmax="400"/>
+
+  <visual>
+    <global azimuth="135" elevation="-25"/>
+    <headlight ambient="0.4 0.4 0.4" diffuse="0.7 0.7 0.7" specular="0.2 0.2 0.2"/>
+  </visual>
+
+  <worldbody>
+    <light name="overhead" pos="0 -2 5" dir="0 0 -1"/>
+    <camera name="overview" pos="3 -5 3.2" xyaxes="0.8575 0.5145 0 -0.206 0.343 0.917"/>
+    <geom name="floor" type="plane" size="6 6 0.1" rgba="0.22 0.25 0.28 1" friction="0.8 0.01 0.01"/>
+
+    <!-- The ball begins one metre uphill from the ramp's lower edge. -->
+    <body name="ramp" pos="0 0 0">
+      <geom name="ramp_slope" type="box" pos="-0.66069 -0.48 1.27732" euler="0 25 0" size="0.6 0.22 0.04" rgba="0.38 0.48 0.60 1" friction="0.65 0.01 0.01" condim="6" solref="0.008 1"/>
+      <geom name="ramp_slope_left_rail" type="box" pos="-0.61420 -0.695 1.37701" euler="0 25 0" size="0.62 0.025 0.10" rgba="0.25 0.34 0.44 1" friction="0.65 0.01 0.01" condim="6"/>
+      <geom name="ramp_slope_right_rail" type="box" pos="-0.61420 -0.265 1.37701" euler="0 25 0" size="0.62 0.025 0.10" rgba="0.25 0.34 0.44 1" friction="0.65 0.01 0.01" condim="6"/>
+      <geom name="ramp_runout" type="box" pos="0.34 -0.48 1.02" size="0.51 0.22 0.04" rgba="0.38 0.48 0.60 1" friction="0.65 0.01 0.01" condim="6" solref="0.008 1"/>
+      <geom name="ramp_runout_left_rail" type="box" pos="0.34 -0.695 1.18" size="0.51 0.025 0.12" rgba="0.25 0.34 0.44 1" friction="0.65 0.01 0.01" condim="6"/>
+      <geom name="ramp_runout_right_rail" type="box" pos="0.34 -0.265 1.18" size="0.51 0.025 0.12" rgba="0.25 0.34 0.44 1" friction="0.65 0.01 0.01" condim="6"/>
+      <geom name="ramp_end_stop" type="box" pos="0.865 -0.48 1.18" size="0.025 0.24 0.12" rgba="0.25 0.34 0.44 1" friction="0.65 0.01 0.01" condim="6" solref="0.015 1"/>
+      <geom name="ramp_upper_support" type="box" pos="-1.08 -0.48 0.72" size="0.055 0.13 0.72" rgba="0.23 0.28 0.34 1"/>
+      <geom name="ramp_lower_support" type="box" pos="0.57 -0.48 0.49" size="0.055 0.13 0.49" rgba="0.23 0.28 0.34 1"/>
+    </body>
+
+    <body name="ball" pos="-0.97884 -0.48 1.54153">
+      <freejoint name="ball_free"/>
+      <geom name="ball_sphere" type="sphere" size="0.065" mass="1.0" rgba="0.90 0.20 0.12 1" friction="0.65 0.01 0.01" condim="6" solref="0.008 1"/>
+    </body>
+
+    <!-- A vertical-axis gate transfers motion from the lower ball lane to the striker lane. -->
+    <body name="paddle" pos="0 0.30 1.14">
+      <joint name="paddle_hinge" type="hinge" axis="0 0 1" limited="true" range="0 65" damping="0.02" frictionloss="0.015" armature="0.0005" solreflimit="0.01 1"/>
+      <geom name="paddle_blade" type="box" pos="0 -0.475 0" size="0.025 0.475 0.12" mass="0.12" rgba="0.95 0.65 0.12 1" friction="0.25 0.005 0.002" condim="6" solref="0.008 1"/>
+      <geom name="paddle_axle" type="cylinder" size="0.035 0.15" mass="0.025" rgba="0.28 0.29 0.32 1"/>
+    </body>
+
+    <body name="slider" pos="0.195 -0.06 1.14">
+      <joint name="slider_slide" type="slide" axis="1 0 0" limited="true" range="0 0.28" damping="0.04" frictionloss="0.04" solreflimit="0.012 1"/>
+      <geom name="slider_striker" type="box" size="0.075 0.055 0.06" mass="0.20" rgba="0.20 0.65 0.80 1" friction="0.25 0.005 0.002" condim="6" solref="0.008 1"/>
+    </body>
+
+    <body name="ledge" pos="0 0 0">
+      <geom name="ledge_shelf" type="box" pos="0.2525 -0.06 1.02" size="0.1525 0.13 0.04" rgba="0.54 0.42 0.30 1" friction="0.35 0.005 0.002" condim="6" solref="0.008 1"/>
+      <geom name="ledge_support" type="box" pos="0.20 -0.06 0.49" size="0.045 0.065 0.49" rgba="0.35 0.29 0.23 1"/>
+      <geom name="ledge_paddle_pedestal" type="box" pos="0 0.30 0.53" size="0.05 0.05 0.53" rgba="0.35 0.29 0.23 1"/>
+    </body>
+
+    <body name="block" pos="0.38 -0.06 1.135">
+      <freejoint name="block_free"/>
+      <geom name="block_payload" type="box" size="0.075 0.075 0.075" mass="0.12" rgba="0.45 0.80 0.25 1" friction="0.6 0.01 0.003" condim="6" solref="0.01 1"/>
+    </body>
+
+    <!-- Sixteen capsule segments form a horizontal circular hoop. -->
+    <body name="hoop" pos="0 0 0">
+      <geom name="hoop_ring_01" type="capsule" fromto="1.48000 -0.06000 0.68 1.43585 0.16196 0.68" size="0.023" rgba="1 0.45 0.08 1" friction="0.4 0.005 0.002"/>
+      <geom name="hoop_ring_02" type="capsule" fromto="1.43585 0.16196 0.68 1.31012 0.35012 0.68" size="0.023" rgba="1 0.45 0.08 1" friction="0.4 0.005 0.002"/>
+      <geom name="hoop_ring_03" type="capsule" fromto="1.31012 0.35012 0.68 1.12196 0.47585 0.68" size="0.023" rgba="1 0.45 0.08 1" friction="0.4 0.005 0.002"/>
+      <geom name="hoop_ring_04" type="capsule" fromto="1.12196 0.47585 0.68 0.90000 0.52000 0.68" size="0.023" rgba="1 0.45 0.08 1" friction="0.4 0.005 0.002"/>
+      <geom name="hoop_ring_05" type="capsule" fromto="0.90000 0.52000 0.68 0.67804 0.47585 0.68" size="0.023" rgba="1 0.45 0.08 1" friction="0.4 0.005 0.002"/>
+      <geom name="hoop_ring_06" type="capsule" fromto="0.67804 0.47585 0.68 0.48988 0.35012 0.68" size="0.023" rgba="1 0.45 0.08 1" friction="0.4 0.005 0.002"/>
+      <geom name="hoop_ring_07" type="capsule" fromto="0.48988 0.35012 0.68 0.36415 0.16196 0.68" size="0.023" rgba="1 0.45 0.08 1" friction="0.4 0.005 0.002"/>
+      <geom name="hoop_ring_08" type="capsule" fromto="0.36415 0.16196 0.68 0.32000 -0.06000 0.68" size="0.023" rgba="1 0.45 0.08 1" friction="0.4 0.005 0.002"/>
+      <geom name="hoop_ring_09" type="capsule" fromto="0.32000 -0.06000 0.68 0.36415 -0.28196 0.68" size="0.023" rgba="1 0.45 0.08 1" friction="0.4 0.005 0.002"/>
+      <geom name="hoop_ring_10" type="capsule" fromto="0.36415 -0.28196 0.68 0.48988 -0.47012 0.68" size="0.023" rgba="1 0.45 0.08 1" friction="0.4 0.005 0.002"/>
+      <geom name="hoop_ring_11" type="capsule" fromto="0.48988 -0.47012 0.68 0.67804 -0.59585 0.68" size="0.023" rgba="1 0.45 0.08 1" friction="0.4 0.005 0.002"/>
+      <geom name="hoop_ring_12" type="capsule" fromto="0.67804 -0.59585 0.68 0.90000 -0.64000 0.68" size="0.023" rgba="1 0.45 0.08 1" friction="0.4 0.005 0.002"/>
+      <geom name="hoop_ring_13" type="capsule" fromto="0.90000 -0.64000 0.68 1.12196 -0.59585 0.68" size="0.023" rgba="1 0.45 0.08 1" friction="0.4 0.005 0.002"/>
+      <geom name="hoop_ring_14" type="capsule" fromto="1.12196 -0.59585 0.68 1.31012 -0.47012 0.68" size="0.023" rgba="1 0.45 0.08 1" friction="0.4 0.005 0.002"/>
+      <geom name="hoop_ring_15" type="capsule" fromto="1.31012 -0.47012 0.68 1.43585 -0.28196 0.68" size="0.023" rgba="1 0.45 0.08 1" friction="0.4 0.005 0.002"/>
+      <geom name="hoop_ring_16" type="capsule" fromto="1.43585 -0.28196 0.68 1.48000 -0.06000 0.68" size="0.023" rgba="1 0.45 0.08 1" friction="0.4 0.005 0.002"/>
+      <geom name="hoop_front_post" type="cylinder" pos="0.90 -0.64 0.33" size="0.025 0.33" rgba="0.45 0.33 0.23 1"/>
+      <geom name="hoop_back_post" type="cylinder" pos="0.90 0.52 0.33" size="0.025 0.33" rgba="0.45 0.33 0.23 1"/>
+    </body>
+
+    <body name="box" pos="0 0 0">
+      <geom name="box_bottom" type="box" pos="0.90 -0.06 0.04" size="0.74 0.52 0.04" rgba="0.25 0.52 0.38 1" friction="0.8 0.02 0.005" condim="6" solref="0.015 1"/>
+      <geom name="box_left_wall" type="box" pos="0.20 -0.06 0.25" size="0.04 0.52 0.21" rgba="0.25 0.52 0.38 1" friction="0.8 0.02 0.005" condim="6" solref="0.015 1"/>
+      <geom name="box_right_wall" type="box" pos="1.60 -0.06 0.25" size="0.04 0.52 0.21" rgba="0.25 0.52 0.38 1" friction="0.8 0.02 0.005" condim="6" solref="0.015 1"/>
+      <geom name="box_front_wall" type="box" pos="0.90 -0.54 0.25" size="0.66 0.04 0.21" rgba="0.25 0.52 0.38 1" friction="0.8 0.02 0.005" condim="6" solref="0.015 1"/>
+      <geom name="box_back_wall" type="box" pos="0.90 0.42 0.25" size="0.66 0.04 0.21" rgba="0.25 0.52 0.38 1" friction="0.8 0.02 0.005" condim="6" solref="0.015 1"/>
+    </body>
+  </worldbody>
+
+  <contact>
+    <exclude name="paddle_ramp_clearance" body1="paddle" body2="ramp"/>
+    <exclude name="paddle_ledge_clearance" body1="paddle" body2="ledge"/>
+  </contact>
+
+  <keyframe>
+    <key name="start" qpos="-0.97884 -0.48 1.54153 1 0 0 0 0 0 0.38 -0.06 1.135 1 0 0 0" qvel="0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+  </keyframe>
+</mujoco>
+```
+
+---
+thinking (summarized):
+
+**Designing a physics chain**
+
+I’m focusing on building a robust physics chain for a scenario involving ramps, paddles, and collisions. I need to ensure the ramp is designed correctly, considering the incline and starting point. The ball should start 1 meter up the ramp and settle after a brief time. Managing collisions precisely is key for the ball's trajectory. Also, I must ensure that the paddle's contact point aligns correctly with the slider for effective interaction.
+
+**Designing paddle and slider system**
+
+I'm working on a system where a paddle acts as a vertical gate, hinged to swing into a striker as a ball approaches. The paddle pivots at a certain height while allowing for a mild spring reset. The slider needs to be horizontal, located at a lower height to effectively interact with a block on a ledge, guiding the ball through a hoop. Essentially, I need to ensure that components work well without the ball bouncing out or missing the target.
+
+**Designing the hoop and block system**
+
+I’m thinking about creating a geometric hoop setup with guides that visually resembles a primitive rectangular hoop, complemented by boxes. The block will fall through the hoop that’s about 0.7 by 0.6 dimensions. The starting walls of the boxes will be higher up, with ledges at specific heights. I need to consider the horizontal flight of the block, ensuring its velocity and position at the hoop make sense for proper displacement. It’s crucial that the striker effectively carries the block without mishaps.
+
+**Explaining body ramp components**
+
+I’m thinking about what makes up a body ramp. It includes several key parts: a platform for standing on, a slope to help with elevation, rails for support and safety, and legs to keep everything stable. Each component plays an important role in the ramp's functionality. It's fascinating to see how all these elements work together to create a functional structure that serves its purpose effectively!
