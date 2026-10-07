@@ -33,4 +33,7 @@ SEEDS = (0, 1, 2)
 # $100" ($84.58 spent before it). Then "No need to stop at $18. Be thorough": 1g grew to four seeds and a control,
 # stopping at $70 (history/budget.py). Raised to $200 on 2026-10-07: Jono chose "Finish it" on the card asking to let
 # the 1h pilot finish at about $40 instead of $20 (Opus spends about $0.85 a world on 1h's briefs).
-SPEND_CAP_USD = 200.0
+# Raised to $210 on 2026-10-07: GPT-6.1 cost $0.23 a world on 1h's new briefs, so the extension stopped at the cap after
+# 69 of 90 worlds; Jono: "Continue on!" (02:41) to finish them and their reads. This ledger view does not include
+# other branches' runs.
+SPEND_CAP_USD = 210.0

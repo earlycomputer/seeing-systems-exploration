@@ -50,4 +50,5 @@ RAW_HZ = 10  # raw-state rows per second in the quiz's raw representation; conta
 
 # 1h's own ceiling past the pilot. Jono, 2026-10-07 01:02, on running the other 15 briefs with GPT-6.1 only (90 worlds
 # plus reads, "about $12"): "go for it". The pilot spent $46.15, so 1h stops here.
-CEILING_1H_USD = 62.0
+# It cost more than estimated ($0.23 a world, not $0.13) and stopped at the program cap; Jono: "Continue on!" (2026-10-07).
+CEILING_1H_USD = 72.0
