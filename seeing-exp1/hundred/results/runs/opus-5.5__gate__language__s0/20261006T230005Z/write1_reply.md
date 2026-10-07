@@ -1,0 +1,98 @@
+`on ramp` already centres the ball across the deck, and the deck is at 9 cm to the left, so I dropped the extra across clause. The ball still starts in its own lane.
+
+```world
+world  ramp paddle slider block hoop box
+
+floor
+  friction  0.8, spinning 0.005, rolling 0.002
+
+ramp
+  is a       ramp
+  high end   0 cm along, 9 cm to the left, 67 cm up
+  low end    113 cm along, 9 cm to the left, 47 cm up
+  width      20 cm
+  thickness  4 cm
+  colour     wood
+
+-- one long fixed platform: ball lane on the left, slider and block lane on the right
+ledge
+  is a      box 75 by 32 by 50 cm
+  friction  0.3
+  colour    grey
+  on floor, 127.5 cm along
+
+ball
+  is a      sphere 5 cm radius, 400 g
+  rolls
+  friction  0.8, spinning 0.005, rolling 0.001
+  colour    orange
+  moves     freely
+  on ramp, 14.8 cm from the top
+
+-- hanging gate across both lanes; its bottom is 1 cm above the ledge
+paddle
+  is a      box 2 by 32 by 25 cm, 150 g
+  colour    wood
+  138 cm along, 63.5 cm up
+  turns on  paddle hinge, about y, at its top
+
+slider
+  is a      box 10 by 14 by 6 cm, 150 g
+  friction  0.3
+  colour    dark grey
+  moves     freely
+  on ledge, 145 cm along, 7 cm to the right
+
+block
+  is a      cube 6 cm, 100 g
+  friction  0.3
+  bounce    dead
+  colour    white
+  moves     freely
+  on ledge, 161 cm along, 7 cm to the right
+
+-- pegs either side of the block's path: they stop the slider, the block passes between
+left peg
+  is a      box 4 by 3 by 5 cm
+  colour    black
+  on ledge, 163 cm along, 1.5 cm to the right
+
+right peg
+  is a      box 4 by 3 by 5 cm
+  colour    black
+  on ledge, 163 cm along, 12.5 cm to the right
+
+ball stop
+  is a      box 4 by 12 by 5 cm
+  colour    black
+  on ledge, 165 cm along, 9 cm to the left
+
+hoop
+  is a      ring 54 cm across, 8 mm thick
+  colour    orange
+  at 193 cm along, 7 cm to the right, 30 cm up
+
+box
+  is an     open box
+  length    60 cm
+  width     50 cm
+  walls     12 cm
+  friction  0.9
+  bounce    dead
+  colour    wood
+  on floor, 200 cm along, 7 cm to the right
+
+expect
+  ball touches ramp
+  ball touches paddle
+  paddle touches slider
+  slider touches block
+  block drops through hoop
+  block comes to rest in box
+```
+
+---
+thinking (summarized):
+
+Actually the ramp deck centers the ball at y=9, not 9 cm to the left, so I should drop that offset and leave the rest unchanged.
+

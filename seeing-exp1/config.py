@@ -31,5 +31,6 @@ SEEDS = (0, 1, 2)
 # Guardrail: spending past this needs a human first (handoff, Decisions). Raised from $100 on 2026-10-06: Jono said
 # "Ok to increase budget, just keep me up to date" and chose the 1g rerun, "about $15, bringing the total to about
 # $100" ($84.58 spent before it). Then "No need to stop at $18. Be thorough": 1g grew to four seeds and a control,
-# stopping at $70 (history/budget.py).
-SPEND_CAP_USD = 160.0
+# stopping at $70 (history/budget.py). Raised to $200 on 2026-10-07: Jono chose "Finish it" on the card asking to let
+# the 1h pilot finish at about $40 instead of $20 (Opus spends about $0.85 a world on 1h's briefs).
+SPEND_CAP_USD = 200.0

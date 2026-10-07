@@ -5,8 +5,9 @@ from history import budget as budget_1e_1g
 from loop.models import BudgetExceeded, spent_usd
 from hundred.settings import CEILING_1H_USD, SPEND_LEDGER
 
-# Jono chose "Pilot first" on 2026-10-06 22:19: 5 briefs, 60 worlds, "about $20". The pilot stops here.
-PILOT_CEILING_USD = 25.0
+# Jono chose "Pilot first" on 2026-10-06 22:19: 5 briefs, 60 worlds, "about $20". Opus cost about $0.85 a world, so the
+# run stopped at the program cap after 25 worlds; Jono then chose "Finish it" (2026-10-07 00:04), about $40 in all.
+PILOT_CEILING_USD = 45.0
 
 
 def spent() -> dict:

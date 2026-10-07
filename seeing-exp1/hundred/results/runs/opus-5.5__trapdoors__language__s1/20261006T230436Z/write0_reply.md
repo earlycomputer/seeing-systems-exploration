@@ -1,0 +1,312 @@
+This is a two-seesaw relay. Each flap is a hinged plank held level against its upper stop by a hanging counterweight, and a small lip on each flap holds the loose things that should stay put.
+
+- **First stage:** ball1 drops through hoop1 and lands on flap1. Its weight tips flap1 to its lower stop. The lip keeps ball1 on the flap, and the block slides off the end onto flap2.
+- **Second stage:** the block lands on flap2, slams it down to its stop and stays against flap2's lip. The flap drops away from under ball2, which falls nearly straight through hoop2 into the cup.
+
+The world assumes positive turns about y tip the forward (+x) end down. Each flap's working end is on its back (−x) side, so it tips to the negative end of its range. That is both its physically lower stop and its range minimum. If MuJoCo's sign convention is the other way, both flaps tip the wrong way and the chain fails at flap1. I haven't run this, so the expect block shows what should happen, not what was checked. The torque and timing figures below come from by-hand estimates.
+
+- **Holding margins:** about 0.15 N·m holds each flap level before the chain starts. Ball1 adds about 0.59 N·m against flap1's hold. The block adds 0.2–1.1 N·m against flap2's hold, depending on where it lands.
+- **Block landing:** the drop from flap1 should put the block between flap2's pivot and its lip, with roughly ±10 cm of tolerance. That tolerance is the least certain part of the chain.
+- **Timing:** ball2 should reach the cup about 1.5 s into the run, leaving several seconds for it to settle.
+
+```world
+world  two flap relay
+
+floor
+  friction  0.8, spinning 0.005, rolling 0.002
+
+flap2 pivot
+  is a  point
+  at    1 m along, 70 cm up
+
+cup
+  is an   open box
+  length  34 cm
+  width   34 cm
+  walls   12 cm
+  colour  wood
+  rests   on floor, 42 cm behind flap2 pivot
+
+hoop2
+  is a    ring 30 cm across, 8 mm thick
+  colour  orange
+  at      42 cm behind flap2 pivot, 30 cm up
+
+flap2
+  is a      box 63 by 12 by 2 cm, 150 g
+  colour    wood
+  friction  0.3
+  at        16.5 cm behind flap2 pivot, level with flap2 pivot
+  turns on  flap2 hinge, about y, at flap2 pivot
+  swings    from -45° to 0°
+  damping   0.005 N·m·s/rad
+
+flap2 lip
+  is a         box 2 by 12 by 6 cm, 20 g
+  colour       dark grey
+  sits         on flap2, 33 cm behind flap2 pivot
+  attached to  flap2
+
+flap2 weight
+  is a         box 8 by 12 by 6 cm, 800 g
+  colour       dark grey
+  hangs        under flap2, 11 cm beyond flap2 pivot
+  attached to  flap2
+
+ball2
+  is a      sphere 4 cm radius, 100 g
+  colour    white
+  rolls
+  bounce    dead
+  friction  0.5, spinning 0.005, rolling 0.01
+  moves     freely
+  rests     on flap2, 42 cm behind flap2 pivot
+
+flap1 pivot
+  is a  point
+  at    1.21 m along, 1.15 m up
+
+flap1
+  is a      box 48 by 12 by 2 cm, 100 g
+  colour    wood
+  friction  0.3
+  at        9 cm behind flap1 pivot, level with flap1 pivot
+  turns on  flap1 hinge, about y, at flap1 pivot
+  swings    from -35° to 0°
+  damping   0.005 N·m·s/rad
+
+flap1 lip
+  is a         box 2 by 12 by 6 cm, 20 g
+  colour       dark grey
+  sits         on flap1, 20 cm behind flap1 pivot
+  attached to  flap1
+
+flap1 weight
+  is a         box 8 by 12 by 6 cm, 1.2 kg
+  colour       dark grey
+  hangs        under flap1, 11 cm beyond flap1 pivot
+  attached to  flap1
+
+block
+  is a      cube 8 cm, 400 g
+  colour    grey
+  friction  0.3
+  bounce    dead
+  moves     freely
+  sits      on flap1, 26 cm behind flap1 pivot
+
+hoop1
+  is a    ring 20 cm across, 8 mm thick
+  colour  orange
+  at      12 cm behind flap1 pivot, 1.4 m up
+
+ball1
+  is a      sphere 4 cm radius, 500 g
+  colour    orange
+  rolls
+  bounce    dead
+  friction  0.5, spinning 0.005, rolling 0.004
+  moves     freely
+  at        12 cm behind flap1 pivot, 80 cm above hoop1
+
+expect
+  ball1 drops through hoop1
+  ball1 touches flap1
+  flap1 reaches its lower stop
+  block touches flap2
+  flap2 reaches its lower stop
+  ball2 drops through hoop2
+  ball2 comes to rest in cup
+```
+
+---
+thinking (summarized):
+
+I'm working through the physical layout and object semantics for this Rube Goldberg chain, considering whether to use a simpler ring primitive for the first fixed hoop rather than a complex backboard-and-pole structure.
+
+For the next piece, I'm figuring out how a flap or trapdoor mechanism could release a block when a ball lands on it — thinking through a seesaw-style pivot versus a hinged panel, and how it would need something holding it level until triggered.
+
+Maybe a seesaw design works better: pivot off-center with a counterweight on the short arm holding the flap at its upper stop, while the block rests near the far end. The ball's impact adds enough torque to tip the far end down, sliding the block off toward flap2, so I need to balance the weights so the flap stays stable until struck.
+
+I also need to check friction and slope conditions in MuJoCo—the lower stop angle should exceed the friction angle so the block actually slides rather than sticking, with maybe a 40° stop and 0.3 friction coefficient. And I need to confirm the hinge rotation convention about the y-axis to make sure my sign for the tipping direction is correct.
+
+"Lower stop" is ambiguous — it could mean the minimum of the range or the physically lower position. I'll resolve it by setting the range to swing negative about +y (toward −35°), placing the ball-landing end on the −x side so that reaching the lower angle bound also means the landing end dips physically lower, satisfying both readings at once.
+
+Flap1 rests at the upper stop (0°) held by the counterweight's torque until the ball and block push it past the balance point, swinging it down to release at −35°. Flap2 works the same way: the block lands on one end, tipping it past its lower stop so it releases ball2 to fall through hoop2 into the cup.
+
+If the block lands on the same side as ball2, tipping it steeply, both could slide off messily. I should try a cleaner geometry instead — maybe having ball2 rest right at the edge of flap2 so the drop is cleaner once triggered.
+
+Maybe simpler: put block at the far end and ball2 nearer the pivot, so when tipped, block slides off first and lands in the cup, then ball2 follows and settles on top of it—still technically resting in the cup if the cup is big enough to hold both.
+
+Actually a cleaner fix: tune flap2's friction and stop angle so the heavy block stays put (static friction beats the shallow tilt), while ball2 rolls freely down and off the end into hoop2. I need to worry about the block bouncing on impact though, so I'll set bounce to zero for that landing.
+
+For the pivot mechanism itself, rather than a counterweight, I could use a preloaded spring biasing the flap toward one stop—holding it closed with no block weight but tipping once the block's torque exceeds the spring preload plus flap weight.
+
+But the spring's restoring torque grows as it swings toward the lower stop, so I need the load torque to still exceed it there too, and the flap needs to stay tilted long enough for the block to actually slide off rather than just momentarily reaching the stop. Maybe it's simpler to skip the spring and position the pivot so the flap's own weight distribution handles the balance.
+
+If I model the flap as a uniform plank, the pivot's offset from center determines whether gravity pulls it toward landing or away — pivot needs to sit closer to the landing end so the long counter-arm's weight dominates, though that means the short landing arm needs more torque from the ball to tip it. I could also try a weak spring preload instead.
+
+Running the numbers: a 0.5 N·m/rad spring gives roughly 0.52 N·m at 0° and 0.83 N·m at −35°, while a 200g ball at 25cm plus a 300g block at 15cm sum to about 0.93 N·m — close but the margins before the ball lands are tight, so I'm considering making the first ball heavier, maybe 500g, to get more reliable margins. I also need to double check how the hinge-turning semantics work for this point.
+
+I should pick a coordinate layout where the pivot point sits inside the box flap, then decide the rotation direction convention — negative angles about +y raising the +x end while the −x end drops, so the chain flows toward −x and the lower stop corresponds to that negative limit. Using a range starting at 0° would make the lower stop trivially true at the start, so negative range makes more sense for the checker.
+
+I'm also weighing how to write negative numbers — whether to use an ASCII hyphen or the minus-sign character the language's expressions use — and considering just avoiding negatives altogether by defining the swing from 0° to 35° instead.
+
+Rather than fight angle sign conventions, I'll keep the range non-negative and build the layout from the floor up, placing the second flap's pivot around 0.6 m height.
+
+Below it I'm positioning the catching cup on the floor using an open box part with modest dimensions and short walls, then placing the second hoop between the second flap and the cup, following the same pattern used for the earlier bucket.
+
+Now I'm working out the physics: ball2 rolls off flap2 at a 25° angle and needs to land through hoop2 into the cup. Getting an exact parabolic landing is tricky, so I'm considering making the flap steep enough that the ball essentially drops near-vertically off the tip with minimal horizontal travel, since the flap's own rotation as it hits its stop also imparts velocity to the ball.
+
+Let me make the targets forgiving by sizing hoop2 and the cup generously relative to ball2. Working through concrete dimensions for flap2 and ball placement, I estimate the ball rolls a short distance down the slope before reaching the edge and falling off, with the stop angle of −25° determining the rolling path.
+
+Computing the exit velocity and fall trajectory, I find the ball leaves the edge with a roughly 25° downward angle, falls about 30 cm to hoop2's level, and lands roughly 11 cm past the edge horizontally — so hoop2 should be positioned there with enough radius to catch the landing reliably.
+
+Beyond that, the ball continues falling into a wider 40 cm cup placed slightly further out. Since it'll bounce around inside the flat-bottomed cup, I'm considering bumping up ball2's rolling friction so it settles rather than rocking back and forth indefinitely against the walls.
+
+Working through the physics of rolling resistance on the sloped flap, I want a value strong enough to settle the ball in the cup but not so strong it stops the ball from rolling down the 25° slope — settling on a rolling friction coefficient around 0.005 as a reasonable balance.
+
+I also need to check that flap2 reaches its down stop given the block resting on it: the block's friction and weight need to overcome the spring preload so the flap swings and holds against the stop, with the ball initially assisting the torque.
+
+Rather than a counterweight design, I'll keep it simple with a spring of modest stiffness, springref around 60° outside the −25°..0° range, which MuJoCo allows fine. I'll add small damping so the flap doesn't bounce too much when it hits the stop, then work out the flap2 dimensions — a 50cm box, 12cm across, 2cm thick, 200g mass, pivoted 15cm from the +x end.
+
+Working through the torque balance: the flap's weight creates about 0.196 N·m tipping torque, ball2 adds another 0.294 N·m, totaling roughly 0.49 N·m pulling negative. I need the spring to overcome this at the zero position, so I'm testing k=0.6 N·m/rad toward 60°, giving about 0.63 N·m with a small margin, and checking the torque at the −25° stop comes out around 0.89 N·m — now figuring out what block mass at 15cm would be needed to hold against that load.
+
+Once ball2 leaves mid-swing, the required block torque increases since I lose that 0.294 N·m assist; using a 1 kg block gives plenty of margin at the stop (1.33 N·m) and at the start (1.96 N·m vs. 0.63 N·m needed), so the swing should move quickly — fast enough that it might fling ball2 off prematurely, which I need to watch for.
+
+If the flap's tip accelerates downward faster than gravity, ball2 actually separates and free-falls almost straight down from its starting position, which is actually convenient since it makes the landing point predictable — directly below hoop2. I'm now checking whether the net torque (about 1.3 N·m) divided by the flap's moment of inertia (accounting for the flap's mass distribution plus the block) gives an angular acceleration exceeding g/r, which would confirm this separation happens.
+
+But I also need to account for the impulsive hit when the block lands on the flap — falling 30 cm gives it roughly 2.4 m/s of speed, and that impact likely kicks the flap into fast rotation instantly, making ball2's separation almost certain. Now I'm working out exactly where the flap ends up relative to ball2's vertical fall path, since the flap is rotating away underneath while the ball drops.
+
+The block sliding off the steep flap is a problem since it'd fall toward ball2's landing zone. I could add a small lip or wall attached to flap2 between the block's position and ball2, so the block slides a short distance and stops against it without interfering with the ball.
+
+Checking torque balance at the -45° stop angle with the block held against the lip, the combined gravity torque exceeds the spring's holding torque, so the system reaches and holds that angle. The lip's position shouldn't interfere with ball2 falling since it moves away as the flap rotates downward—though I'm reconsidering whether ball2 should even be on this flap at all, since its horizontal position stays fixed with hoop2 and the cup directly below it.
+
+I'm now checking whether the flap's rotating end could brush against ball2 during the fall, possibly imparting some tangential velocity or pull, and tracing the flap end's circular path to see if it intercepts the ball's position as it clears the mechanism.
+
+Checking the block impulse numbers: a 1 kg block at 2.4 m/s striking at 15 cm gives angular momentum 0.36, so with the combined inertia the flap spins up to roughly 9.5 rad/s. At that rate it reaches φ=42° in about 0.07 s, during which the ball only falls 0.024 m versus the flap depth of 0.27 m at x=0.3 — plenty of clearance, and the lip at 22 cm height 4 cm checks out fine. I'm now reconsidering the block's size and landing position relative to flap2's span (11–19 cm) and the lip location at 22 cm.
+
+I also need to check ball2's position at 30 cm with its 4 cm radius spanning 26–34 cm against the 2 cm-thick lip at 22–24 cm — that clears fine, and since flap2 stays horizontal, the ball resting on it should remain stable. But the trickier part is predicting exactly where the block lands after sliding off flap1 at -35°, since its exit speed and trajectory need to land it within about 3 cm accuracy, which is hard to pin down precisely — I may need to adjust flap2's landing zone to accommodate that uncertainty.
+
+Let me widen flap2's landing zone so the block has more margin: extending the landing side to 50 cm with the lip at 32 cm, ball2 at 42 cm, and the end at 48 cm gives roughly a 19 cm window (5 to 28 cm from pivot) for the 8 cm block to land safely. Recomputing torques with this new geometry — a 10 cm counter side and 48 cm landing side — the 300 g mass contributes about 0.56 N·m and the 100 g ball2 at 42 cm contributes about 0.41 N·m, totaling roughly 0.97 N·m at rest.
+
+Checking spring requirements: at 60° the spring needs k above about 0.93 to beat gravity, so k=1.2 gives a margin of 0.29. At −45° though, gravity from the flap (0.40) plus the block sitting near the lip (1.87) totals 2.27 N·m, which barely exceeds the spring's 2.2 N·m — this is uncomfortably marginal and I need to reconsider, since the block sliding toward the lip as the flap tilts depends on having low enough friction to actually slide rather than stick.
+
+Testing a mid-angle equilibrium with the block at 10 cm: at θ=20° the gravity torque (1.45) is less than the spring torque (1.67), meaning the flap gets stuck around 10° instead of completing its motion — that's a failure mode. This points me toward replacing the spring with a counterweight instead, since all gravity-based torques scale with cosθ and keep the same sign throughout the rotation, avoiding the stuck-equilibrium problem the spring creates.
+
+Working through the counterweight numbers: with the flap (300g) and ball (0.1kg) contributing about -0.97 N·m toward landing, I need a counterweight on the opposite side greater than 1.24 kg at 8 cm — choosing 1.6 kg gives +1.256 N·m, leaving a net resting torque of +0.29 N·m, which should hold the flap in the right position.
+
+Adding the lip mass (~20g at 32cm, -0.06) still leaves a net +0.23 at rest, but once a 1kg block lands at 8cm or beyond it swings to about -0.55 to -0.78 N·m, enough to trigger tipping even accounting for the ball leaving the platform. Bumping the block to 1.5 kg gives more margin (-1.18 N·m at 8cm), though that means flap1 needs to be reworked to release a heavier block — I'll need to adjust that mechanism accordingly.
+
+Keeping the block at 1 kg but lowering its friction to 0.3 should let it slide to the lip once tilt exceeds about 17 degrees, which solves the margin problem without complicating flap1. I'm checking whether the lip (4cm tall) actually holds an 8cm cube at a 45° tilt — comparing the block's center of mass position relative to the lip's top edge to see if it would pivot over rather than stay put.
+
+Checking the torque result: with COM level with the edge, the down-slope force gives zero net torque, making it only marginally stable, so I bump the lip height to 6 cm to get real restoring torque. I'm also considering an alternative without a lip, using a steeper -30° stop angle with high friction instead, and checking if that still leaves enough clearance for ball2.
+
+Settling on the -45° lip option since it clears ball2 with enough margin, even accounting for the flap's thickness and corner geometry. I'll not worry about minor bounce at the hinge stop, and now I'm turning to the counterweight box on the other side to work out its required mass.
+
+For the counterweight on flap2, I'm sizing it roughly 8x12x6 cm at a reasonable density, placing it beneath the flap near the counter end so it hangs clear of the incoming ball's trajectory from flap1 rather than sitting in its path.
+
+Now I'm working through the flap1 mechanics: ball1 drops through hoop1 onto the landing end, tipping flap1 so the block slides off toward flap2 before the ball catches up to it, assuming the slope exceeds the block's 0.3 friction coefficient.
+
+I'm calculating the block's acceleration down flap1's 35° slope (~3.22 m/s²), figuring it travels roughly 6-8 cm before leaving the edge at about 0.67 m/s, then adding in rotational velocity from the flap's tipping motion to get the block's launch velocity components. Now I'm setting up the fall from flap1's edge to flap2's surface with a drop height of 0.25 m to compute the time of flight.
+
+Solving the quadratic gives t ≈ 0.19 s, landing offset dx ≈ −0.105 m, within the roughly 19 cm window — the vertical landing speed comes out to about 2.24 m/s, a solid impulse. I'm now considering whether the block might actually lift off the flap momentarily during the rapid rotation triggered by ball impact, free-falling briefly before landing back on the tilting surface, and checking whether the flap's motion could launch the block rather than just slide it — concluding no launch occurs since both ball and block move down the same side together.
+
+A bigger worry is ball1's path after tipping off flap1: it rolls toward −x and could fall onto flap2 or interfere with ball2, possibly knocking ball2 out of the cup or clipping hoop2's rim. I'm trying to figure out whether ball1 can be stopped on flap1 itself using a lip or stop between the pivot and the block, so it doesn't just chase the block down and cause a collision.
+
+No, block sits beyond the lip on the down-slope side and slides off freely, while ball1 stays up-slope, held by the lip with a dead bounce so it sticks to the flap. I'm now working out flap1's torque balance—placing the lip around 20-22 cm from pivot, ball1 landing zone at 8-16 cm, and the block centered near 28 cm within its 24-32 cm span, checking that everything fits before the flap's end at 34 cm.
+
+But I realize a 1 kg block at 28 cm creates a counter-torque too strong (−2.75 N·m) for ball1 to overcome at 12 cm, so I'm reconsidering lighter block masses—trying 0.5 kg and checking torque balance at different landing points near the pivot versus edge, looking for a configuration where the net torque is just slightly negative at rest but the ball's impact impulse is enough to tip it past the critical slope angle so the block slides off.
+
+I'm reconsidering the block placement—it needs to sit on the landing side so it slides off as the flap tips, since putting it on the counter side would just cause it to slide toward the pivot instead of falling away. Checking torque budget again with block and ball both on the landing side.
+
+Flap1 swinging back after block departs should be harmless since ball1 isn't needed anymore — it might hop but would just land back on the flap. I'll keep the block at 0.4 kg rather than lightening it further, since the design seems workable as is. Now I'm moving on to work out the actual coordinates.
+
+I'm placing flap2's pivot at x=0, z=0.70 m, with the landing side toward −x — defining its dimensions (58×12×2 cm, 150 g), pivot offset, and centering it at x=−0.19 so the top surface sits at 0.71 m. Then I'm positioning lip2 (a small 2×12×6 cm, 20 g box) attached to flap2's surface, centered around x=−0.33.
+
+Now I'm placing ball2 (4 cm radius sphere, 100 g) centered at x=−0.42, z=0.75, checking it fits within the flap's end at −0.48, and setting counterweight2 (8×12×6 cm box) beneath the flap near x=0.06, z=0.66. I'm starting to compute torques about the pivot at x=0 for the flap's weight, the lip, and the ball to balance against the counterweight's mass W2.
+
+Working through the ball torque, I get the landing-side total around −0.757, and solving for W2 at the 6 cm arm gives roughly 1.49 kg, which seems unusually heavy for such a short lever. I'm now reconsidering whether this simple torque balance is even valid, since the counterweight hangs below the pivot plane—its position needs to be treated with trigonometric rotation terms rather than a fixed linear arm, since as the flap rotates the (x, z) offset vector rotates and introduces sine-based torque components instead of the straightforward products I was using.
+
+I check whether the block's trajectory clears the counterweight on top—it should pass above safely but it's tight, so I try reducing mass by extending the counter arm to 15 cm instead. Recalculating with the new geometry: flap length 63 cm, centre at −0.165, landing torque −0.72, which requires a counterweight around 0.78 kg, so I round to 0.8 kg giving a net torque of +0.143 at 0°. I'm now sizing the counterweight box at 8x12x6 cm, centered under flap2 at x=0.11.
+
+Working through the block's descent: as it lands and slides toward the lip at x=−0.28, the torque swings sharply negative (around −1.10 including the cosine factor), while losing ball2's weight adds +0.412, giving a net of about −0.55—enough to hold firmly at the stop. I also check an intermediate position before the block fully slides, where the net torque is only about −0.03, which is marginal but still tips the right way.
+
+Then I turn to the geometry around hoop2: ball2 sits at x=−0.42, falling through a 30cm ring at z=0.45. Checking the swung flap at −45°, its endpoint lands at roughly x=−0.34, z=0.36—lower than the ring height, which means the flap could actually collide with the hoop's ring as it swings.
+
+Lowering the ring to z=0.30 clears the flap, placing it just above the cup below (a 34x34cm open box with 12cm walls on the floor). The ball drops from 0.75 to the cup's base at 0.02m, hitting around 3.7 m/s, and settles with a dead bounce.
+
+That gives 5 cm clearance over the ring, so swing geometry holds at the −45° extreme. Now checking the falling block's path from flap1 — it needs to stay within flap2's catch zone and not stray into ball2's area, so I'm tracking where it drops from around x≈+0.05 and drifts toward −0.10 as it falls.
+
+Working out flap1's pivot position so the block lands near x≈−0.15, which means the end of flap1 at its −35° stop needs to sit around x≈−0.05, computed from the pivot offset and arm length.
+
+The landing position window seems fine at nominal velocity, roughly -0.15, with some variation if the block exits faster or slower. I need to be careful about exactly when the block tips off the edge of the flap versus just estimating. Checking flap2's rotation when tipped - the counter end rises but stays well clear of flap1 at 1.15, so no collision there, and the block's path from flap1 over the counter side looks consistent.
+
+Now I'm laying out the landing zones for flap1: the ball zone sits at 6-18 cm from the pivot, the lip at 19-21 cm, and the block centered around 26 cm with its 8 cm span needing clearance from the lip, ending around 33 cm total length with a 15 cm counter section giving 48 cm overall. Working out the pivot and endpoint coordinates for flap1, I get the landing side centered at x=0.14, so ball1 landing at 12 cm from pivot puts it at x=0.11.
+
+I'm then recomputing the exit geometry at a -35° angle to find where the block edge lands, getting x≈-0.040, z≈0.961, and checking the slide distance from the block's centre point out past the edge — roughly 8 cm — then calculating the fall distance down to the 0.75 m level, which comes out to about 0.24 m.
+
+Now checking ball1 against hoop1: the hoop sits above flap1 near the ball's landing x of 0.11, with the ring positioned at z=1.40 giving about 6 cm of clearance tolerance given the ball's 4 cm radius, and since the ball falls straight down this should clear fine. I'm also working out ball1's impact speed from its 0.8 m drop height above the hoop (about 4.43 m/s) and its resulting momentum of 2.2 kg·m/s at the 12 cm landing point, checking whether there's any resulting angular impulse.
+
+Checking that the block placement clears the ring opening, then working through flap1's torque balance: the flap, lip, and block weights pulling down total about −1.147, so I need counterweight C1 around 1.20 kg at 11 cm to produce enough opposing torque, giving a small net positive margin of about 0.148. Now I'm positioning the 0.5 kg ball on flap1 to check its contribution.
+
+As the block slides toward the edge its torque keeps growing, so it continues tipping, and the impact itself may cause a slight hop before settling back. Computing moments of inertia gives ω ≈ 5 rad/s, reaching 35° in about 0.1s, with the block's downward velocity arresting abruptly at impact then landing back down. Now I need to check whether ball1 actually drops through hoop1.
+
+I'm verifying ball1's dead bounce behavior and confirming it clears lip1 given the lip's position and height relative to the ball's span. I'm also working out how to name and position the flap pieces as boxes—thinking through flap1's dimensions, weight, and pivot placement so the centre aligns correctly with the lip and landing geometry.
+
+Now I'm working out the hinge definition for the flap swinging about its pivot, with a small damping value and a swing range from -35° to 0°, defaulting to a 0° start. For the lip piece, I'm reasoning that "on flap1" fixes its vertical position to rest atop the flap while "3 cm along" sets its absolute horizontal position, trying to pin down whether "on" also centers the other axes based on earlier examples like the block and wall placements.
+
+For the block, I'm working through the negative offset — reasoning that "-3 cm along" should be expressed as "26 cm behind flap1 pivot" so the centre lands at x = -0.03 without using negative numbers directly, matching the earlier pattern of avoiding negative placements in favor of relative phrasing like "behind" or "beyond."
+
+To keep everything positive, I'll shift the whole coordinate system by +1 m — so flap2's pivot sits at x=1.00 instead of x=0, and flap1's pivot moves to x=1.23. That way every coordinate stays positive while I still express positions using relative clauses tied to the pivots. I'm now laying out flap2 as a box with its centre offset from that shifted pivot.
+
+I'm working out the remaining flap2 attachments — the lip, the weight, the ball, and the hoop — each positioned relative to flap2's pivot with specific offsets, trying to resolve whether "on flap2" and "30 cm up" should be read relative to the flap or as absolute heights.
+
+I'm also setting up the cup as an open box positioned on the floor at the same offset from flap2's pivot, double-checking whether it should be centered under the hoop or ball2 instead.
+
+Confirming ball2's drop path clears through hoop2 without any obstruction from flap1's landing position, then placing flap1's pivot and building out flap1 itself, its lip, and its counterweight box, each positioned relative to flap1's pivot point.
+
+Setting hoop1's ring 12 cm behind flap1's pivot at 1.40 m up, then working out ball1's placement — its density checks out fine at 500g in a 4cm sphere, but I'm wrestling with whether "80 cm above hoop1" also fixes its horizontal position or whether I need to separately apply the "12 cm behind flap1 pivot" offset, since "centred over hoop1" might already resolve both the along and across axes while "above" just sets the height.
+
+Now I'm adding the block: an 8 cm cube, 400 g, sitting 26 cm behind flap1's pivot, free to move with 0.3 friction and dead bounce. I'm also sorting out the ordering of components so that each part only references ones already defined above it — placing flap pivots before their flaps, hoops before whatever's near them — and double-checking flap2's swing direction against the hinge sign convention and how its weight sits underneath it.
+
+I verify flap2's torque balance using its box span (0.52–1.15) around pivot 1.00, confirming a 15 cm counter-side versus 48 cm landing arm checks out, and the lip and ball2 positions fall within acceptable ranges. For the block, I trace its landing zone between the pivot and lip, estimating it exits near flap1's end around x=0.96 and drifts to roughly 0.86, which sits comfortably within the target window.
+
+Checking the slow-exit case where the block lands closer to the pivot (0.93–0.95), I compute the torque as still slightly negative so it tips, though the impulse there is weak since it's near the pivot. I work out momentum transfer (0.88 at 0.05 arm) and flap2's rotational inertia (~0.041) to estimate an angular velocity around 1 rad/s once the flap exceeds 17°.
+
+I realize ball2's position is actually on the landing side, so if it rolls off the flap edge before the flap tips fully, it would remove tipping torque and let the flap spring back — this is a risky edge case even though the nominal scenario is fine. To make the nominal landing more centered (around 0.84), I consider shifting flap1's pivot inward by about 2 cm.
+
+Checking the block's interaction with flap2: it lands moving at −0.55 m/s and slides about 5 cm toward the lip under friction, which actually helps by increasing the tipping torque further. I also need to verify my sign convention for flap1's rest angle — positive rotation should correspond to the +x end tipping downward, consistent with gravity pulling that side down.
+
+Moving to the ball1 drop sequence, I'm recalculating positions with the pivot at 1.21: flap1 center at 1.12, lip at 1.01, block at 0.95, hoop1 at 1.09, and weight at 1.32. Then I'm rechecking the exit geometry — the flap1 end at rest sits at x=0.88, shifting to x=0.94 at −35°, with z around 0.96, giving a block release centre near 1.0 m.
+
+Checking landing geometry, ball1 lands at z=0.75 on flap2's top surface (0.71+0.04), a drop of 0.25. I'm verifying no interference between the tipped flap1 and ball2/flap2 — the positions check out as clear. I'm also considering whether ball1 could strike hoop1 on a bounce (ruling it out), noting friction effects as ball1 settles against the lip, and setting lower stops at −45° for flap2 and −35° for flap1, plus a small damping factor (~0.01) to reduce bounce at the stops.
+
+Damping seems negligible given the low torque at this swing speed, so I'll skip an explicit damping term and no armature is needed. MuJoCo's hinge limits are soft, so slight overshoot is acceptable. For the cup geometry, I'm defining a 34x34 open box with 12cm walls and 2cm base, positioned 42cm behind flap2's pivot (cup center at x=0.58), with the part's local placement translating correctly to the final location — this should let ball2 come to rest in the cup with rolling friction (~0.005) causing it to settle, though it may roll until it contacts a wall.
+
+Working through the full sequence timing: ball1 drops (~0.45s), flap1 swings (~0.1s), block slides and falls (~0.4s), flap2 swings, and ball2 falls into the cup by about 1.5s, leaving roughly 4.5s for it to settle — rolling friction decelerating it at ~0.9 m/s² should be enough to stop it given its low horizontal speed. I'll bump ball2's rolling friction to 0.01 since it mostly free-falls onto flap2 rather than rolling. The cup floor can use default friction, and I'm placing hoop2 — a 30cm ring 30cm above the 34cm cup — so it sits within the cup's footprint above the 12cm walls.
+
+After landing on flap2 at -45°, the block should rest stably against the 6cm lip (block COM at 4cm, friction 0.3) without touching ball2, since ball2 will have already separated. Checking the impulse: flap2's angular velocity from the block impact (~3 rad/s) gives the flap surface a downward velocity of ~1.26 m/s at ball2's position, enough for ball2 (at rest) to separate immediately and fall freely before the flap catches up — I need to verify the flap doesn't overtake and strike the ball as it continues swinging toward 45°.
+
+So flap1 clears the ball by t≈0.155s, and the flap's resting angle at -45° leaves its end at 0.339 while the ball's inner edge sits at 0.38, so they clear fine. I'm also checking that ball2 doesn't intersect flap2's path or lip, and confirming the counterweight under flap1 doesn't collide with hoop1's ring when it rotates up—nothing lines up there either.
+
+Ball1 starts 0.8m above hoop1, so its center is at z=2.20, which checks out. Now I'm laying out the expected event sequence: ball1 falls through hoop1, hits flap1, flap1 bottoms out, the block contacts flap2, flap2 bottoms out, then ball2 falls through hoop2 and settles in the cup.
+
+I'm now writing the scene syntax with key-value pairs, positioning lines like "16.5 cm behind flap2 pivot, level with flap2 pivot," and noting that named references like "flap2 pivot" are treated as valid multi-word identifiers. I still need to specify friction values for the flaps and block.
+
+Since MuJoCo combines contact friction by taking the max of the two geoms involved, I need to keep flap1 and flap2 friction low (0.3) along with the block's friction (0.3) so the block actually slides down the 17°+ incline rather than sticking. Ball friction can be higher since rolling behavior dominates regardless; floor and lip friction can stay at defaults.
+
+Now I'm sketching the scene layout: an orange ring 20 cm across and 8 mm thick, a hinge swinging from -35° to 0°, a floor with specified friction and damping values, a flap2 pivot point positioned relative to the floor, and a wooden open-box cup with defined dimensions positioned behind flap2. I'm working out whether the positioning syntax for placing the cup "on floor" relative to another part will parse correctly.
+
+I decide on `rests  on floor, 42 cm behind flap2 pivot` as the positioning phrase, then continue defining hoop2 as another orange ring positioned behind and above flap2 pivot, and flap2 itself as a 150 g wooden box with friction 0.3 positioned relative to its pivot point.
+
+Next I define the flap2 hinge turning about y at the pivot, swinging from -45° to 0° with light damping, then add flap2 lip and flap2 weight as attached box components — settling on `sits on flap2, ...` for the lip's position line, with the weight hanging under the flap extending 11 cm beyond it.
+
+Then I add ball2 as a 4 cm radius, 100 g sphere that rolls, bounces dead, with friction 0.5, spinning 0.005, rolling 0.01, moving freely and resting 42 cm behind the flap2 pivot. I'm working through how friction values combine across contacts — flap2 vs ball using max combine gives 0.5, block on flap2 gives 0.3, and I'm checking how rolling friction combines similarly when a default value exists on the flap.
+
+Now I'm setting up flap1, pivoted 1.21 m along and 1.15 m up, as a 48×12×2 cm 100 g box swinging from -35° to 0°, with its lip, weight, block, and hoop1 all positioned at specified distances behind the pivot and heights, and I'm about to place ball1 on it.
+
+I add ball1 as a 4 cm radius 500 g rolling sphere positioned above hoop1, then verify the block's position relative to flap1's extent and lip gives a clean 1 cm clearance, and confirm ball1's landing spot clears the lip by 3 cm. I also check that flap1's tip at -35° still falls within the right range, then start checking whether hoop1 is positioned correctly relative to everything else.
+
+Flap1 checks out too: 0.088+0.039+1.020=1.147 against a weight torque of 1.295, confirming it holds. The counterweight placement at 0.11 below pivot also checks out at 0°. Everything verifies, so I can write up the final answer now.
+
