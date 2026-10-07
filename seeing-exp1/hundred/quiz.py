@@ -85,7 +85,7 @@ def questions(rec: dict, run: Run) -> list[dict]:
     for t in things:
         if t["kind"] != "loose":
             continue
-        bs = thing_bodies(run, t["name"])
+        bs = [b for b in thing_bodies(run, t["name"]) if expect.free_joint_or_none(run, b) is not None]
         if not bs:
             continue
         x = bs[0]
@@ -170,6 +170,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--dry", action="store_true")
     ap.add_argument("--worlds", type=int, default=10)
     ap.add_argument("--jobs", type=int, default=6)
+    ap.add_argument("--models", nargs="+", default=list(MODELS), choices=list(MODELS))
     args = ap.parse_args(argv)
     runs = (DRYRUN_DIR / "runs") if args.dry else RUNS_DIR
     out_dir = (DRYRUN_DIR / "quiz") if args.dry else QUIZ_DIR
@@ -181,7 +182,7 @@ def main(argv: list[str] | None = None) -> int:
             built.append((rec, Path(f).parent))
     random.Random(QUIZ_SEED).shuffle(built)
     chosen = built[: args.worlds]
-    todo = [(rec, d, form, model) for rec, d in chosen for form in FORMS for model in MODELS
+    todo = [(rec, d, form, model) for rec, d in chosen for form in FORMS for model in args.models
             if not (out_dir / f"{rec['world']}__{form}__{model}.json").exists()]
     print(f"{len(built)} built worlds; quizzing {len(chosen)}: {len(todo)} quizzes to do")
     with ThreadPoolExecutor(max_workers=args.jobs) as pool:
