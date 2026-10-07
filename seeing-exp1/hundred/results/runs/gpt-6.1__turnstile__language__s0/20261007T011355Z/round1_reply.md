@@ -1,0 +1,162 @@
+Ball1 rolls down the ramp and strikes the rotor at 0.77 s. However, ball2 starts at y = 0, off its runway, and falls to the floor before the rotor moves. The rotor instead strikes the latch directly, retracting it and releasing the block. The block falls through the ring’s opening into the box and comes to rest by 1.68 s.
+
+The world therefore **does not satisfy the required chain**. The revision below explicitly places ball2 on its runway and limits the rotor’s swing so it cannot reach the latch directly. This revision has not yet been rerun.
+
+```world
+world  ramp rotor latch release
+
+floor
+  size      6 m
+  friction  0.8, spinning 0.005, rolling 0.002
+
+-- The ramp is 2 m long; ball1 starts 1 m up from its foot.
+
+ramp foot
+  is a  point
+  at    0 m along, 40 cm to the right, 60 cm up
+
+ramp high end
+  is a  point
+  at    1.6 m behind ramp foot, 40 cm to the right, 1.2 m above ramp foot
+
+ramp
+  is a      plank from ramp high end to ramp foot, 26 cm wide, 4 cm thick
+  friction  0.6, spinning 0.001, rolling 0.001
+  colour    wood
+
+ball1 runway
+  is a      box 90 by 28 by 4 cm
+  raised    56 cm, 25 cm along, 40 cm to the right
+  friction  0.6, spinning 0.001, rolling 0.001
+  colour    wood
+
+ball1
+  is a      sphere 8 cm radius, 800 g
+  moves     freely
+  rolls
+  bounce    dead
+  friction  0.6, spinning 0.001, rolling 0.001
+  colour    orange
+  on ramp, 1 m from the top
+
+rotor pivot
+  is a  point
+  at    35 cm along, 68 cm up
+
+-- The opposite arm strikes ball2.
+-- The upper stop prevents the rotor from reaching the latch itself.
+
+rotor
+  is a      box 6 by 110 by 12 cm, 250 g
+  at        35 cm along, 68 cm up
+  turns on  rotor hinge, about z, at rotor pivot
+  swings    from 0° to 35°
+  damping   0.01 N·m·s/rad
+  armature  0.003 kg·m²
+  bounce    dead
+  friction  0.2
+  colour    grey
+
+ball2 runway
+  is a      box 180 by 34 by 4 cm
+  raised    56 cm, 35 cm behind ramp foot, 40 cm to the left
+  friction  0.03, spinning 0.001, rolling 0.001
+  colour    wood
+
+ball2
+  is a      sphere 8 cm radius, 400 g
+  moves     freely
+  rolls
+  bounce    dead
+  friction  0.3, spinning 0.001, rolling 0.001
+  colour    white
+  at        23.9 cm along, 40 cm to the left, 68 cm up
+
+-- Two runners support the sliding shelf, leaving the drop path open.
+
+latch lower runner
+  is a      box 180 by 8 by 4 cm
+  raised    56 cm, 35 cm behind ramp foot, 16 cm to the right
+  friction  0.01
+  colour    grey
+
+latch lower guide
+  is a      box 120 by 2 by 16 cm
+  raised    58 cm, 65 cm behind ramp foot, 21.4 cm to the right
+  friction  0.01
+  colour    grey
+
+latch upper guide
+  is a      box 120 by 2 by 16 cm
+  raised    58 cm, 65 cm behind ramp foot, 57.4 cm to the left
+  friction  0.01
+  colour    grey
+
+latch lower keeper
+  is a      box 120 by 3 by 2 cm
+  raised    72.4 cm, 65 cm behind ramp foot, 18.5 cm to the right
+  friction  0.01
+  colour    grey
+
+latch upper keeper
+  is a      box 120 by 3 by 2 cm
+  raised    72.4 cm, 65 cm behind ramp foot, 54.5 cm to the left
+  friction  0.01
+  colour    grey
+
+latch stop
+  is a      box 12 by 76 by 12 cm
+  raised    60 cm, 1.31 m behind ramp foot, 18 cm to the left
+  bounce    dead
+  friction  0.01
+  colour    dark grey
+
+latch
+  is a      box 40 by 76 by 12 cm, 120 g
+  moves     freely
+  bounce    dead
+  friction  0.01, spinning 0.001, rolling 0.001
+  colour    orange
+  raised    60 cm, 28 cm behind ramp foot, 18 cm to the left
+
+block
+  is a      cube 14 cm, 250 g
+  moves     freely
+  bounce    dead
+  friction  0.01
+  colour    wood
+  on latch, 4 cm behind latch, 5 cm to the left
+
+ring
+  is a    ring 46 cm across, 8 mm thick
+  at      39 cm up, centred over block
+  colour  orange
+
+box
+  is an           open box
+  length          64 cm
+  width           64 cm
+  walls           24 cm
+  wall thickness  2 cm
+  base thickness  2 cm
+  bounce          dead
+  friction        0.8, spinning 0.01, rolling 0.004
+  colour          wood
+  on floor, centred over ring
+
+expect
+  ball1 touches ramp
+  ball1 touches rotor
+  rotor touches ball2
+  ball2 touches latch
+  block drops through ring
+  block comes to rest in box
+```
+
+```json
+{
+  "what_happens": "Ball1 rolls down the ramp and strikes the rotor. Ball2 falls off its starting position to the floor without contacting the rotor or latch. The rotor directly pushes the latch away, releasing the block through the ring into the box, where it rests.",
+  "works": false,
+  "problem": "Ball2 starts off its runway and never strikes the latch; the rotor releases the block directly instead."
+}
+```

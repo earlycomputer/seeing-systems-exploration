@@ -1,0 +1,85 @@
+```xml
+<mujoco model="weight_lever_lift_bridge_cup">
+  <compiler angle="degree" autolimits="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100" tolerance="1e-10" cone="elliptic"/>
+  <size njmax="1000" nconmax="300"/>
+
+  <visual>
+    <global azimuth="135" elevation="-20"/>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.7 0.7 0.7"/>
+  </visual>
+
+  <worldbody>
+    <light name="overhead_light" pos="0.4 -1 3" dir="0 0 -1"/>
+    <geom name="floor" type="plane" pos="0 0 0" size="4 3 0.1" friction="0.8 0.01 0.005" rgba="0.82 0.84 0.86 1"/>
+
+    <body name="fulcrum" pos="0 0 0">
+      <geom name="fulcrum_near_leg" type="box" pos="0 -0.11 0.16" size="0.035 0.025 0.16" rgba="0.25 0.28 0.32 1"/>
+      <geom name="fulcrum_far_leg" type="box" pos="0 0.11 0.16" size="0.035 0.025 0.16" rgba="0.25 0.28 0.32 1"/>
+      <geom name="fulcrum_axle" type="cylinder" pos="0 0 0.35" quat="0.70710678 0.70710678 0 0" size="0.025 0.14" contype="0" conaffinity="0" rgba="0.18 0.20 0.23 1"/>
+    </body>
+
+    <body name="lower_stop" pos="-0.44 0 0.162">
+      <geom name="lower_stop_support" type="box" pos="0 0 -0.096" size="0.025 0.08 0.066" rgba="0.25 0.28 0.32 1"/>
+      <geom name="lever_lower_stop" type="cylinder" quat="0.70710678 0.70710678 0 0" size="0.03 0.08" friction="0.8 0.005 0.001" solref="0.006 1" solimp="0.95 0.99 0.001" rgba="0.15 0.17 0.20 1"/>
+    </body>
+
+    <!-- Weight bottom: 0.870 m. Horizontal lever top: 0.370 m. -->
+    <body name="weight" pos="-0.43 0 0.925">
+      <freejoint name="weight_free"/>
+      <geom name="weight_cylinder" type="cylinder" size="0.065 0.055" mass="0.4" friction="1.0 0.005 0.001" solref="0.006 1" solimp="0.95 0.99 0.001" rgba="0.22 0.35 0.65 1"/>
+    </body>
+
+    <body name="lever" pos="0 0 0.35">
+      <joint name="lever_hinge" type="hinge" axis="0 1 0" range="-17.188734 0" damping="0.003" frictionloss="0.001" solreflimit="0.004 1" solimplimit="0.99 0.999 0.001"/>
+      <geom name="lever_beam" type="box" size="0.5 0.06 0.02" mass="0.12" friction="1.0 0.005 0.001" solref="0.006 1" solimp="0.95 0.99 0.001" rgba="0.75 0.48 0.20 1"/>
+    </body>
+
+    <!-- The lever must rise through a 0.060 m initial gap to reach this pad. -->
+    <body name="lift" pos="0.43 0 0.43">
+      <joint name="lift_slide" type="slide" axis="0 0 1" range="0 0.45" damping="0.02" solreflimit="0.004 1" solimplimit="0.99 0.999 0.001"/>
+      <geom name="lift_contact_pad" type="box" pos="0 0 0.015" size="0.025 0.045 0.015" mass="0.03" friction="0.8 0.005 0.001" solref="0.006 1" solimp="0.95 0.99 0.001" rgba="0.9 0.55 0.12 1"/>
+      <geom name="lift_stem" type="capsule" fromto="0 0 0.03 0.08 0 0.1765" size="0.015" mass="0.03" friction="0.2 0.001 0.0001" solref="0.006 1" rgba="0.9 0.55 0.12 1"/>
+      <geom name="lift_striking_face" type="box" pos="0.08 0 0.1765" euler="0 45 0" size="0.10 0.05 0.012" mass="0.18" priority="3" friction="0.02 0.0001 0.0001" condim="3" solref="0.006 1" solimp="0.95 0.99 0.001" rgba="1.0 0.68 0.16 1"/>
+    </body>
+
+    <!-- Ball contact requires about 0.170 m of lift travel; the lever drives only about 0.082 m. -->
+    <body name="ball" pos="0.60 0 0.76">
+      <freejoint name="ball_free"/>
+      <geom name="ball_sphere" type="sphere" size="0.04" mass="0.03" condim="6" friction="0.4 0.002 0.0003" solref="0.006 1" solimp="0.95 0.99 0.001" rgba="0.85 0.12 0.10 1"/>
+    </body>
+
+    <body name="bridge" pos="0 0 0">
+      <geom name="bridge_deck" type="box" pos="0.93 0 0.685" size="0.335 0.11 0.035" priority="1" condim="6" friction="0.45 0.003 0.0005" solref="0.006 1" solimp="0.95 0.99 0.001" rgba="0.56 0.40 0.25 1"/>
+      <geom name="bridge_near_rail" type="box" pos="0.93 -0.112 0.85" size="0.335 0.012 0.13" priority="1" condim="6" friction="0.45 0.003 0.0005" solref="0.006 1" rgba="0.38 0.30 0.23 1"/>
+      <geom name="bridge_far_rail" type="box" pos="0.93 0.112 0.85" size="0.335 0.012 0.13" priority="1" condim="6" friction="0.45 0.003 0.0005" solref="0.006 1" rgba="0.38 0.30 0.23 1"/>
+      <geom name="bridge_near_leg" type="box" pos="0.80 -0.085 0.325" size="0.025 0.02 0.325" rgba="0.38 0.30 0.23 1"/>
+      <geom name="bridge_far_leg" type="box" pos="1.17 0.085 0.325" size="0.025 0.02 0.325" rgba="0.38 0.30 0.23 1"/>
+    </body>
+
+    <body name="cup" pos="1.43 0 0">
+      <geom name="cup_pedestal" type="box" pos="0 0 0.215" size="0.13 0.10 0.215" rgba="0.20 0.37 0.29 1"/>
+      <geom name="cup_bottom" type="box" pos="0 0 0.45" size="0.18 0.15 0.02" priority="2" condim="6" friction="0.9 0.02 0.01" solref="0.01 1" solimp="0.95 0.99 0.001" rgba="0.20 0.62 0.39 1"/>
+      <geom name="cup_back_wall" type="box" pos="0.165 0 0.76" size="0.015 0.15 0.29" priority="2" condim="6" friction="0.9 0.02 0.01" solref="0.01 1" solimp="0.95 0.99 0.001" rgba="0.20 0.62 0.39 1"/>
+      <geom name="cup_near_wall" type="box" pos="0 -0.135 0.76" size="0.18 0.015 0.29" priority="2" condim="6" friction="0.9 0.02 0.01" solref="0.01 1" solimp="0.95 0.99 0.001" rgba="0.20 0.62 0.39 1"/>
+      <geom name="cup_far_wall" type="box" pos="0 0.135 0.76" size="0.18 0.015 0.29" priority="2" condim="6" friction="0.9 0.02 0.01" solref="0.01 1" solimp="0.95 0.99 0.001" rgba="0.20 0.62 0.39 1"/>
+      <geom name="cup_entry_wall" type="box" pos="-0.165 0 0.59" size="0.015 0.15 0.12" priority="2" condim="6" friction="0.9 0.02 0.01" solref="0.01 1" solimp="0.95 0.99 0.001" rgba="0.20 0.62 0.39 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start" qpos="-0.43 0 0.925 1 0 0 0 0 0 0.60 0 0.76 1 0 0 0"/>
+  </keyframe>
+</mujoco>
+```
+
+---
+thinking (summarized):
+
+**Evaluating ball launch design**
+
+I'm considering a scenario where a ball is launched onto a bridge that has a slight upward or downward slope, crossing a height of 0.7 meters before reaching a cup. I need the bridge to have a continuous walkway, and I must ensure that the cup's capture walls are taller than the ball. The friction needs to be high enough to bring the ball to rest. I'm also thinking about the weight, lever dimensions, and energies involved, like calculating energy for a 2 kg mass, leading to a target ball speed.
+
+**Calculating lever adjustments**
+
+I’m thinking about how wall channels may affect orientation, but that’s not an immediate concern. For a physical lever setup, I need to add a fixed block below the left side at x = -0.44, with the top at 0.23. The stop range for that lever is from -0.30 to the bottom at 0.35, which gives us some calculations to do. The world bar local center at x = -0.45 transforms to -0.430 in position with adjustments needed.

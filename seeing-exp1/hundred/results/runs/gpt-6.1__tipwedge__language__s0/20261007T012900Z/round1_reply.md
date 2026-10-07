@@ -1,0 +1,174 @@
+No. The block falls about 0.5 m and tips the wedge into ball1, but the block then also hits ball1. Ball1 rolls backward off the starting pad and stops on the floor instead of reaching the ramp or flap. The flap stays at its upper stop, and ball2 remains on its shelf.
+
+The revision separates the falling block from the ball’s lane and adds a forward-facing striker attached to the loose wedge. It has not yet been simulation-tested.
+
+```world
+world  separated weight lane and wedge striker
+
+floor
+  size      6 m
+  friction  0.9, spinning 0.005, rolling 0.001
+
+wedge
+  is a      box 48 by 60 by 2 cm, 300 g
+  moves     freely
+  friction  1.5, spinning 0.01, rolling 0.002
+  bounce    dead
+  colour    wood
+  at        0 cm along, 30 cm up
+
+wedge foot
+  is a         box 12 by 60 by 4 cm, 600 g
+  on           floor, centred over wedge
+  attached to  wedge
+  friction     2, spinning 0.01, rolling 0.002
+  bounce       dead
+  colour       wood
+
+wedge near tip
+  is a  point
+  at    24 cm behind wedge, level with wedge
+
+wedge far tip
+  is a  point
+  at    24 cm beyond wedge, level with wedge
+
+wedge near slope
+  is a         plank from wedge foot to wedge near tip, 60 cm wide, 2 cm thick
+  weighs       100 g
+  attached to  wedge
+  friction     1.5
+  bounce       dead
+  colour       wood
+
+wedge far slope
+  is a         plank from wedge foot to wedge far tip, 60 cm wide, 2 cm thick
+  weighs       100 g
+  attached to  wedge
+  friction     1.5
+  bounce       dead
+  colour       wood
+
+wedge striker
+  is a         box 18 by 12 by 8 cm, 40 g
+  at           19 cm along, 12 cm to the left, 20 cm up
+  attached to  wedge
+  friction     0.5
+  bounce       dead
+  colour       wood
+
+block
+  is a      box 8 by 12 by 10 cm, 4 kg
+  moves     freely
+  friction  0.8
+  bounce    dead
+  colour    dark grey
+  at        50 cm outside wedge's top, 18 cm beyond wedge, 18 cm to the right
+
+starting pad
+  is a      box 24 by 18 by 9 cm
+  on        floor, 46 cm along, 12 cm to the left
+  friction  0.7, spinning 0.005, rolling 0.0005
+  bounce    dead
+  colour    grey
+
+ramp
+  is a       ramp
+  high end   56 cm along, 12 cm to the left, 8 cm up
+  low end    150 cm along, 12 cm to the left, 2.5 cm up
+  width      18 cm
+  thickness  2 cm
+  friction   0.7, spinning 0.005, rolling 0.0005
+  bounce     dead
+  colour     wood
+
+right guide
+  is a      box 56 by 1 by 14 cm
+  at        83 cm along, 2 cm to the left, 10.5 cm up
+  friction  0.3
+  bounce    dead
+  colour    grey
+
+left guide
+  is a      box 56 by 1 by 14 cm
+  at        83 cm along, 22 cm to the left, 10.5 cm up
+  friction  0.3
+  bounce    dead
+  colour    grey
+
+ball1
+  is a      sphere 6 cm radius, 500 g
+  moves     freely
+  rolls
+  friction  0.7, spinning 0.005, rolling 0.0005
+  bounce    dead
+  colour    orange
+  on        starting pad, 6 cm behind starting pad
+
+flap pivot
+  is a  point
+  at    146 cm along, 12 cm to the left, 20 cm up
+
+flap
+  is a           box 2 by 18 by 30 cm, 100 g
+  at             149 cm along, 12 cm to the left, 25 cm up
+  turns on       release hinge, about y, at flap pivot
+  swings         from -90° to 0°
+  starts turned  0°
+  damping        0.001 N·m·s/rad
+  friction       0.7
+  bounce         dead
+  colour         wood
+
+flap shelf
+  is a         box 16 by 48 by 1 cm, 5 g
+  at           140 cm along, 24 cm to the left, 32 cm up
+  attached to  flap
+  friction     0.7, spinning 0.005, rolling 0.001
+  bounce       dead
+  colour       wood
+
+ball2
+  is a      sphere 1.5 cm radius, 10 g
+  moves     freely
+  rolls
+  friction  0.8, spinning 0.01, rolling 0.003
+  bounce    dead
+  colour    white
+  on        flap shelf, 1 cm beyond flap shelf, 18 cm left of flap shelf
+
+cup
+  is an           open box
+  length          80 cm
+  width           24 cm
+  walls           5 cm
+  wall thickness  1 cm
+  base thickness  1 cm
+  on              floor, 123 cm along, 42 cm to the left
+  friction        1, spinning 0.01, rolling 0.01
+  bounce          dead
+  colour          grey
+
+expect
+  block touches wedge
+  wedge touches ball1
+  ball1 touches ramp
+  ball1 touches flap
+  flap reaches its lower stop
+  ball2 comes to rest in cup
+```
+
+```json
+{
+  "what_happens": "The block falls about 0.5 m and tips the wedge into ball1, then also hits ball1. Ball1 rolls backward off the starting pad and stops on the floor. The block stops on the ramp, the wedge settles, the flap remains at its upper stop, and ball2 stays on its shelf.",
+  "works": false,
+  "problem": "Ball1 rolls backward rather than reaching the flap, so the flap never reaches its lower stop and ball2 is not released into the cup."
+}
+```
+
+---
+thinking (summarized):
+
+**Evaluating shelf design**
+
+I'm setting the shelf width to 48 cm and centering it. I want to make sure it's clear at 24 spans from 0 to 48. The mass is 5g, and I need the flap to pivot at specific coordinates. The flap should be explicitly positioned 12 cm left, with its center also in precise coordinates. I’ll ensure all the calculations align correctly. It’s crucial to get these details right for the final design!

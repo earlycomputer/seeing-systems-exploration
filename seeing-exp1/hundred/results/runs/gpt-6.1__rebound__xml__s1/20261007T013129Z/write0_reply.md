@@ -1,0 +1,112 @@
+```xml
+<mujoco model="drop_driven_spring_launcher">
+  <compiler angle="degree" inertiafromgeom="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100" cone="elliptic"/>
+  <size njmax="1000" nconmax="300"/>
+  <visual>
+    <global azimuth="125" elevation="-22"/>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.7 0.7 0.7"/>
+  </visual>
+
+  <worldbody>
+    <light name="overhead" pos="0.5 -1.5 3" dir="0 0 -1"/>
+    <camera name="overview" pos="2.7 -3.8 2.5" xyaxes="0.86 0.51 0 -0.22 0.37 0.90"/>
+
+    <geom name="floor" type="plane" size="4 4 0.1" contype="1" conaffinity="6" friction="0.8 0.02 0.01" solref="0.008 1" rgba="0.22 0.25 0.28 1"/>
+
+    <!-- The block's bottom starts exactly 0.5 m above the compressor pad. -->
+    <body name="block" pos="0 -0.45 1.10">
+      <freejoint name="block_free"/>
+      <geom name="block_compressor" type="box" size="0.075 0.075 0.075" mass="2" contype="2" conaffinity="9" priority="1" friction="0.15 0.005 0.001" solref="0.006 1" rgba="0.85 0.24 0.12 1"/>
+    </body>
+
+    <!-- A vertical carriage links the compressor pad to an inclined striker. -->
+    <body name="plunger" pos="0 0 0.35">
+      <joint name="plunger_slide" type="slide" axis="0 0 1" limited="true" range="-0.23 0.25" stiffness="800" springref="0.00367875" damping="0.4" armature="0.002"/>
+      <geom name="plunger_pad" type="box" pos="0 -0.45 0.15" size="0.15 0.13 0.025" mass="0.22" contype="8" conaffinity="6" priority="1" friction="0.15 0.005 0.001" solref="0.006 1" rgba="0.95 0.65 0.12 1"/>
+      <geom name="plunger_link" type="capsule" fromto="0 -0.45 0.15 -0.042132 0 -0.035353" size="0.018" mass="0.02" contype="0" conaffinity="0" rgba="0.65 0.68 0.72 1"/>
+      <geom name="plunger_striker" type="box" pos="-0.042132 0 -0.035353" quat="0.9396926 0 -0.3420201 0" size="0.02 0.075 0.14" mass="0.06" contype="8" conaffinity="6" priority="2" friction="0.01 0.001 0.0001" solref="0.008 0.12" solimp="0.95 0.99 0.001" rgba="0.95 0.65 0.12 1"/>
+    </body>
+
+    <body name="ball" pos="0 0 0.35">
+      <freejoint name="ball_free"/>
+      <geom name="ball_sphere" type="sphere" size="0.035" mass="0.04" contype="4" conaffinity="9" friction="0.02 0.002 0.0001" solref="0.006 1" rgba="0.15 0.55 0.95 1"/>
+    </body>
+
+    <!-- The striker passes through a clearance slot represented by collision masks. -->
+    <body name="ramp" pos="0 0 0">
+      <geom name="ramp_surface" type="box" pos="0.103681 0 0.358674" quat="0.9396926 0 -0.3420201 0" size="0.315 0.10 0.025" contype="1" conaffinity="4" priority="1" friction="0.015 0.001 0.0001" solref="0.006 1" rgba="0.35 0.65 0.42 1"/>
+      <geom name="ramp_left_rail" type="capsule" fromto="-0.165258 0.108 0.189138 0.317350 0.108 0.594094" size="0.012" contype="1" conaffinity="4" priority="1" friction="0.015 0.001 0.0001" solref="0.006 1" rgba="0.22 0.43 0.29 1"/>
+      <geom name="ramp_right_rail" type="capsule" fromto="-0.165258 -0.108 0.189138 0.317350 -0.108 0.594094" size="0.012" contype="1" conaffinity="4" priority="1" friction="0.015 0.001 0.0001" solref="0.006 1" rgba="0.22 0.43 0.29 1"/>
+    </body>
+
+    <!-- Horizontal flight hoop: the ball crosses it on its descending arc. -->
+    <body name="hoop" pos="1 0 0.43">
+      <geom name="hoop_01" type="capsule" fromto="0.65 0 0 0.600522 0.248744 0" size="0.012" contype="1" conaffinity="4" friction="0.2 0.005 0.001" solref="0.008 1" rgba="0.95 0.82 0.18 1"/>
+      <geom name="hoop_02" type="capsule" fromto="0.600522 0.248744 0 0.459619 0.459619 0" size="0.012" contype="1" conaffinity="4" friction="0.2 0.005 0.001" solref="0.008 1" rgba="0.95 0.82 0.18 1"/>
+      <geom name="hoop_03" type="capsule" fromto="0.459619 0.459619 0 0.248744 0.600522 0" size="0.012" contype="1" conaffinity="4" friction="0.2 0.005 0.001" solref="0.008 1" rgba="0.95 0.82 0.18 1"/>
+      <geom name="hoop_04" type="capsule" fromto="0.248744 0.600522 0 0 0.65 0" size="0.012" contype="1" conaffinity="4" friction="0.2 0.005 0.001" solref="0.008 1" rgba="0.95 0.82 0.18 1"/>
+      <geom name="hoop_05" type="capsule" fromto="0 0.65 0 -0.248744 0.600522 0" size="0.012" contype="1" conaffinity="4" friction="0.2 0.005 0.001" solref="0.008 1" rgba="0.95 0.82 0.18 1"/>
+      <geom name="hoop_06" type="capsule" fromto="-0.248744 0.600522 0 -0.459619 0.459619 0" size="0.012" contype="1" conaffinity="4" friction="0.2 0.005 0.001" solref="0.008 1" rgba="0.95 0.82 0.18 1"/>
+      <geom name="hoop_07" type="capsule" fromto="-0.459619 0.459619 0 -0.600522 0.248744 0" size="0.012" contype="1" conaffinity="4" friction="0.2 0.005 0.001" solref="0.008 1" rgba="0.95 0.82 0.18 1"/>
+      <geom name="hoop_08" type="capsule" fromto="-0.600522 0.248744 0 -0.65 0 0" size="0.012" contype="1" conaffinity="4" friction="0.2 0.005 0.001" solref="0.008 1" rgba="0.95 0.82 0.18 1"/>
+      <geom name="hoop_09" type="capsule" fromto="-0.65 0 0 -0.600522 -0.248744 0" size="0.012" contype="1" conaffinity="4" friction="0.2 0.005 0.001" solref="0.008 1" rgba="0.95 0.82 0.18 1"/>
+      <geom name="hoop_10" type="capsule" fromto="-0.600522 -0.248744 0 -0.459619 -0.459619 0" size="0.012" contype="1" conaffinity="4" friction="0.2 0.005 0.001" solref="0.008 1" rgba="0.95 0.82 0.18 1"/>
+      <geom name="hoop_11" type="capsule" fromto="-0.459619 -0.459619 0 -0.248744 -0.600522 0" size="0.012" contype="1" conaffinity="4" friction="0.2 0.005 0.001" solref="0.008 1" rgba="0.95 0.82 0.18 1"/>
+      <geom name="hoop_12" type="capsule" fromto="-0.248744 -0.600522 0 0 -0.65 0" size="0.012" contype="1" conaffinity="4" friction="0.2 0.005 0.001" solref="0.008 1" rgba="0.95 0.82 0.18 1"/>
+      <geom name="hoop_13" type="capsule" fromto="0 -0.65 0 0.248744 -0.600522 0" size="0.012" contype="1" conaffinity="4" friction="0.2 0.005 0.001" solref="0.008 1" rgba="0.95 0.82 0.18 1"/>
+      <geom name="hoop_14" type="capsule" fromto="0.248744 -0.600522 0 0.459619 -0.459619 0" size="0.012" contype="1" conaffinity="4" friction="0.2 0.005 0.001" solref="0.008 1" rgba="0.95 0.82 0.18 1"/>
+      <geom name="hoop_15" type="capsule" fromto="0.459619 -0.459619 0 0.600522 -0.248744 0" size="0.012" contype="1" conaffinity="4" friction="0.2 0.005 0.001" solref="0.008 1" rgba="0.95 0.82 0.18 1"/>
+      <geom name="hoop_16" type="capsule" fromto="0.600522 -0.248744 0 0.65 0 0" size="0.012" contype="1" conaffinity="4" friction="0.2 0.005 0.001" solref="0.008 1" rgba="0.95 0.82 0.18 1"/>
+    </body>
+
+    <!-- Broad, open-topped cup with dissipative bottom and wall contacts. -->
+    <body name="cup" pos="1.05 0 0">
+      <geom name="cup_bottom" type="box" pos="0 0 0.03" size="0.78 0.78 0.03" contype="1" conaffinity="4" priority="3" condim="6" friction="0.8 0.02 0.01" solref="0.008 1" rgba="0.32 0.42 0.72 1"/>
+      <geom name="cup_left_wall" type="box" pos="-0.76 0 0.17" size="0.02 0.78 0.11" contype="1" conaffinity="4" priority="3" condim="6" friction="0.8 0.02 0.01" solref="0.008 1" rgba="0.38 0.49 0.82 1"/>
+      <geom name="cup_right_wall" type="box" pos="0.76 0 0.17" size="0.02 0.78 0.11" contype="1" conaffinity="4" priority="3" condim="6" friction="0.8 0.02 0.01" solref="0.008 1" rgba="0.38 0.49 0.82 1"/>
+      <geom name="cup_front_wall" type="box" pos="0 -0.76 0.17" size="0.74 0.02 0.11" contype="1" conaffinity="4" priority="3" condim="6" friction="0.8 0.02 0.01" solref="0.008 1" rgba="0.38 0.49 0.82 1"/>
+      <geom name="cup_back_wall" type="box" pos="0 0.76 0.17" size="0.74 0.02 0.11" contype="1" conaffinity="4" priority="3" condim="6" friction="0.8 0.02 0.01" solref="0.008 1" rgba="0.38 0.49 0.82 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start"/>
+  </keyframe>
+</mujoco>
+```
+
+---
+thinking (summarized):
+
+**Designing a physical scene test**
+
+I’m considering the design of a physical test setup that uses no listed Python tools. I need to create a mechanism that allows a block to fall and compress a spring plunger, launching a ball up a ramp. It’s important that the geometry is robust enough to handle the collisions. I need the block to either clear a path for the plunger or support the ball. I’ll also define the incline angle and how gravity affects the ball.
+
+**Setting up spring system dynamics**
+
+I'm setting up a spring equilibrium where the plunger and ball are supported by gravity. When a block falls at time 0.319 seconds, it impacts the plunger, causing it to retreat while the ball rolls down. However, the ball compresses too slowly, leading to a delayed impact on rebound. I need to ensure a stable design where the block lands on the platform but then falls away after compression, which might affect the rebound dynamics. The geometry and placement are key to avoid interference.
+
+**Redesigning block dynamics**
+
+I’m rethinking the design for a block that falls onto a sloped impact surface angled to redirect it. The block needs to be frictionless, so it glances away upon impact. I wonder if a spherical geometry for the block would work, perhaps using a box shape for the body. This way, a separate compression platform can keep the ball or block contained without interference. I could also add a chute to guide the block off the platform during compression. The mechanism seems straightforward—with a vertical plunger and striker to launch the block.
+
+**Analyzing ball mechanics**
+
+I'm working through the mechanics of a ball sliding down a ramp with a plunger. The ball slides at 0.5 m/s, while the plunger moves downward at 2 m/s which creates some separation. I need to adjust the ramp's angles and lengths. It seems reasonable to choose an angle of about 40°. The ball's initial position and rebound times are all calculated based on the forces acting upon it, factoring in gravity and energy loss during its movement. I'll need to refine these calculations further.
+
+**Evaluating ball trajectory and hoop design**
+
+I'm analyzing the ball's flight and how it interacts with the hoop and cup. At its peak, the ball reaches 0.72m, while the hoop sits horizontally at 0.5m. I've got specific measurements for the hoop and cup, ensuring they catch a broad range. The hoop's center is at (1, 0.65) with a radius of 0.45, while the cup needs a diameter of 0.9 for effective range. I'll refine the design to improve accuracy and ensure it fits the expected ball speeds and trajectories.
+
+**Evaluating ramp and collision**
+
+I’m thinking about hoop collisions with the cup and the setup with the ramp and rails. The poles through the cup might not need to be fixed since the hoop can stay in place. I noticed I could omit the ramp rails since the strike is symmetric. Adding rails along the platform width makes sense, and I'm examining the coordinates for the ball’s movement. It looks like I'll also compute some adjustments based on the ball's path.
+
+**Configuring simulation settings**
+
+I’m considering some configuration options for a simulation, ensuring no default classes are included for safety. Each geometry should specify attributes like mass and collision properties. I’m looking at using explicit dynamics and a Newton solver while setting the timestep to .002. I'm also paying attention to the energy impact with low damping, spring joints, and defined ranges. And I’ll calculate dynamic geom masses for accuracy while adjusting priority settings for multiple elements in the simulation.
+
+**Analyzing ball dynamics**
+
+I'm considering how the ball strikes the reference face when the platform compresses. The acceleration for rolling versus no rolling friction affects the ball's displacement. Earlier, the ball's displacement was -.077, which leads to earlier collisions. I noted that the plunger's speed is 2.4, and analyzing the ball's speed gives an energy of .68. The ramp speed calculates out to about 2.1, which seems acceptable. Overall, cup positioning looks fine at around 1.1.

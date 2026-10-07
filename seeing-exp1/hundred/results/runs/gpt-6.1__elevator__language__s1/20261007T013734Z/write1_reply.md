@@ -1,0 +1,149 @@
+```world
+world  falling weight and two-gap lift
+
+floor
+  size      6 m
+  friction  0.8, spinning 0.005, rolling 0.002
+
+pivot
+  is a  point
+  at    50 cm up
+
+lever
+  is a           box 160 by 6 by 5 cm, 600 g
+  at             0 m along, 50 cm up
+  turns on       lever hinge, about y, at pivot
+  swings         from -25° to 0°
+  starts turned  0°
+  damping        0.03 N·m·s/rad
+  friction       0.5
+  bounce         dead
+  colour         wood
+
+-- The weight's bottom begins exactly 0.5 m above the lever's top.
+weight
+  is a      box 20 by 16 by 20 cm, 6 kg
+  moves     freely
+  at        65 cm behind pivot, 1.125 m up
+  friction  0.6
+  bounce    dead
+  colour    dark grey
+
+-- These seats support the striker without blocking the narrow lever.
+left seat
+  is a      box 14 by 3 by 4 cm
+  at        68 cm beyond pivot, 6.5 cm to the left, 62 cm up
+  friction  0.01
+  bounce    dead
+
+right seat
+  is a      box 14 by 3 by 4 cm
+  at        68 cm beyond pivot, 6.5 cm to the right, 62 cm up
+  friction  0.01
+  bounce    dead
+
+-- Four close-fitting faces guide the stem vertically.
+rear guide
+  is a      box 2 by 21 by 45 cm
+  at        60.5 cm beyond pivot, 1.125 m up
+  friction  0.01
+  bounce    dead
+  colour    grey
+
+front guide
+  is a      box 2 by 21 by 45 cm
+  at        75.5 cm beyond pivot, 1.125 m up
+  friction  0.01
+  bounce    dead
+  colour    grey
+
+left guide
+  is a      box 13 by 2 by 45 cm
+  at        68 cm beyond pivot, 9.5 cm to the left, 1.125 m up
+  friction  0.01
+  bounce    dead
+  colour    grey
+
+right guide
+  is a      box 13 by 2 by 45 cm
+  at        68 cm beyond pivot, 9.5 cm to the right, 1.125 m up
+  friction  0.01
+  bounce    dead
+  colour    grey
+
+lift
+  is a      sphere 5 cm radius, 30 g
+  moves     freely
+  at        68 cm beyond pivot, 1.11 m up
+  friction  0.01
+  bounce    dead
+  colour    orange
+
+-- Its bottom starts 11.5 cm above the horizontal lever.
+lift stem
+  is a         box 12 by 16 by 42 cm, 300 g
+  at           68 cm beyond pivot, 85 cm up
+  attached to  lift
+  friction     0.01
+  bounce       dead
+  colour       orange
+
+bridge
+  is a      box 65 by 32 by 3 cm
+  at        1.075 m along, 1.435 m up
+  friction  0.04, spinning 0.001, rolling 0.0004
+  bounce    dead
+  colour    wood
+
+bridge left rail
+  is a      box 65 by 2 by 10 cm
+  at        1.075 m along, 17 cm to the left, 1.50 m up
+  friction  0.04
+  bounce    dead
+  colour    wood
+
+bridge right rail
+  is a      box 65 by 2 by 10 cm
+  at        1.075 m along, 17 cm to the right, 1.50 m up
+  friction  0.04
+  bounce    dead
+  colour    wood
+
+-- The offset makes the rising rounded striker push the ball forward.
+-- At the lever's lower stop, the striker still has a gap to cross.
+ball
+  is a      sphere 8 cm radius, 60 g
+  moves     freely
+  rolls
+  at        9 cm beyond lift, 1.53 m up
+  friction  0.04, spinning 0.001, rolling 0.0004
+  bounce    dead
+  colour    white
+
+cup
+  is an             open box
+  length            65 cm
+  width             40 cm
+  walls             45 cm
+  wall thickness    2 cm
+  base thickness    2 cm
+  near wall height  1 cm
+  at                1.725 m along, raised 1.43 m
+  friction          1.0, spinning 0.01, rolling 0.02
+  bounce            dead
+  colour            grey
+
+expect
+  weight touches lever
+  lever reaches its lower stop
+  lift touches ball
+  ball touches bridge
+  ball comes to rest in cup
+```
+
+---
+thinking (summarized):
+
+**Revising position details**
+
+I need to replace the pivot position with either “at 0 m along, 50 cm up” or “level with pivot, 0 m along.” For all other positions, I should use “68 cm beyond pivot” and parse the position line as “65 cm behind” for validity. It’s crucial to make sure the hinge axis at the pivot remains unaffected. I’ll ensure the full code reflects this correction without any extra commentary.

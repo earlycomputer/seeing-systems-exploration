@@ -1,0 +1,136 @@
+```world
+world  rolling release and gap striker
+
+floor
+  size      6 m
+  friction  0.8, spinning 0.005, rolling 0.002
+
+pivot
+  is a  point
+  at    0 m along, 0 m to the left, 1.55 m up
+
+ramp
+  is a       ramp
+  high end   -99 cm along, 160 cm to the right, 1.90 m up
+  low end    -99 cm along, 22 cm to the right, 1.10 m up
+  width      24 cm
+  thickness  3 cm
+  friction   0.6, spinning 0.001, rolling 0.0003
+  colour     wood
+
+-- The prop slides across the hammer's path on this elevated track.
+prop track
+  is a      box 18 by 90 by 4 cm
+  at        100 cm behind pivot, 10 cm to the left, 88 cm up
+  friction  0.005
+  colour    grey
+
+-- This strip keeps the tall prop upright without touching the hammer.
+prop retainer
+  is a      box 4 by 90 by 2 cm
+  at        103 cm behind pivot, 10 cm to the left, 147.5 cm up
+  friction  0.005
+  colour    grey
+
+prop
+  is a      box 12 by 16 by 56 cm, 300 g
+  moves     freely
+  rests     on prop track, 1 cm beyond prop track, 0 cm to the left
+  friction  0.005
+  bounce    dead
+  colour    wood
+
+hammer
+  is a           box 98 by 12 by 18 cm, 3 kg
+  its far end at pivot, level with pivot, 0 cm to the left
+  turns on       hammer hinge, about y, at pivot
+  swings         from -105° to 0°
+  starts turned  0°
+  damping        0.04 N·m·s/rad
+  friction       0.005
+  bounce         dead
+  colour         dark grey
+
+-- The striker's track ends before the separate payload perch.
+peg track
+  is a      box 43 by 24 by 5 cm
+  at        26.5 cm beyond pivot, 0 cm to the left, 43.5 cm up
+  friction  0.005
+  colour    grey
+
+peg left guide
+  is a      box 43 by 3 by 19 cm
+  on        peg track, 26.5 cm beyond pivot, 8 cm to the left
+  friction  0.005
+  colour    grey
+
+peg right guide
+  is a      box 43 by 3 by 19 cm
+  on        peg track, 26.5 cm beyond pivot, 8 cm to the right
+  friction  0.005
+  colour    grey
+
+peg
+  is a      box 28 by 10 by 20 cm, 120 g
+  moves     freely
+  rests     on peg track, 26 cm beyond pivot, 0 cm to the left
+  friction  0.005
+  bounce    dead
+  colour    orange
+
+-- There is a 22 cm unsupported gap between track and perch.
+block perch
+  is a      box 16 by 22 by 4 cm
+  at        78 cm beyond pivot, 0 cm to the left, 44 cm up
+  friction  0.01
+  colour    wood
+
+block
+  is a      cube 8 cm, 1.3 kg
+  moves     freely
+  rests     on block perch, centred over block perch
+  friction  0.02, spinning 0.005, rolling 0.002
+  bounce    dead
+  colour    white
+
+hoop
+  is a    ring 60 cm across, 1 cm thick
+  at      103 cm beyond pivot, 0 cm to the left, 34 cm up
+  colour  orange
+
+cup
+  is an          open box
+  length         66 cm
+  width          48 cm
+  walls          27 cm
+  wall thickness 2 cm
+  base thickness 2 cm
+  on             floor, 103 cm beyond pivot, 0 cm to the left
+  friction       0.8, spinning 0.01, rolling 0.004
+  bounce         dead
+  colour         wood
+
+ball
+  is a      sphere 6.5 cm radius, 1 kg
+  moves     freely
+  rolls
+  rests     on ramp, 80 cm from the top
+  friction  0.6, spinning 0.001, rolling 0.0003
+  bounce    dead
+  colour    orange
+
+expect
+  ball touches ramp
+  ball touches prop
+  hammer touches peg
+  peg touches block
+  block drops through hoop
+  block comes to rest in cup
+```
+
+---
+thinking (summarized):
+
+**Interpreting library context**
+
+I need to interpret a part within a library context, but I can't refer to any external pivot points. There was a mention of a pivot earlier that exists, but this compiler resolves the part locally only. I should use an absolute format with specifications like `-99 cm along`, `160 cm to the right`, and `1.90 m up`. It seems that using ASCII signs should be fine. All other pivot references appear to work with no errors, so I need to finalize the full code.

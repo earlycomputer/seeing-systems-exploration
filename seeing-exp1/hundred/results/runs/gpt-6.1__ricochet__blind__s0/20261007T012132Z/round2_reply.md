@@ -1,0 +1,91 @@
+For the last file, I expect the ball to ricochet from wall1 to wall2 and then strike the target, driving it toward its 85° lower stop.
+
+My previous correction was not sufficient: at that stop, the rounded cam still overlaps the block’s underside. Release depends on the block tipping or sliding within the guides; it is not a reliable lower-stop-triggered release. The block could remain supported or wedged. Without a run, I also cannot confirm the final rest speeds.
+
+The revised file uses a **spring-loaded retracting shelf**. The target retains that shelf until near the end of its rotation. Once unlocked, the shelf must travel substantially before uncovering the block, giving the target time to reach its lower stop first. This is a geometry-based correction, not a simulated verification.
+
+```xml
+<mujoco model="ricochet_stop_release">
+  <compiler angle="degree" autolimits="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100" tolerance="1e-10"/>
+  <size njmax="2000" nconmax="400"/>
+
+  <worldbody>
+    <light name="overhead" pos="0 -2 6" dir="0 0 -1"/>
+    <camera name="overview" pos="4 -7 4" xyaxes="0.868 0.496 0 -0.155 0.271 0.950"/>
+    <geom name="floor" type="plane" size="8 8 0.1" rgba="0.25 0.28 0.31 1" condim="6" friction="0.8 0.02 0.02" solref="0.015 1" solimp="0.95 0.99 0.001"/>
+
+    <!-- The ball's bottom is initially 1 m above wall1 directly below it. -->
+    <body name="ball" pos="0 0 3.095355339">
+      <freejoint name="ball_free"/>
+      <geom name="ball_sphere" type="sphere" size="0.06" mass="0.4" rgba="1 0.35 0.08 1" condim="6" friction="0.5 0.01 0.01" solref="0.01 1" solimp="0.95 0.99 0.001"/>
+    </body>
+
+    <body name="wall1" pos="0 0 2">
+      <geom name="wall1_face" type="box" size="0.23 0.30 0.025" euler="0 45 0" rgba="0.22 0.52 0.85 1" priority="2" condim="1" friction="0 0 0" solref="-30000 -1" solimp="0.99 0.99 0.001"/>
+    </body>
+
+    <body name="wall2" pos="0.90 0 1.94">
+      <geom name="wall2_face" type="box" size="0.60 0.30 0.025" euler="0 -60 0" rgba="0.22 0.52 0.85 1" priority="2" condim="1" friction="0 0 0" solref="-30000 -1" solimp="0.99 0.99 0.001"/>
+    </body>
+
+    <!-- The ball hits below the hinge; the elevated weight completes the rotation. -->
+    <body name="target" pos="-0.25 0 2.90">
+      <joint name="target_hinge" type="hinge" axis="0 1 0" range="0 85" damping="0.025" armature="0.001" solreflimit="0.004 1" solimplimit="0.99 0.99 0.001"/>
+      <geom name="target_paddle" type="box" pos="0 0 -0.55" size="0.04 0.20 0.35" mass="0.08" rgba="0.95 0.72 0.12 1" condim="3" friction="0.15 0.005 0.001" solref="0.008 1"/>
+      <geom name="target_counterweight" type="sphere" pos="-0.08 0 0.40" size="0.045" mass="0.30" rgba="0.75 0.55 0.10 1"/>
+      <geom name="target_counterweight_stem" type="capsule" fromto="0 0 0 -0.08 0 0.40" size="0.012" mass="0.01" rgba="0.75 0.55 0.10 1"/>
+      <geom name="target_axle" type="capsule" fromto="0 -0.22 0 0 0.56 0" size="0.012" mass="0.02" rgba="0.65 0.48 0.10 1"/>
+      <geom name="target_latch_brace" type="capsule" fromto="0 0 0 0.10 0.50 0.20" size="0.012" mass="0.015" rgba="0.75 0.55 0.10 1"/>
+      <geom name="target_latch_spoke" type="capsule" fromto="0 0.50 0 0.226274 0.50 0.226274" size="0.012" mass="0.015" rgba="0.75 0.55 0.10 1"/>
+
+      <!-- This arc retains the shelf's catch until approximately 82 degrees. -->
+      <geom name="target_latch_1" type="capsule" fromto="0.066532 0.50 0.313007 0.160000 0.50 0.277128" size="0.012" mass="0.008" rgba="0.95 0.72 0.12 1" condim="1" friction="0 0 0" solref="0.004 1" solimp="0.99 0.99 0.001"/>
+      <geom name="target_latch_2" type="capsule" fromto="0.160000 0.50 0.277128 0.226274 0.50 0.226274" size="0.012" mass="0.008" rgba="0.95 0.72 0.12 1" condim="1" friction="0 0 0" solref="0.004 1" solimp="0.99 0.99 0.001"/>
+      <geom name="target_latch_3" type="capsule" fromto="0.226274 0.50 0.226274 0.277128 0.50 0.160000" size="0.012" mass="0.008" rgba="0.95 0.72 0.12 1" condim="1" friction="0 0 0" solref="0.004 1" solimp="0.99 0.99 0.001"/>
+      <geom name="target_latch_4" type="capsule" fromto="0.277128 0.50 0.160000 0.309096 0.50 0.082822" size="0.012" mass="0.008" rgba="0.95 0.72 0.12 1" condim="1" friction="0 0 0" solref="0.004 1" solimp="0.99 0.99 0.001"/>
+      <geom name="target_latch_5" type="capsule" fromto="0.309096 0.50 0.082822 0.320000 0.50 0" size="0.012" mass="0.008" rgba="0.95 0.72 0.12 1" condim="1" friction="0 0 0" solref="0.004 1" solimp="0.99 0.99 0.001"/>
+    </body>
+
+    <!-- Spring-driven retraction needs roughly 0.15 m before releasing the block. -->
+    <body name="release_shelf" pos="-0.25 0.50 2.90">
+      <joint name="shelf_slide" type="slide" axis="-1 0 0" range="0 0.22" stiffness="4" springref="0.22" damping="0.15" solreflimit="0.006 1"/>
+      <geom name="release_shelf_plate" type="box" pos="0 0 0.445" size="0.08 0.065 0.015" mass="0.035" rgba="0.65 0.68 0.72 1" condim="3" friction="0.02 0.001 0.0001" solref="0.006 1"/>
+      <geom name="release_shelf_catch" type="sphere" pos="0.344 0 0" size="0.012" mass="0.008" rgba="0.75 0.78 0.82 1" priority="1" condim="1" friction="0 0 0" solref="0.004 1" solimp="0.99 0.99 0.001"/>
+      <geom name="release_shelf_catch_link" type="capsule" fromto="0.344 0 0 0.344 0.15 0" size="0.007" mass="0.005" rgba="0.65 0.68 0.72 1"/>
+      <geom name="release_shelf_outer_brace" type="capsule" fromto="0.344 0.15 0 0 0.15 0.43" size="0.007" mass="0.005" rgba="0.65 0.68 0.72 1"/>
+      <geom name="release_shelf_plate_link" type="capsule" fromto="0 0.15 0.43 0 0 0.43" size="0.007" mass="0.005" rgba="0.65 0.68 0.72 1"/>
+    </body>
+
+    <body name="block" pos="-0.25 0.50 3.430">
+      <freejoint name="block_free"/>
+      <geom name="block_payload" type="box" size="0.055 0.055 0.070" mass="0.08" rgba="0.80 0.16 0.22 1" condim="3" friction="0.02 0.001 0.0001" solref="0.008 1" solimp="0.95 0.99 0.001"/>
+    </body>
+
+    <!-- The lower bin stays clear of the rotating latch and catches the payload. -->
+    <body name="bin" pos="-0.25 0.50 0">
+      <geom name="bin_bottom" type="box" pos="0 0 0.06" size="0.22 0.19 0.06" rgba="0.18 0.65 0.35 1" condim="3" friction="0.8 0.01 0.001" solref="0.012 1"/>
+      <geom name="bin_left" type="box" pos="-0.21 0 1.235" size="0.01 0.19 1.115" rgba="0.18 0.65 0.35 0.45" condim="3" friction="0.03 0.001 0.0001" solref="0.008 1"/>
+      <geom name="bin_right" type="box" pos="0.21 0 1.235" size="0.01 0.19 1.115" rgba="0.18 0.65 0.35 0.45" condim="3" friction="0.03 0.001 0.0001" solref="0.008 1"/>
+      <geom name="bin_front" type="box" pos="0 -0.18 1.235" size="0.20 0.01 1.115" rgba="0.18 0.65 0.35 0.25" condim="3" friction="0.03 0.001 0.0001" solref="0.008 1"/>
+      <geom name="bin_back" type="box" pos="0 0.18 1.235" size="0.20 0.01 1.115" rgba="0.18 0.65 0.35 0.45" condim="3" friction="0.03 0.001 0.0001" solref="0.008 1"/>
+      <geom name="bin_upper_left_guide" type="box" pos="-0.0775 0 3.50" size="0.01 0.0875 0.12" rgba="0.18 0.65 0.35 0.55" condim="3" friction="0.02 0.001 0.0001" solref="0.006 1"/>
+      <geom name="bin_upper_right_guide" type="box" pos="0.0775 0 3.50" size="0.01 0.0875 0.12" rgba="0.18 0.65 0.35 0.55" condim="3" friction="0.02 0.001 0.0001" solref="0.006 1"/>
+      <geom name="bin_upper_front_guide" type="box" pos="0 -0.0775 3.50" size="0.0675 0.01 0.12" rgba="0.18 0.65 0.35 0.30" condim="3" friction="0.02 0.001 0.0001" solref="0.006 1"/>
+      <geom name="bin_upper_back_guide" type="box" pos="0 0.0775 3.50" size="0.0675 0.01 0.12" rgba="0.18 0.65 0.35 0.55" condim="3" friction="0.02 0.001 0.0001" solref="0.006 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start" qpos="0 0 3.095355339 1 0 0 0 0 0 -0.25 0.50 3.430 1 0 0 0" qvel="0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+  </keyframe>
+</mujoco>
+```
+
+```json
+{
+  "what_happens": "The previous file is expected to produce the two ricochets and tip the target to its 85-degree stop, but the block still overlaps the stopped cam and may remain supported or wedged instead of falling into the bin.",
+  "works": false,
+  "problem": "The previous correction leaves support under the block at the lower stop and relies on uncertain tipping or sliding to release it."
+}
+```

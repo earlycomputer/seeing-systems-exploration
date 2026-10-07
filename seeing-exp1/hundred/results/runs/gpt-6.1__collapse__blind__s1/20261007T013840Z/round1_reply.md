@@ -1,0 +1,89 @@
+The ball will roll down the ramp, but the intended sequence is compromised immediately: the tall `key_post` initially intersects both `bridge2` and `flap`. MuJoCo will generate contact forces to resolve those overlaps before the ball removes the support, potentially moving bridge2 or the flap prematurely.
+
+The correction below replaces the full-width post with a narrow stem in the ball’s lane and a high support cap beneath bridge1. This removes the initial intersections. I have not simulated the corrected file.
+
+```xml
+<mujoco model="passive_bridge_cascade">
+  <compiler angle="degree" autolimits="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100" tolerance="1e-10"/>
+  <size njmax="1000" nconmax="300"/>
+
+  <visual>
+    <global azimuth="135" elevation="-25"/>
+  </visual>
+
+  <worldbody>
+    <light name="overhead_light" pos="0 0 4" dir="0 0 -1"/>
+    <camera name="overview" pos="2.7 -3.6 2.5" xyaxes="0.8 0.6 0 -0.25 0.33 0.91"/>
+
+    <geom name="floor" type="plane" size="4 4 0.1" friction="1.0 0.005 0.01" condim="6" rgba="0.78 0.80 0.82 1"/>
+
+    <!-- The initial ball contact point is 0.8 m uphill from the ramp's low end. -->
+    <body name="ramp" pos="-0.530107 0 0.322819" euler="0 20 0">
+      <geom name="ramp_surface" type="box" size="0.5 0.16 0.03" friction="1.0 0.005 0.003" condim="6" rgba="0.48 0.52 0.58 1"/>
+    </body>
+
+    <body name="ball" pos="-0.774392 0 0.528791">
+      <freejoint name="ball_free"/>
+      <geom name="ball_sphere" type="sphere" size="0.08" mass="0.75" friction="1.0 0.005 0.01" condim="6" solref="0.008 1" rgba="0.85 0.18 0.12 1"/>
+    </body>
+
+    <!-- The stem intercepts the ball without entering the bridge or flap lane.
+         Only the high cap extends sideways beneath bridge1. -->
+    <body name="key" pos="0.08 0 0.60">
+      <joint name="key_slide" type="slide" axis="1 0 0" range="0 0.55" limited="true" damping="0.015" frictionloss="0.02" solreflimit="0.008 1"/>
+      <geom name="key_stem" type="box" size="0.04 0.09 0.59" mass="0.035" priority="1" friction="0.015 0.001 0.0001" condim="3" solref="0.008 1" rgba="0.95 0.72 0.12 1"/>
+      <geom name="key_support_cap" type="box" pos="0 0.20 0.59" size="0.04 0.30 0.01" mass="0.015" priority="1" friction="0.015 0.001 0.0001" condim="3" solref="0.008 1" rgba="0.95 0.72 0.12 1"/>
+    </body>
+
+    <body name="bridge1" pos="0.10 0.40 1.28">
+      <freejoint name="bridge1_free"/>
+      <geom name="bridge1_block" type="box" size="0.07 0.10 0.08" mass="0.50" friction="0.6 0.005 0.001" solref="0.008 1" rgba="0.20 0.45 0.85 1"/>
+    </body>
+
+    <!-- An off-center impact on the right side tips bridge2 off this pedestal. -->
+    <body name="bridge2_pedestal" pos="-0.08 0.40 0.435">
+      <geom name="bridge2_pedestal_column" type="box" size="0.035 0.15 0.435" friction="0.9 0.005 0.001" solref="0.008 1" rgba="0.36 0.38 0.42 1"/>
+    </body>
+
+    <body name="bridge2" pos="-0.08 0.40 0.91">
+      <freejoint name="bridge2_free"/>
+      <geom name="bridge2_block" type="box" size="0.28 0.13 0.04" mass="0.35" friction="0.6 0.005 0.001" solref="0.008 1" rgba="0.18 0.65 0.42 1"/>
+    </body>
+
+    <!-- Hinge friction holds the initial payload load.
+         Negative rotation lowers the left end toward the -55-degree stop. -->
+    <body name="flap" pos="0.55 0.70 0.70">
+      <joint name="flap_hinge" type="hinge" axis="0 1 0" range="-55 0" limited="true" frictionloss="0.9" damping="0.015" armature="0.001" solreflimit="0.004 1"/>
+      <geom name="flap_plate" type="box" pos="-0.35 0 0" size="0.35 0.45 0.02" mass="0.08" friction="1.0 0.005 0.001" solref="0.008 1" rgba="0.68 0.35 0.78 1"/>
+    </body>
+
+    <!-- The payload is laterally separated from the bridge impact lane. -->
+    <body name="payload" pos="0.10 1.00 0.765">
+      <freejoint name="payload_free"/>
+      <geom name="payload_block" type="box" size="0.045 0.055 0.045" mass="0.12" friction="0.8 0.005 0.001" solref="0.008 1" rgba="0.95 0.48 0.10 1"/>
+    </body>
+
+    <!-- The lowered flap remains above the bin rim. -->
+    <body name="bin" pos="0.20 1.00 0">
+      <geom name="bin_bottom" type="box" pos="0 0 0.02" size="0.42 0.24 0.02" friction="1.2 0.01 0.003" condim="6" solref="0.008 1" rgba="0.22 0.30 0.38 1"/>
+      <geom name="bin_left_wall" type="box" pos="-0.42 0 0.045" size="0.02 0.24 0.045" friction="1.0 0.005 0.001" solref="0.008 1" rgba="0.30 0.40 0.50 1"/>
+      <geom name="bin_right_wall" type="box" pos="0.42 0 0.045" size="0.02 0.24 0.045" friction="1.0 0.005 0.001" solref="0.008 1" rgba="0.30 0.40 0.50 1"/>
+      <geom name="bin_front_wall" type="box" pos="0 -0.24 0.045" size="0.42 0.02 0.045" friction="1.0 0.005 0.001" solref="0.008 1" rgba="0.30 0.40 0.50 1"/>
+      <geom name="bin_back_wall" type="box" pos="0 0.24 0.045" size="0.42 0.02 0.045" friction="1.0 0.005 0.001" solref="0.008 1" rgba="0.30 0.40 0.50 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start" qpos="-0.774392 0 0.528791 1 0 0 0 0 0.10 0.40 1.28 1 0 0 0 -0.08 0.40 0.91 1 0 0 0 0 0.10 1.00 0.765 1 0 0 0"/>
+  </keyframe>
+</mujoco>
+```
+
+```json
+{
+  "what_happens": "In the original file, contact forces act immediately because the key intersects bridge2 and the flap; the ball subsequently rolls down the ramp, but the intended ball-triggered cascade is compromised before it reaches the key.",
+  "works": false,
+  "problem": "The original key post initially penetrates both bridge2 and the flap, introducing unintended forces before the ball removes the support."
+}
+```

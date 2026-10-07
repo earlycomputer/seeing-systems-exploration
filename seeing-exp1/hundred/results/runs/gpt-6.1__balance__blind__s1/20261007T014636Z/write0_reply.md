@@ -1,0 +1,120 @@
+```xml
+<mujoco model="ramp_balance_hoop_cup">
+  <compiler angle="radian"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" iterations="80"/>
+  <size njmax="2000" nconmax="400"/>
+
+  <visual>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.7 0.7 0.7" specular="0.2 0.2 0.2"/>
+    <map znear="0.01"/>
+  </visual>
+
+  <worldbody>
+    <light name="main_light" pos="-1 -3 5" dir="0.2 0.4 -1"/>
+    <camera name="overview" pos="0 -5.8 3.3" xyaxes="1 0 0 0 0.40 0.9165"/>
+
+    <geom name="floor" type="plane" size="6 4 0.1" pos="0 0 0" rgba="0.78 0.80 0.82 1" friction="0.9 0.01 0.025" condim="6"/>
+
+    <!-- The starting point is 0.9 m along the inclined surface from its lower end. -->
+    <body name="ramp" pos="-1.736027 0 1.261143" euler="0 0.261799388 0">
+      <geom name="ramp_surface" type="box" size="0.60 0.14 0.025" rgba="0.55 0.61 0.68 1" friction="0.7 0.005 0.0001" condim="6"/>
+      <geom name="ramp_left_rail" type="box" pos="0 0.155 0.055" size="0.60 0.015 0.055" rgba="0.32 0.38 0.45 1" friction="0.7 0.005 0.0001" condim="6"/>
+      <geom name="ramp_right_rail" type="box" pos="0 -0.155 0.055" size="0.60 0.015 0.055" rgba="0.32 0.38 0.45 1" friction="0.7 0.005 0.0001" condim="6"/>
+    </body>
+
+    <body name="ball1" pos="-1.999922 0 1.435382">
+      <freejoint name="ball1_free"/>
+      <geom name="ball1_sphere" type="sphere" size="0.075" mass="2.0" rgba="0.85 0.18 0.12 1" friction="0.8 0.005 0.001" condim="6" solref="0.008 1"/>
+    </body>
+
+    <body name="balance_support" pos="0 0 0">
+      <geom name="balance_support_base" type="box" pos="0 0 0.04" size="0.20 0.24 0.04" rgba="0.22 0.25 0.29 1" contype="0" conaffinity="0"/>
+      <geom name="balance_support_column" type="box" pos="0 0 0.40" size="0.055 0.075 0.36" rgba="0.22 0.25 0.29 1" contype="0" conaffinity="0"/>
+      <geom name="balance_support_axle" type="capsule" fromto="0 -0.23 0.8 0 0.23 0.8" size="0.035" rgba="0.15 0.17 0.20 1" contype="0" conaffinity="0"/>
+    </body>
+
+    <!-- Positive hinge angle lowers the striker end; ball1 drives it to -0.25 rad. -->
+    <body name="balance" pos="0 0 0.8">
+      <inertial pos="0.22 0 0.03" mass="1.0" diaginertia="0.014 0.25 0.25"/>
+      <joint name="balance_hinge" type="hinge" axis="0 1 0" limited="true" range="-0.25 0.12" damping="20" armature="0.002" solreflimit="0.01 1" solimplimit="0.99 0.99 0.001"/>
+      <geom name="balance_beam" type="box" pos="-0.24 0 0" size="0.93 0.065 0.025" rgba="0.64 0.43 0.22 1" friction="0.55 0.005 0.001" condim="6"/>
+      <geom name="balance_recess_floor" type="box" pos="-0.90 0 0.035" size="0.29 0.15 0.015" rgba="0.72 0.51 0.28 1" friction="0.65 0.005 0.001" condim="6"/>
+      <geom name="balance_recess_outer_wall" type="box" pos="-1.20 0 0.08" size="0.025 0.20 0.055" rgba="0.64 0.43 0.22 1" friction="0.65 0.005 0.001" condim="6"/>
+      <geom name="balance_recess_inner_wall" type="box" pos="-0.59 0 0.175" size="0.025 0.20 0.125" rgba="0.64 0.43 0.22 1" friction="0.65 0.005 0.001" condim="6"/>
+      <geom name="balance_recess_front_wall" type="box" pos="-0.90 -0.175 0.14" size="0.29 0.025 0.115" rgba="0.64 0.43 0.22 1" friction="0.65 0.005 0.001" condim="6"/>
+      <geom name="balance_recess_back_wall" type="box" pos="-0.90 0.175 0.14" size="0.29 0.025 0.115" rgba="0.64 0.43 0.22 1" friction="0.65 0.005 0.001" condim="6"/>
+      <geom name="balance_counterweight" type="box" pos="0.40 0 -0.075" size="0.17 0.10 0.05" rgba="0.30 0.32 0.35 1" friction="0.55 0.005 0.001" condim="6"/>
+      <geom name="balance_striker_ramp_brace" type="box" pos="0.71 0 0.07" size="0.065 0.065 0.10" rgba="0.64 0.43 0.22 1" friction="0.28 0.005 0.001" condim="6"/>
+      <geom name="balance_striker_ramp" type="box" pos="0.878014 0 0.098060" euler="0 0.50 0" size="0.26 0.07 0.025" rgba="0.78 0.58 0.32 1" friction="0.28 0.005 0.001" condim="6"/>
+    </body>
+
+    <!-- These posts retain the block until the balance lifts it clear. -->
+    <body name="striker_gate" pos="0 0 0">
+      <geom name="striker_gate_front" type="box" pos="1.027 -0.10 0.88" size="0.01 0.015 0.18" rgba="0.28 0.32 0.36 1" friction="0.15 0.003 0.0001" condim="6"/>
+      <geom name="striker_gate_back" type="box" pos="1.027 0.10 0.88" size="0.01 0.015 0.18" rgba="0.28 0.32 0.36 1" friction="0.15 0.003 0.0001" condim="6"/>
+    </body>
+
+    <body name="block" pos="0.932827 0 0.861424" euler="0 0.62 0">
+      <freejoint name="block_free"/>
+      <geom name="block_box" type="box" size="0.06 0.10 0.06" mass="0.20" rgba="0.95 0.66 0.12 1" friction="0.28 0.005 0.001" condim="6" solref="0.008 1"/>
+    </body>
+
+    <!-- The ball is only 4 mm behind the shelf's release edge. -->
+    <body name="ball2_support" pos="0 0 0">
+      <geom name="ball2_support_shelf" type="box" pos="1.217 0 1.005" size="0.037 0.12 0.02" rgba="0.38 0.43 0.49 1" friction="0.35 0.005 0.0001" condim="6"/>
+      <geom name="ball2_support_post" type="box" pos="1.19 0 0.5025" size="0.018 0.035 0.5025" rgba="0.38 0.43 0.49 1" friction="0.35 0.005 0.0001" condim="6"/>
+    </body>
+
+    <body name="ball2" pos="1.25 0 1.10">
+      <freejoint name="ball2_free"/>
+      <geom name="ball2_sphere" type="sphere" size="0.075" mass="0.065" rgba="0.12 0.42 0.90 1" friction="0.5 0.005 0.008" condim="6" solref="0.008 1"/>
+    </body>
+
+    <body name="hoop" pos="1.65 0 0.66">
+      <geom name="hoop_segment_01" type="capsule" fromto="0.38 0 0 0.329090 0.19 0" size="0.012" rgba="0.90 0.25 0.12 1" friction="0.5 0.005 0.008" condim="6"/>
+      <geom name="hoop_segment_02" type="capsule" fromto="0.329090 0.19 0 0.19 0.329090 0" size="0.012" rgba="0.90 0.25 0.12 1" friction="0.5 0.005 0.008" condim="6"/>
+      <geom name="hoop_segment_03" type="capsule" fromto="0.19 0.329090 0 0 0.38 0" size="0.012" rgba="0.90 0.25 0.12 1" friction="0.5 0.005 0.008" condim="6"/>
+      <geom name="hoop_segment_04" type="capsule" fromto="0 0.38 0 -0.19 0.329090 0" size="0.012" rgba="0.90 0.25 0.12 1" friction="0.5 0.005 0.008" condim="6"/>
+      <geom name="hoop_segment_05" type="capsule" fromto="-0.19 0.329090 0 -0.329090 0.19 0" size="0.012" rgba="0.90 0.25 0.12 1" friction="0.5 0.005 0.008" condim="6"/>
+      <geom name="hoop_segment_06" type="capsule" fromto="-0.329090 0.19 0 -0.38 0 0" size="0.012" rgba="0.90 0.25 0.12 1" friction="0.5 0.005 0.008" condim="6"/>
+      <geom name="hoop_segment_07" type="capsule" fromto="-0.38 0 0 -0.329090 -0.19 0" size="0.012" rgba="0.90 0.25 0.12 1" friction="0.5 0.005 0.008" condim="6"/>
+      <geom name="hoop_segment_08" type="capsule" fromto="-0.329090 -0.19 0 -0.19 -0.329090 0" size="0.012" rgba="0.90 0.25 0.12 1" friction="0.5 0.005 0.008" condim="6"/>
+      <geom name="hoop_segment_09" type="capsule" fromto="-0.19 -0.329090 0 0 -0.38 0" size="0.012" rgba="0.90 0.25 0.12 1" friction="0.5 0.005 0.008" condim="6"/>
+      <geom name="hoop_segment_10" type="capsule" fromto="0 -0.38 0 0.19 -0.329090 0" size="0.012" rgba="0.90 0.25 0.12 1" friction="0.5 0.005 0.008" condim="6"/>
+      <geom name="hoop_segment_11" type="capsule" fromto="0.19 -0.329090 0 0.329090 -0.19 0" size="0.012" rgba="0.90 0.25 0.12 1" friction="0.5 0.005 0.008" condim="6"/>
+      <geom name="hoop_segment_12" type="capsule" fromto="0.329090 -0.19 0 0.38 0 0" size="0.012" rgba="0.90 0.25 0.12 1" friction="0.5 0.005 0.008" condim="6"/>
+    </body>
+
+    <body name="cup" pos="1.65 0 0">
+      <geom name="cup_bottom" type="cylinder" pos="0 0 0.04" size="0.50 0.03" rgba="0.16 0.55 0.38 1" friction="0.9 0.01 0.025" condim="6" solref="0.01 1"/>
+      <geom name="cup_wall_01" type="box" pos="0.475 0 0.23" size="0.025 0.132 0.16" rgba="0.16 0.55 0.38 1" friction="0.9 0.01 0.025" condim="6"/>
+      <geom name="cup_wall_02" type="box" pos="0.411362 0.2375 0.23" euler="0 0 0.523599" size="0.025 0.132 0.16" rgba="0.16 0.55 0.38 1" friction="0.9 0.01 0.025" condim="6"/>
+      <geom name="cup_wall_03" type="box" pos="0.2375 0.411362 0.23" euler="0 0 1.047198" size="0.025 0.132 0.16" rgba="0.16 0.55 0.38 1" friction="0.9 0.01 0.025" condim="6"/>
+      <geom name="cup_wall_04" type="box" pos="0 0.475 0.23" euler="0 0 1.570796" size="0.025 0.132 0.16" rgba="0.16 0.55 0.38 1" friction="0.9 0.01 0.025" condim="6"/>
+      <geom name="cup_wall_05" type="box" pos="-0.2375 0.411362 0.23" euler="0 0 2.094395" size="0.025 0.132 0.16" rgba="0.16 0.55 0.38 1" friction="0.9 0.01 0.025" condim="6"/>
+      <geom name="cup_wall_06" type="box" pos="-0.411362 0.2375 0.23" euler="0 0 2.617994" size="0.025 0.132 0.16" rgba="0.16 0.55 0.38 1" friction="0.9 0.01 0.025" condim="6"/>
+      <geom name="cup_wall_07" type="box" pos="-0.475 0 0.23" euler="0 0 3.141593" size="0.025 0.132 0.16" rgba="0.16 0.55 0.38 1" friction="0.9 0.01 0.025" condim="6"/>
+      <geom name="cup_wall_08" type="box" pos="-0.411362 -0.2375 0.23" euler="0 0 3.665191" size="0.025 0.132 0.16" rgba="0.16 0.55 0.38 1" friction="0.9 0.01 0.025" condim="6"/>
+      <geom name="cup_wall_09" type="box" pos="-0.2375 -0.411362 0.23" euler="0 0 4.188790" size="0.025 0.132 0.16" rgba="0.16 0.55 0.38 1" friction="0.9 0.01 0.025" condim="6"/>
+      <geom name="cup_wall_10" type="box" pos="0 -0.475 0.23" euler="0 0 4.712389" size="0.025 0.132 0.16" rgba="0.16 0.55 0.38 1" friction="0.9 0.01 0.025" condim="6"/>
+      <geom name="cup_wall_11" type="box" pos="0.2375 -0.411362 0.23" euler="0 0 5.235988" size="0.025 0.132 0.16" rgba="0.16 0.55 0.38 1" friction="0.9 0.01 0.025" condim="6"/>
+      <geom name="cup_wall_12" type="box" pos="0.411362 -0.2375 0.23" euler="0 0 5.759587" size="0.025 0.132 0.16" rgba="0.16 0.55 0.38 1" friction="0.9 0.01 0.025" condim="6"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start" qpos="-1.999922 0 1.435382 1 0 0 0 0.12 0.932827 0 0.861424 0.952333570 0 0.305058636 0 1.25 0 1.10 1 0 0 0"/>
+  </keyframe>
+</mujoco>
+```
+
+---
+thinking (summarized):
+
+**Analyzing block movement mechanics**
+
+I’m thinking about how a lever can lift a block into an angled overhang and how this causes it to slide and push another object, ball2. The block’s upward movement and angled acceleration make it interesting, as it can bounce and change direction depending on its starting velocity. The block remains stationary at first due to a fixed lip, but once lifted, it slides down and hits ball2. This creates a reliable cause-and-effect sequence.
+
+**Calculating ball and hoop dynamics**
+
+I’m assessing the dynamics of a ball falling through a hoop and into a cup based on specific measurements. I need to consider various parameters like heights, radiuses, and timings. The initial sphere’s placement is key, and I’m analyzing how it relates to the hoop's center. I also need to explore whether the cup's design allows for both balls to rest inside without colliding. Lastly, ensuring proper containment and friction will be important for stability.

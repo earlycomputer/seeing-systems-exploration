@@ -1,0 +1,133 @@
+```world
+world  falling weight tips wedge and releases ball
+
+floor
+  size      6 m
+  friction  0.9, spinning 0.005, rolling 0.001
+
+wedge
+  is a      box 48 by 30 by 2 cm, 200 g
+  moves     freely
+  friction  1.5, spinning 0.01, rolling 0.002
+  bounce    dead
+  colour    wood
+  at        0 cm along, 30 cm up
+
+wedge foot
+  is a         box 12 by 30 by 4 cm, 200 g
+  on           floor, centred over wedge
+  attached to  wedge
+  friction     1.5, spinning 0.01, rolling 0.002
+  bounce       dead
+  colour       wood
+
+wedge near tip
+  is a  point
+  at    24 cm behind wedge, level with wedge
+
+wedge far tip
+  is a  point
+  at    24 cm beyond wedge, level with wedge
+
+wedge near slope
+  is a         plank from wedge foot to wedge near tip, 30 cm wide, 2 cm thick
+  weighs       50 g
+  attached to  wedge
+  friction     1.5
+  bounce       dead
+  colour       wood
+
+wedge far slope
+  is a         plank from wedge foot to wedge far tip, 30 cm wide, 2 cm thick
+  weighs       50 g
+  attached to  wedge
+  friction     1.5
+  bounce       dead
+  colour       wood
+
+block
+  is a      box 8 by 18 by 10 cm, 3 kg
+  moves     freely
+  friction  0.8
+  bounce    dead
+  colour    dark grey
+  at        50 cm outside wedge's top, 18 cm beyond wedge
+
+starting pad
+  is a      box 24 by 30 by 9 cm
+  on        floor, 46 cm along
+  friction  0.7, spinning 0.005, rolling 0.0005
+  bounce    dead
+  colour    grey
+
+ramp
+  is a       ramp
+  high end   56 cm along, 8 cm up
+  low end    150 cm along, 2.5 cm up
+  width      30 cm
+  thickness  2 cm
+  friction   0.7, spinning 0.005, rolling 0.0005
+  bounce     dead
+  colour     wood
+
+ball1
+  is a      sphere 6 cm radius, 1 kg
+  moves     freely
+  rolls
+  friction  0.7, spinning 0.005, rolling 0.0005
+  bounce    dead
+  colour    orange
+  on        starting pad, 6 cm behind starting pad
+
+flap pivot
+  is a  point
+  at    146 cm along, 20 cm up
+
+flap
+  is a           box 2 by 18 by 30 cm, 100 g
+  at             149 cm along, 25 cm up
+  turns on       release hinge, about y, at flap pivot
+  swings         from -90° to 0°
+  starts turned  0°
+  damping        0.001 N·m·s/rad
+  friction       0.7
+  bounce         dead
+  colour         wood
+
+flap shelf
+  is a         box 16 by 40 by 1 cm, 5 g
+  at           140 cm along, 18 cm to the left, 32 cm up
+  attached to  flap
+  friction     0.7, spinning 0.005, rolling 0.001
+  bounce       dead
+  colour       wood
+
+ball2
+  is a      sphere 1.5 cm radius, 10 g
+  moves     freely
+  rolls
+  friction  0.8, spinning 0.01, rolling 0.003
+  bounce    dead
+  colour    white
+  on        flap shelf, 1 cm beyond flap shelf, 12 cm left of flap shelf
+
+cup
+  is an           open box
+  length          80 cm
+  width           24 cm
+  walls           5 cm
+  wall thickness  1 cm
+  base thickness  1 cm
+  on              floor, 123 cm along, 30 cm to the left
+  friction        1, spinning 0.01, rolling 0.01
+  bounce          dead
+  colour          grey
+
+expect
+  block touches wedge
+  wedge touches ball1
+  ball1 touches ramp
+  ball1 touches flap
+  flap reaches its lower stop
+  ball2 comes to rest in cup
+```

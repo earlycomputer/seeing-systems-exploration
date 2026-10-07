@@ -1,0 +1,176 @@
+```world
+world  guided key and falling bridges
+
+floor
+  size      6 m
+  friction  0.8, spinning 0.005, rolling 0.002
+
+ramp high
+  is a  point
+  at    95 cm along, 30 cm to the right, 127 cm up
+
+ramp low
+  is a  point
+  at    15 cm along, 30 cm to the right, 67 cm up
+
+ramp
+  is a      plank from ramp high to ramp low, 18 cm wide, 2 cm thick
+  friction  0.6, spinning 0.001, rolling 0.0002
+  colour    wood
+
+ball
+  is a      sphere 8 cm radius, 600 g
+  moves     freely
+  rolls
+  bounce    dead
+  friction  0.6, spinning 0.001, rolling 0.0002
+  colour    orange
+  on ramp, 20 cm from the top
+
+-- Separated tracks leave the bridge lane open underneath the key.
+
+key right track
+  is a      box 50 by 18 by 4 cm
+  friction  0.005
+  colour    grey
+  at        18 cm behind floor, 30 cm to the right, raised 56 cm
+
+key left track
+  is a      box 50 by 14 by 4 cm
+  friction  0.005
+  colour    grey
+  at        18 cm behind floor, 27 cm to the left, raised 56 cm
+
+key right track leg
+  is a    box 4 by 12 by 56 cm
+  colour  grey
+  on      floor, 38 cm behind floor, 30 cm to the right
+
+key left track leg
+  is a    box 4 by 12 by 56 cm
+  colour  grey
+  on      floor, 38 cm behind floor, 27 cm to the left
+
+key right upper guide
+  is a      box 50 by 10 by 2 cm
+  friction  0.005
+  colour    grey
+  at        18 cm behind floor, 30 cm to the right, raised 90.3 cm
+
+key left upper guide
+  is a      box 50 by 10 by 2 cm
+  friction  0.005
+  colour    grey
+  at        18 cm behind floor, 27 cm to the left, raised 90.3 cm
+
+-- The key is one loose body made from two feet and a high crossbeam.
+-- Its open centre clears bridge2 at the start.
+
+key
+  is a      box 14 by 12 by 26 cm, 50 g
+  moves     freely
+  friction  0.005
+  bounce    dead
+  colour    white
+  on        key right track, 0 cm along, 30 cm to the right
+
+key beam
+  is a         box 14 by 80 by 4 cm, 80 g
+  attached to  key
+  friction     0.005
+  bounce       dead
+  colour       white
+  on           key, 0 cm along, 0 cm to the left
+
+key left foot
+  is a         box 14 by 12 by 26 cm, 50 g
+  attached to  key
+  friction     0.005
+  bounce       dead
+  colour       white
+  on           key left track, 0 cm along, 27 cm to the left
+
+bridge1 rear ledge
+  is a      box 10 by 22 by 4 cm
+  friction  0.4
+  colour    grey
+  at        71 cm along, 0 cm to the left, raised 86 cm
+
+bridge1 rear post
+  is a    box 5 by 18 by 86 cm
+  colour  grey
+  on      floor, 73 cm along, 0 cm to the left
+
+bridge2 shelf
+  is a      box 38 by 22 by 4 cm
+  friction  0.3
+  colour    grey
+  at        44 cm along, 0 cm to the left, raised 64 cm
+
+bridge2 shelf post
+  is a    box 5 by 18 by 64 cm
+  colour  grey
+  on      floor, 56 cm along, 0 cm to the left
+
+bin
+  is an           open box
+  length          90 cm
+  width           60 cm
+  walls           6 cm
+  wall thickness  2 cm
+  base thickness  2 cm
+  friction        1.0, spinning 0.01, rolling 0.005
+  bounce          dead
+  colour          wood
+  at              10 cm along, 50 cm to the left
+
+-- Spring preload holds the light flap against its initial upper stop.
+
+flap
+  is a           box 50 by 75 by 1.6 cm, 80 g
+  at             13 cm along, 25 cm to the left, 53 cm up
+  turns on       flap hinge, about y, at its far end
+  swings         from -65° to 0°
+  spring         0.5 N·m/rad toward 40°
+  damping        0.015 N·m·s/rad
+  armature       0.001 kg·m²
+  starts turned  0°
+  friction       0.2
+  bounce         dead
+  colour         wood
+
+payload
+  is a      cube 7 cm, 35 g
+  moves     freely
+  friction  0.25
+  bounce    dead
+  colour    white
+  on        flap, 7 cm along, 48 cm to the left
+
+-- Bridge2's centre is just inside its shelf edge.
+-- Bridge1 loads its projecting near end, tipping it onto the flap.
+
+bridge2
+  is a      box 70 by 18 by 8 cm, 650 g
+  moves     freely
+  friction  0.3
+  bounce    dead
+  colour    wood
+  on        bridge2 shelf, 27 cm along, 0 cm to the left
+
+bridge1
+  is a      box 80 by 18 by 5 cm, 1.8 kg
+  moves     freely
+  friction  0.01
+  bounce    dead
+  colour    wood
+  on        key beam, 35 cm along, 0 cm to the left
+
+expect
+  ball touches ramp
+  ball touches key
+  bridge1 touches bridge2
+  bridge2 touches flap
+  flap reaches its lower stop
+  payload comes to rest in bin
+```

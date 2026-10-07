@@ -1,0 +1,171 @@
+```world
+world  ramp rotor latch and drop
+
+floor
+  size      6 m
+  friction  0.8, spinning 0.005, rolling 0.002
+
+ramp
+  is a       ramp
+  high end   -112.5833 cm along, 0 cm to the left, 110 cm up
+  low end    0 cm along, 0 cm to the left, 45 cm up
+  width      30 cm
+  thickness  2 cm
+  friction   0.6, spinning 0.001, rolling 0.0001
+  colour     wood
+
+runout
+  is a      box 78 by 140 by 6 cm
+  at        29 cm along, 20 cm to the left, 43 cm up
+  friction  0.4, spinning 0.001, rolling 0.0001
+  colour    grey
+
+-- The ramp is 1.30 m long: ball1 starts 1 m up from its foot.
+ball1
+  is a      sphere 6 cm radius, 600 g
+  moves     freely
+  rolls
+  bounce    dead
+  friction  0.6, spinning 0.001, rolling 0.0001
+  rests     on ramp, 30 cm from the top
+  colour    orange
+
+rotor pivot
+  is a  point
+  at    25 cm along, 25 cm to the left, 51.5 cm up
+
+rotor
+  is a      box 4 by 130 by 10 cm, 80 g
+  at        25 cm along, 25 cm to the left, 51.5 cm up
+  turns on  rotor hinge, about z, at rotor pivot
+  swings    from 0° to 24°
+  damping   0.004 N·m·s/rad
+  armature  0.0002 kg·m²
+  bounce    dead
+  friction  0.25, spinning 0.001, rolling 0.0001
+  colour    black
+
+ball2
+  is a      sphere 5 cm radius, 150 g
+  moves     freely
+  rolls
+  bounce    dead
+  friction  0.4, spinning 0.001, rolling 0.0001
+  at        40 cm along, 35 cm to the right, 51 cm up
+  colour    white
+
+striker runway
+  is a      box 122 by 20 by 6 cm
+  at        119 cm along, 32 cm to the right, 43 cm up
+  friction  0.4, spinning 0.001, rolling 0.0001
+  colour    grey
+
+-- The free latch is captured in a horizontal sliding channel.
+right lower rail
+  is a      box 120 by 4 by 4 cm
+  at        115 cm along, 41 cm to the right, 45 cm up
+  friction  0.015, spinning 0.0001, rolling 0.0001
+  colour    grey
+
+left lower rail
+  is a      box 120 by 4 by 4 cm
+  at        115 cm along, 11 cm to the left, 45 cm up
+  friction  0.015, spinning 0.0001, rolling 0.0001
+  colour    grey
+
+right rail cap
+  is a      box 120 by 4 by 2 cm
+  at        115 cm along, 41 cm to the right, 62.5 cm up
+  friction  0.015, spinning 0.0001, rolling 0.0001
+  colour    grey
+
+left rail cap
+  is a      box 120 by 4 by 2 cm
+  at        115 cm along, 11 cm to the left, 62.5 cm up
+  friction  0.015, spinning 0.0001, rolling 0.0001
+  colour    grey
+
+right channel wall
+  is a      box 120 by 2 by 16 cm
+  at        115 cm along, 45 cm to the right, 54 cm up
+  friction  0.015, spinning 0.0001, rolling 0.0001
+  colour    grey
+
+left channel wall
+  is a      box 120 by 2 by 16 cm
+  at        115 cm along, 15 cm to the left, 54 cm up
+  friction  0.015, spinning 0.0001, rolling 0.0001
+  colour    grey
+
+latch
+  is a      box 24 by 56 by 14 cm, 80 g
+  moves     freely
+  bounce    dead
+  friction  0.015, spinning 0.0001, rolling 0.0001
+  at        82 cm along, 15 cm to the right, 54 cm up
+  colour    grey
+
+latch end stop
+  is a      box 4 by 60 by 18 cm
+  at        177 cm along, 15 cm to the right, 54 cm up
+  bounce    dead
+  colour    grey
+
+ring
+  is a    ring 44 cm across, 1 cm thick
+  at      82 cm along, 0 cm to the left, 30 cm up
+  colour  orange
+
+block
+  is a      cube 10 cm, 200 g
+  moves     freely
+  bounce    dead
+  friction  0.015, spinning 0.001, rolling 0.0001
+  rests     on latch, 82 cm along, 0 cm to the left
+  colour    wood
+
+-- These guides keep the payload over the opening during withdrawal.
+payload near guide
+  is a      box 2 by 16 by 22 cm
+  at        75 cm along, 0 cm to the left, 72.5 cm up
+  friction  0.015, spinning 0.0001, rolling 0.0001
+  colour    grey
+
+payload far guide
+  is a      box 2 by 16 by 22 cm
+  at        89 cm along, 0 cm to the left, 72.5 cm up
+  friction  0.015, spinning 0.0001, rolling 0.0001
+  colour    grey
+
+payload left guide
+  is a      box 14 by 2 by 22 cm
+  at        82 cm along, 7 cm to the left, 72.5 cm up
+  friction  0.015, spinning 0.0001, rolling 0.0001
+  colour    grey
+
+payload right guide
+  is a      box 14 by 2 by 22 cm
+  at        82 cm along, 7 cm to the right, 72.5 cm up
+  friction  0.015, spinning 0.0001, rolling 0.0001
+  colour    grey
+
+box
+  is an           open box
+  length          56 cm
+  width           56 cm
+  walls           18 cm
+  wall thickness  2 cm
+  base thickness  2 cm
+  on              floor, centred over ring
+  bounce          dead
+  friction        0.8, spinning 0.005, rolling 0.002
+  colour          wood
+
+expect
+  ball1 touches ramp
+  ball1 touches rotor
+  rotor touches ball2
+  ball2 touches latch
+  block drops through ring
+  block comes to rest in box
+```

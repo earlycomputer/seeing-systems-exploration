@@ -1,0 +1,102 @@
+```xml
+<mujoco model="passive_bridge_cascade">
+  <compiler angle="degree" autolimits="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100" tolerance="1e-10"/>
+  <size njmax="1000" nconmax="300"/>
+
+  <visual>
+    <global azimuth="135" elevation="-25"/>
+  </visual>
+
+  <worldbody>
+    <light name="overhead_light" pos="0 0 4" dir="0 0 -1"/>
+    <camera name="overview" pos="2.7 -3.6 2.5" xyaxes="0.8 0.6 0 -0.25 0.33 0.91"/>
+
+    <geom name="floor" type="plane" size="4 4 0.1" friction="1.0 0.005 0.01" condim="6" rgba="0.78 0.80 0.82 1"/>
+
+    <!-- The ball's initial contact point is 0.8 m along the ramp from its low end. -->
+    <body name="ramp" pos="-0.530107 0 0.322819" euler="0 20 0">
+      <geom name="ramp_surface" type="box" size="0.5 0.16 0.03" friction="1.0 0.005 0.003" condim="6" rgba="0.48 0.52 0.58 1"/>
+    </body>
+
+    <body name="ball" pos="-0.774392 0 0.528791">
+      <freejoint name="ball_free"/>
+      <geom name="ball_sphere" type="sphere" size="0.08" mass="0.75" friction="1.0 0.005 0.01" condim="6" solref="0.008 1" rgba="0.85 0.18 0.12 1"/>
+    </body>
+
+    <!-- This lightweight sliding post supports bridge1 and intercepts the ball. -->
+    <body name="key" pos="0.08 0.20 0.60">
+      <joint name="key_slide" type="slide" axis="1 0 0" range="0 0.55" limited="true" damping="0.015" frictionloss="0.02" solreflimit="0.008 1"/>
+      <geom name="key_post" type="box" size="0.04 0.28 0.60" mass="0.05" priority="1" friction="0.015 0.001 0.0001" condim="3" solref="0.008 1" rgba="0.95 0.72 0.12 1"/>
+    </body>
+
+    <body name="bridge1" pos="0.10 0.40 1.28">
+      <freejoint name="bridge1_free"/>
+      <geom name="bridge1_block" type="box" size="0.07 0.10 0.08" mass="0.50" friction="0.6 0.005 0.001" solref="0.008 1" rgba="0.20 0.45 0.85 1"/>
+    </body>
+
+    <!-- A narrow pedestal lets an off-center impact topple bridge2 toward the flap. -->
+    <body name="bridge2_pedestal" pos="-0.08 0.40 0.435">
+      <geom name="bridge2_pedestal_column" type="box" size="0.035 0.15 0.435" friction="0.9 0.005 0.001" solref="0.008 1" rgba="0.36 0.38 0.42 1"/>
+    </body>
+
+    <body name="bridge2" pos="-0.08 0.40 0.91">
+      <freejoint name="bridge2_free"/>
+      <geom name="bridge2_block" type="box" size="0.28 0.13 0.04" mass="0.35" friction="0.6 0.005 0.001" solref="0.008 1" rgba="0.18 0.65 0.42 1"/>
+    </body>
+
+    <!-- Hinge friction holds the loaded flap level until the bridge impact.
+         Negative rotation lowers its left end; the lower stop is -55 degrees. -->
+    <body name="flap" pos="0.55 0.70 0.70">
+      <joint name="flap_hinge" type="hinge" axis="0 1 0" range="-55 0" limited="true" frictionloss="0.9" damping="0.015" armature="0.001" solreflimit="0.004 1"/>
+      <geom name="flap_plate" type="box" pos="-0.35 0 0" size="0.35 0.45 0.02" mass="0.08" friction="1.0 0.005 0.001" solref="0.008 1" rgba="0.68 0.35 0.78 1"/>
+    </body>
+
+    <!-- The payload occupies a separate lateral lane from the falling bridges. -->
+    <body name="payload" pos="0.10 1.00 0.765">
+      <freejoint name="payload_free"/>
+      <geom name="payload_block" type="box" size="0.045 0.055 0.045" mass="0.12" friction="0.8 0.005 0.001" solref="0.008 1" rgba="0.95 0.48 0.10 1"/>
+    </body>
+
+    <!-- The shallow bin clears the flap throughout its motion. -->
+    <body name="bin" pos="0.20 1.00 0">
+      <geom name="bin_bottom" type="box" pos="0 0 0.02" size="0.42 0.24 0.02" friction="1.2 0.01 0.003" condim="6" solref="0.008 1" rgba="0.22 0.30 0.38 1"/>
+      <geom name="bin_left_wall" type="box" pos="-0.42 0 0.045" size="0.02 0.24 0.045" friction="1.0 0.005 0.001" solref="0.008 1" rgba="0.30 0.40 0.50 1"/>
+      <geom name="bin_right_wall" type="box" pos="0.42 0 0.045" size="0.02 0.24 0.045" friction="1.0 0.005 0.001" solref="0.008 1" rgba="0.30 0.40 0.50 1"/>
+      <geom name="bin_front_wall" type="box" pos="0 -0.24 0.045" size="0.42 0.02 0.045" friction="1.0 0.005 0.001" solref="0.008 1" rgba="0.30 0.40 0.50 1"/>
+      <geom name="bin_back_wall" type="box" pos="0 0.24 0.045" size="0.42 0.02 0.045" friction="1.0 0.005 0.001" solref="0.008 1" rgba="0.30 0.40 0.50 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start" qpos="-0.774392 0 0.528791 1 0 0 0 0 0.10 0.40 1.28 1 0 0 0 -0.08 0.40 0.91 1 0 0 0 0 0.10 1.00 0.765 1 0 0 0"/>
+  </keyframe>
+</mujoco>
+```
+
+---
+thinking (summarized):
+
+**Evaluating flap mechanics**
+
+I’m trying to figure out how the flap reaches its lower stop and stays there. The brief mentions that it releases the payload once it hits the lower stop, potentially using a spring hinge. My calculations involve friction loss and the torque needed to overcome it. I’m looking at various factors like gravity, mass, and the impact of forces to ensure it operates correctly. I want to confirm that the flap holds at the lower stop despite other influences.
+
+**Analyzing payload mechanics**
+
+I need to consider how the payload behaves when initially positioned horizontally. It starts to slip once the angle exceeds the arctangent of the friction, dropping the bin centered beneath it. It seems important to incorporate bridge1 and bridge2 to help land the bin with the payload, even if it rests on other objects. I'll arrange the layout using lanes, making sure bridge2 spans the central impact lane and aligns with the flap and rear of the payload.
+
+**Analyzing ball movement dynamics**
+
+I’m working through the physics of a ball rolling down a ramp. The ball has a mass of 0.08 and its energy is calculated based on the relevant mass and friction values, including the bridge and key constraints. I’m considering how friction affects the ball’s movement and its collision with the key. The calculations will determine if the ball comes to rest on the floor once it exits the ramp. I’m making sure to keep track of exact measurements.
+
+**Examining bridge and ball dynamics**
+
+I'm analyzing how the key pushes the ball down due to gravity until it collides with the wall. The ball stops at x.53 after bouncing, and friction plays a role in slowing it down. There are details about the bridges and their positions, including their drop heights and stability. I’m factoring in bridge dimensions and their ability to support weight. I also need to consider the pivot point and torque created by the bridges tilting, ensuring everything remains stable.
+
+**Analyzing bridge rotation and contact**
+
+I’m looking at how the bridge rotates positively around the y-axis, causing the right end's z-coordinate to decrease. Bridge2 reaches a height of z.65 at an angle of about 50 degrees, and I’m noting the pivot adjustments. I calculate how the projection impacts the x-axis as the flap starts contact. It seems Bridge1 might tumble right while rotating, possibly making contact with the flap, which indicates a dynamic interaction I need to keep an eye on.
+
+**Analyzing collision dynamics**
+
+I'm looking at a scenario where one ball at a certain height doesn't collide with a bin nearby, but there are two bridges whose lanes might intersect with a flap that's extending. The important part is that this flap won't hit the bin. Meanwhile, there's a payload that's at a height that allows it to fall freely to the ground, resting eventually with the consideration of friction. I'm curious how the dynamics play out with these various factors!

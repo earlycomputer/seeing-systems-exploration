@@ -1,0 +1,183 @@
+The wedge and cart run in physical guides. A preloaded hinged shelf holds the wedge until the falling trigger releases it.
+
+```parts
+part guided wedge
+  low tip
+    is a  point
+    at    10 cm along, 1.2 m up
+  high tip
+    is a  point
+    at    1.2 m along, 2.3 m up
+  slope
+    is a      plank from low tip to high tip, 14 cm wide, 6 cm thick
+    weighs    250 g
+  neck
+    is a      box 8 by 12 by 12 cm, 20 g
+    at        1.15 m along, 2.34 m up
+  crown
+    is a      box 30 by 24 by 4 cm, 100 g
+    at        1.15 m along, 2.42 m up
+```
+
+```world
+world  falling trigger and guided wedge
+
+floor
+  size      10 m
+  friction  0.8, spinning 0.005, rolling 0.002
+
+box
+  is an                open box
+  length               4 m
+  width                1.4 m
+  walls                30 cm
+  near wall height     20 cm
+  wall thickness       2 cm
+  base thickness       4 cm
+  friction             1, spinning 0.02, rolling 0.01
+  bounce               dead
+  colour               wood
+  at                   2.3 m along, 0 m to the left
+
+hoop
+  is a      ring 3 m across, 12 mm thick
+  colour    orange
+  at        2.2 m along, 0 m to the left, 55 cm up
+
+ledge
+  is a      box 40 by 24 by 6 cm
+  friction  0.15
+  bounce    dead
+  colour    wood
+  at        1 m along, 0 m to the left, 97 cm up
+
+left track
+  is a      box 90 by 4 by 4 cm
+  friction  0.04
+  bounce    dead
+  colour    grey
+  at        92 cm along, 17 cm to the left, 98 cm up
+
+right track
+  is a      box 90 by 4 by 4 cm
+  friction  0.04
+  bounce    dead
+  colour    grey
+  at        92 cm along, 17 cm to the right, 98 cm up
+
+left cart guide
+  is a      box 92 by 3 by 10 cm
+  friction  0.01
+  bounce    dead
+  colour    grey
+  at        91 cm along, 21.8 cm to the left, 1.06 m up
+
+right cart guide
+  is a      box 92 by 3 by 10 cm
+  friction  0.01
+  bounce    dead
+  colour    grey
+  at        91 cm along, 21.8 cm to the right, 1.06 m up
+
+left cart stop
+  is a      box 4 by 5 by 12 cm
+  bounce    dead
+  colour    dark grey
+  at        1.35 m along, 17 cm to the left, 1.06 m up
+
+right cart stop
+  is a      box 4 by 5 by 12 cm
+  bounce    dead
+  colour    dark grey
+  at        1.35 m along, 17 cm to the right, 1.06 m up
+
+cart
+  is a      box 24 by 40 by 12 cm, 600 g
+  moves     freely
+  friction  0.04, spinning 0.001, rolling 0.001
+  bounce    dead
+  colour    orange
+  at        72 cm along, 0 m to the left, 1.06 m up
+
+block
+  is a      cube 12 cm, 100 g
+  moves     freely
+  friction  0.15, spinning 0.01, rolling 0.005
+  bounce    dead
+  colour    white
+  rests     on ledge, 18 cm beyond ledge, 0 m to the left
+
+left wedge guides
+  is a      box 3 by 3 by 131 cm
+  friction  0.005
+  bounce    dead
+  colour    grey
+  repeated  2 times, 33.8 cm apart along
+  at        98.1 cm along, 13.9 cm to the left, 1.995 m up
+
+right wedge guides
+  is a      box 3 by 3 by 131 cm
+  friction  0.005
+  bounce    dead
+  colour    grey
+  repeated  2 times, 33.8 cm apart along
+  at        98.1 cm along, 13.9 cm to the right, 1.995 m up
+
+left wedge stop
+  is a      box 30 by 3 by 6 cm
+  bounce    dead
+  colour    dark grey
+  at        1.15 m along, 10.5 cm to the left, 1.35 m up
+
+right wedge stop
+  is a      box 30 by 3 by 6 cm
+  bounce    dead
+  colour    dark grey
+  at        1.15 m along, 10.5 cm to the right, 1.35 m up
+
+release shelf
+  is a           box 16 by 18 by 2.5 cm, 30 g
+  friction       0.01
+  bounce         dead
+  colour         dark grey
+  at             1.15 m along, 16 cm to the left, 2.3875 m up
+  turns on       release hinge, about x, at its left side
+  swings         from 0° to 100°
+  spring         0.6 N·m/rad toward −60°
+  damping        0.025 N·m·s/rad
+  starts turned  0°
+
+wedge
+  is a      guided wedge
+  moves     freely
+  friction  0.01, spinning 0.001, rolling 0.001
+  bounce    dead
+  colour    orange
+  at        0 m along, 0 m to the left
+
+trigger
+  is a      cube 16 cm, 2 kg
+  moves     freely
+  friction  0.3, spinning 0.01, rolling 0.005
+  bounce    dead
+  colour    black
+  at        1.15 m along, 0 m to the left, 3.02 m up
+
+expect
+  trigger touches wedge
+  wedge touches cart
+  cart touches block
+  block drops through hoop
+  block comes to rest in box
+```
+
+---
+thinking (summarized):
+
+**Exploring design components**
+
+I'm considering using a wedge resting on a pivoting trap support with a spring hinge that keeps it stable until a trigger collapses it. The wedge would slide on guides for free movement. I need a support shelf hinged above the cart for potential stability. This wedge should be a custom part that can slide freely. I need to define the dimensions and relationships of these parts to ensure everything is functional and moves properly.
+
+**Analyzing cart ramp mechanics**
+
+I’m thinking about how a cart below the ramp interacts with a wedge on the lower side. The wedge should contact the cart's upper corner, and I need to consider the height and positioning of the top carrier. There's an inclination that might influence how the cart moves. Also, I want to explore how a trigger mechanism could initiate motion, considering gaps and supports for a stable structure. I need to balance the mechanics carefully throughout this design.

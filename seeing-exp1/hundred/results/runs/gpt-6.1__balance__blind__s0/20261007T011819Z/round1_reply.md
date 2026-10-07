@@ -1,0 +1,111 @@
+Ball1 will roll down the ramp, but the original scene has an unintended startup collision: the ramp’s underside penetrates the balance’s entry and side walls by about 5 cm. The contact solver will push the receiving end downward and lift the block before ball1 arrives. That impulse may disturb the intended sequence, so I would not count the original as working.
+
+The correction below lowers those three walls, leaving approximately 27 mm of initial clearance. The far wall remains tall to retain ball1. This fixes the geometric interference; I have not simulated the corrected run.
+
+```xml
+<mujoco model="ramp_balance_hoop_cup">
+  <compiler angle="radian"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" cone="elliptic" iterations="80"/>
+  <size njmax="2000" nconmax="400"/>
+
+  <worldbody>
+    <light name="main_light" pos="-1 -3 5" dir="0.2 0.5 -1"/>
+    <camera name="overview" pos="0 -5 3.1" xyaxes="1 0 0 0 0.40 0.9165"/>
+
+    <geom name="floor" type="plane" size="6 4 0.1" rgba="0.25 0.28 0.31 1" friction="0.8 0.03 0.01" condim="6" solref="0.02 1"/>
+
+    <body name="ramp" pos="-1.581645 0 1.282130" quat="0.9987502604 0 0.0499791693 0">
+      <geom name="ramp_surface" type="box" size="0.57 0.18 0.045" rgba="0.55 0.60 0.65 1" friction="0.7 0.005 0.0002" condim="6" solref="0.015 1"/>
+      <geom name="ramp_rail_front" type="box" pos="0 -0.205 0.085" size="0.57 0.025 0.05" rgba="0.38 0.43 0.48 1" friction="0.5 0.005 0.0002"/>
+      <geom name="ramp_rail_back" type="box" pos="0 0.205 0.085" size="0.57 0.025 0.05" rgba="0.38 0.43 0.48 1" friction="0.5 0.005 0.0002"/>
+    </body>
+
+    <body name="ball1" pos="-1.896020 0 1.454376">
+      <freejoint name="ball1_free"/>
+      <geom name="ball1_sphere" type="sphere" size="0.095" mass="3.2" rgba="0.85 0.18 0.10 1" friction="0.75 0.008 0.0002" condim="6" solref="0.015 1"/>
+    </body>
+
+    <body name="balance_support" pos="0 0 0">
+      <geom name="balance_support_column" type="box" pos="0 0 0.35" size="0.075 0.13 0.35" rgba="0.30 0.33 0.36 1"/>
+      <geom name="balance_support_axle" type="cylinder" pos="0 0 0.80" quat="0.7071067812 0.7071067812 0 0" size="0.035 0.28" rgba="0.20 0.22 0.25 1" contype="0" conaffinity="0"/>
+    </body>
+
+    <body name="balance" pos="0 0 0.80" quat="0.9987502604 0 0.0499791693 0">
+      <joint name="balance_hinge" type="hinge" axis="0 1 0" ref="0.10" limited="true" range="-0.20 0.10" damping="10" armature="0.02" solreflimit="0.015 1"/>
+      <geom name="balance_beam" type="box" pos="-0.085 0 0" size="1.175 0.145 0.035" mass="0.45" rgba="0.78 0.60 0.24 1" friction="0.9 0.01 0.001" condim="6"/>
+      <geom name="balance_recess_floor" type="box" pos="-0.91 0 0.005" size="0.36 0.175 0.055" mass="0.10" rgba="0.70 0.49 0.16 1" friction="0.85 0.02 0.003" condim="6" solref="0.02 1"/>
+      <geom name="balance_recess_left" type="box" pos="-1.28 0 0.14" size="0.025 0.22 0.11" mass="0.035" rgba="0.78 0.60 0.24 1" friction="0.6 0.01 0.002" condim="6" solref="0.02 1"/>
+      <geom name="balance_recess_right" type="box" pos="-0.54 0 0.18" size="0.025 0.22 0.15" mass="0.035" rgba="0.78 0.60 0.24 1" friction="0.6 0.01 0.002" condim="6" solref="0.02 1"/>
+      <geom name="balance_recess_front" type="box" pos="-0.91 -0.195 0.14" size="0.345 0.025 0.11" mass="0.04" rgba="0.78 0.60 0.24 1" friction="0.6 0.01 0.002" condim="6" solref="0.02 1"/>
+      <geom name="balance_recess_back" type="box" pos="-0.91 0.195 0.14" size="0.345 0.025 0.11" mass="0.04" rgba="0.78 0.60 0.24 1" friction="0.6 0.01 0.002" condim="6" solref="0.02 1"/>
+    </body>
+
+    <body name="block" pos="0.923890 0 0.792729" quat="0.9987502604 0 0.0499791693 0">
+      <freejoint name="block_free"/>
+      <geom name="block_base" type="box" size="0.10 0.035 0.05" mass="0.25" rgba="0.22 0.47 0.80 1" friction="0.8 0.008 0.0005" condim="6" solref="0.015 1"/>
+      <geom name="block_striking_face" type="box" pos="0 0 0.14" quat="0.9747941071 0 0.2231063621 0" size="0.13 0.035 0.06" mass="0.15" rgba="0.25 0.55 0.90 1" friction="0.3 0.005 0.0005" condim="6" solref="0.012 1"/>
+    </body>
+
+    <body name="ball2_support" pos="1.045 0 1.053467">
+      <geom name="ball2_support_front" type="box" pos="0 -0.075 0" size="0.055 0.025 0.025" rgba="0.42 0.45 0.49 1" friction="0.35 0.005 0.0005" condim="6" solref="0.015 1"/>
+      <geom name="ball2_support_back" type="box" pos="0 0.075 0" size="0.055 0.025 0.025" rgba="0.42 0.45 0.49 1" friction="0.35 0.005 0.0005" condim="6" solref="0.015 1"/>
+    </body>
+
+    <body name="ball2" pos="1.045 0 1.12">
+      <freejoint name="ball2_free"/>
+      <geom name="ball2_sphere" type="sphere" size="0.065" mass="0.08" rgba="0.16 0.78 0.35 1" friction="0.6 0.02 0.005" condim="6" solref="0.02 1"/>
+    </body>
+
+    <body name="hoop" pos="1.36 0 0.62">
+      <geom name="hoop_ring_01" type="capsule" fromto="0.195 0 0 0.180156 0.074625 0" size="0.013" rgba="0.90 0.32 0.12 1" friction="0.25 0.005 0.001" solref="0.02 1"/>
+      <geom name="hoop_ring_02" type="capsule" fromto="0.180156 0.074625 0 0.137886 0.137886 0" size="0.013" rgba="0.90 0.32 0.12 1" friction="0.25 0.005 0.001" solref="0.02 1"/>
+      <geom name="hoop_ring_03" type="capsule" fromto="0.137886 0.137886 0 0.074625 0.180156 0" size="0.013" rgba="0.90 0.32 0.12 1" friction="0.25 0.005 0.001" solref="0.02 1"/>
+      <geom name="hoop_ring_04" type="capsule" fromto="0.074625 0.180156 0 0 0.195 0" size="0.013" rgba="0.90 0.32 0.12 1" friction="0.25 0.005 0.001" solref="0.02 1"/>
+      <geom name="hoop_ring_05" type="capsule" fromto="0 0.195 0 -0.074625 0.180156 0" size="0.013" rgba="0.90 0.32 0.12 1" friction="0.25 0.005 0.001" solref="0.02 1"/>
+      <geom name="hoop_ring_06" type="capsule" fromto="-0.074625 0.180156 0 -0.137886 0.137886 0" size="0.013" rgba="0.90 0.32 0.12 1" friction="0.25 0.005 0.001" solref="0.02 1"/>
+      <geom name="hoop_ring_07" type="capsule" fromto="-0.137886 0.137886 0 -0.180156 0.074625 0" size="0.013" rgba="0.90 0.32 0.12 1" friction="0.25 0.005 0.001" solref="0.02 1"/>
+      <geom name="hoop_ring_08" type="capsule" fromto="-0.180156 0.074625 0 -0.195 0 0" size="0.013" rgba="0.90 0.32 0.12 1" friction="0.25 0.005 0.001" solref="0.02 1"/>
+      <geom name="hoop_ring_09" type="capsule" fromto="-0.195 0 0 -0.180156 -0.074625 0" size="0.013" rgba="0.90 0.32 0.12 1" friction="0.25 0.005 0.001" solref="0.02 1"/>
+      <geom name="hoop_ring_10" type="capsule" fromto="-0.180156 -0.074625 0 -0.137886 -0.137886 0" size="0.013" rgba="0.90 0.32 0.12 1" friction="0.25 0.005 0.001" solref="0.02 1"/>
+      <geom name="hoop_ring_11" type="capsule" fromto="-0.137886 -0.137886 0 -0.074625 -0.180156 0" size="0.013" rgba="0.90 0.32 0.12 1" friction="0.25 0.005 0.001" solref="0.02 1"/>
+      <geom name="hoop_ring_12" type="capsule" fromto="-0.074625 -0.180156 0 0 -0.195 0" size="0.013" rgba="0.90 0.32 0.12 1" friction="0.25 0.005 0.001" solref="0.02 1"/>
+      <geom name="hoop_ring_13" type="capsule" fromto="0 -0.195 0 0.074625 -0.180156 0" size="0.013" rgba="0.90 0.32 0.12 1" friction="0.25 0.005 0.001" solref="0.02 1"/>
+      <geom name="hoop_ring_14" type="capsule" fromto="0.074625 -0.180156 0 0.137886 -0.137886 0" size="0.013" rgba="0.90 0.32 0.12 1" friction="0.25 0.005 0.001" solref="0.02 1"/>
+      <geom name="hoop_ring_15" type="capsule" fromto="0.137886 -0.137886 0 0.180156 -0.074625 0" size="0.013" rgba="0.90 0.32 0.12 1" friction="0.25 0.005 0.001" solref="0.02 1"/>
+      <geom name="hoop_ring_16" type="capsule" fromto="0.180156 -0.074625 0 0.195 0 0" size="0.013" rgba="0.90 0.32 0.12 1" friction="0.25 0.005 0.001" solref="0.02 1"/>
+      <geom name="hoop_left_guide" type="box" pos="-0.195 0 0.235" quat="0.992094 0 -0.125499 0" size="0.02 0.20 0.181" rgba="0.55 0.62 0.68 0.65" friction="0.2 0.005 0.001" solref="0.02 1"/>
+      <geom name="hoop_right_guide" type="box" pos="0.195 0 0.26" quat="0.996250 0 0.086521 0" size="0.02 0.20 0.203" rgba="0.55 0.62 0.68 0.65" friction="0.2 0.005 0.001" solref="0.02 1"/>
+      <geom name="hoop_right_backstop" type="box" pos="0.24 0 0.92" size="0.02 0.20 0.48" rgba="0.55 0.62 0.68 0.45" friction="0.2 0.005 0.001" solref="0.025 1"/>
+      <geom name="hoop_front_guard" type="box" pos="-0.015 -0.18 0.73" size="0.29 0.015 0.63" rgba="0.55 0.62 0.68 0.25" friction="0.2 0.005 0.001" solref="0.02 1"/>
+      <geom name="hoop_back_guard" type="box" pos="-0.015 0.18 0.73" size="0.29 0.015 0.63" rgba="0.55 0.62 0.68 0.25" friction="0.2 0.005 0.001" solref="0.02 1"/>
+    </body>
+
+    <body name="cup" pos="1.36 0 0">
+      <geom name="cup_bottom" type="box" pos="0 0 0.035" size="0.255 0.255 0.035" rgba="0.18 0.52 0.65 1" friction="0.9 0.04 0.01" condim="6" solref="0.025 1"/>
+      <geom name="cup_left_wall" type="box" pos="-0.23 0 0.23" size="0.025 0.255 0.16" rgba="0.18 0.52 0.65 1" friction="0.8 0.04 0.01" condim="6" solref="0.025 1"/>
+      <geom name="cup_right_wall" type="box" pos="0.23 0 0.23" size="0.025 0.255 0.16" rgba="0.18 0.52 0.65 1" friction="0.8 0.04 0.01" condim="6" solref="0.025 1"/>
+      <geom name="cup_front_wall" type="box" pos="0 -0.23 0.23" size="0.205 0.025 0.16" rgba="0.18 0.52 0.65 0.55" friction="0.8 0.04 0.01" condim="6" solref="0.025 1"/>
+      <geom name="cup_back_wall" type="box" pos="0 0.23 0.23" size="0.205 0.025 0.16" rgba="0.18 0.52 0.65 1" friction="0.8 0.04 0.01" condim="6" solref="0.025 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start"/>
+  </keyframe>
+</mujoco>
+```
+
+```json
+{
+  "what_happens": "In the original file, startup penetration between the fixed ramp and the balance walls forces the receiving end downward and lifts the block before ball1 arrives. Ball1 subsequently rolls down the ramp, but the unintended startup impulse may disturb the block and ball2, so the specified sequence and final resting condition cannot be relied upon.",
+  "works": false,
+  "problem": "The ramp initially penetrates the balance's entry and side walls by about 5 cm, producing unintended motion before ball1 reaches the recess."
+}
+```
+
+---
+thinking (summarized):
+
+**Analyzing ramp geometry**
+
+I’m observing a ramp that crosses into a basin, where the fixed ramp slab intersects the walls near the entry. This seems problematic because there's an overlap between the ramp slab and the wall. The dimensions show a critical collision risk, and the fixed ramp alters balance by an angle. There’s uncertainty in the outcomes, especially if the block shifts unexpectedly, potentially causing it to lose support. I need to clarify these interactions.

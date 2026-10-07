@@ -1,0 +1,108 @@
+```xml
+<mujoco model="falling_weight_lever_lift_bridge_cup">
+  <compiler angle="radian"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" cone="elliptic" iterations="100"/>
+  <size njmax="1000" nconmax="200"/>
+
+  <visual>
+    <global azimuth="135" elevation="-20"/>
+    <headlight ambient="0.4 0.4 0.4" diffuse="0.7 0.7 0.7" specular="0.2 0.2 0.2"/>
+  </visual>
+
+  <worldbody>
+    <light name="overhead_light" pos="0.5 -1 3" dir="0 0 -1"/>
+    <camera name="overview" pos="2.8 -4 2.4" xyaxes="0.86 0.51 0 -0.22 0.37 0.90"/>
+
+    <geom name="floor" type="plane" size="4 3 0.1" pos="0 0 0" friction="0.8 0.01 0.005" rgba="0.22 0.25 0.28 1"/>
+
+    <!-- The weight's underside starts exactly 0.5 m above the horizontal lever. -->
+    <body name="weight" pos="-0.58 0 1.08">
+      <freejoint name="weight_free"/>
+      <geom name="weight_block" type="box" size="0.095 0.095 0.10" mass="8" friction="0.7 0.005 0.0001" solref="0.006 1" solimp="0.98 0.995 0.001" rgba="0.32 0.34 0.38 1"/>
+    </body>
+
+    <body name="pivot_frame" pos="0 0 0">
+      <geom name="pivot_frame_pedestal" type="box" pos="0 0 0.215" size="0.045 0.12 0.215" contype="0" conaffinity="0" rgba="0.35 0.38 0.42 1"/>
+      <geom name="pivot_frame_axle" type="cylinder" pos="0 0 0.45" quat="0.707106781 0.707106781 0 0" size="0.045 0.115" contype="0" conaffinity="0" rgba="0.15 0.17 0.19 1"/>
+    </body>
+
+    <!-- This inclined block meets the underside of the lever at its lower stop. -->
+    <body name="lever_stop" pos="-0.554533 0 0.266167" quat="0.995004165 0 -0.099833417 0">
+      <geom name="lever_stop_block" type="box" size="0.10 0.10 0.04" friction="0.7 0.005 0.0001" solref="0.004 1" solimp="0.995 0.999 0.0005" rgba="0.65 0.22 0.16 1"/>
+    </body>
+
+    <body name="lever" pos="0 0 0.45">
+      <joint name="lever_hinge" type="hinge" axis="0 1 0" limited="true" range="-0.20 0" damping="0.02" armature="0.005" solreflimit="0.004 1" solimplimit="0.995 0.999 0.0005"/>
+      <geom name="lever_beam" type="box" size="0.65 0.075 0.03" mass="1" friction="0.7 0.005 0.0001" solref="0.006 1" solimp="0.98 0.995 0.001" rgba="0.88 0.58 0.16 1"/>
+    </body>
+
+    <!--
+      The lower slide limit holds the lift initially.
+      There is a 0.03 m initial gap beneath its foot.
+      The lever drives approximately 0.10 m of lift travel, then stops.
+      The striker must continue upward ballistically before reaching the ball.
+    -->
+    <body name="lift" pos="0.60 0 0.525">
+      <joint name="lift_slide" type="slide" axis="0 0 1" limited="true" range="0 0.50" damping="0.015" armature="0.001" solreflimit="0.004 1" solimplimit="0.995 0.999 0.0005"/>
+      <geom name="lift_foot" type="box" size="0.065 0.08 0.015" mass="0.18" friction="0.5 0.005 0.0001" solref="0.006 1" solimp="0.98 0.995 0.001" rgba="0.18 0.55 0.78 1"/>
+      <geom name="lift_stem" type="capsule" fromto="0.007 0 0.015 0.007 0 0.119" size="0.009" mass="0.025" friction="0.2 0.005 0.0001" rgba="0.18 0.55 0.78 1"/>
+      <geom name="lift_striker" type="sphere" pos="0.007 0 0.130" size="0.016" mass="0.015" friction="0.2 0.005 0.0001" solref="0.006 1" solimp="0.98 0.995 0.001" rgba="0.12 0.72 0.90 1"/>
+    </body>
+
+    <!--
+      Two rails support the ball while leaving a central opening for the striker.
+      Its offset contact pushes the ball predominantly toward positive x.
+    -->
+    <body name="bridge" pos="0 0 0">
+      <geom name="bridge_left_rail" type="box" pos="0.91 -0.059 0.843" size="0.31 0.035 0.025" condim="6" friction="0.2 0.005 0.0001" solref="0.01 1" rgba="0.58 0.65 0.69 1"/>
+      <geom name="bridge_right_rail" type="box" pos="0.91 0.059 0.843" size="0.31 0.035 0.025" condim="6" friction="0.2 0.005 0.0001" solref="0.01 1" rgba="0.58 0.65 0.69 1"/>
+      <geom name="bridge_left_guard" type="box" pos="0.91 -0.12 0.94" size="0.31 0.015 0.07" condim="6" friction="0.2 0.005 0.0001" rgba="0.42 0.49 0.54 1"/>
+      <geom name="bridge_right_guard" type="box" pos="0.91 0.12 0.94" size="0.31 0.015 0.07" condim="6" friction="0.2 0.005 0.0001" rgba="0.42 0.49 0.54 1"/>
+      <geom name="bridge_left_support" type="box" pos="0.92 -0.059 0.409" size="0.025 0.035 0.409" rgba="0.38 0.43 0.47 1"/>
+      <geom name="bridge_right_support" type="box" pos="0.92 0.059 0.409" size="0.025 0.035 0.409" rgba="0.38 0.43 0.47 1"/>
+    </body>
+
+    <body name="ball" pos="0.66 0 0.90">
+      <freejoint name="ball_free"/>
+      <geom name="ball_sphere" type="sphere" size="0.04" mass="0.06" condim="6" friction="0.2 0.005 0.0001" solref="0.01 1" solimp="0.98 0.995 0.001" rgba="0.92 0.24 0.12 1"/>
+    </body>
+
+    <!-- The low entrance lip clears the bridge; the rough cup dissipates rolling motion. -->
+    <body name="cup" pos="0 0 0">
+      <geom name="cup_bottom" type="box" pos="1.524 0 0.675" size="0.314 0.198 0.025" condim="6" friction="1 0.01 0.02" solref="0.015 1" solimp="0.98 0.995 0.001" rgba="0.24 0.62 0.34 1"/>
+      <geom name="cup_front_lip" type="box" pos="1.224 0 0.76" size="0.014 0.17 0.06" condim="6" friction="1 0.01 0.02" solref="0.015 1" rgba="0.20 0.53 0.29 1"/>
+      <geom name="cup_back_wall" type="box" pos="1.824 0 0.95" size="0.014 0.198 0.25" condim="6" friction="1 0.01 0.02" solref="0.015 1" rgba="0.20 0.53 0.29 1"/>
+      <geom name="cup_left_wall" type="box" pos="1.524 -0.184 0.95" size="0.314 0.014 0.25" condim="6" friction="1 0.01 0.02" solref="0.015 1" rgba="0.20 0.53 0.29 1"/>
+      <geom name="cup_right_wall" type="box" pos="1.524 0.184 0.95" size="0.314 0.014 0.25" condim="6" friction="1 0.01 0.02" solref="0.015 1" rgba="0.20 0.53 0.29 1"/>
+      <geom name="cup_support" type="box" pos="1.524 0 0.325" size="0.28 0.15 0.325" rgba="0.29 0.37 0.31 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start" time="0" qpos="-0.58 0 1.08 1 0 0 0 0 0 0.66 0 0.90 1 0 0 0"/>
+  </keyframe>
+</mujoco>
+```
+
+---
+thinking (summarized):
+
+**Evaluating ball travel mechanics**
+
+I'm working to understand the mechanics of ball travel across a bridge cup using impulse. I need to build a model for the x-axis ball travel and examine how a lever pivoted on the y-axis behaves. If the left weight is at x=-0.6, it should rise to x=0.6 on the right. I want to verify the angle changes during rotation and calculate the correct ranges and weights involved in this setup for accurate measurements.
+
+**Calculating impact dynamics**
+
+I'm figuring out some dynamics involving a free drop of 0.5 meters and the resulting speeds and timings. For an 8 kg weight impacting a lever with a 1 kg mass and a striker of 0.18 kg, the lever accelerates to about 4 rad/s. I note how energy transfers and what happens when I introduce a large mass on one side, affecting swing speeds. Additionally, I'm considering the striker's movement before impact with the ball and how the incline can influence speed along the bridge.
+
+**Calculating ball position**
+
+I'm figuring out the contact point, which is at the bottom-left, and noting that it's normal and moving forward-up. The ball's positioned at x = .66. The rising lever is calculated around x  .586 using cosine of .22. I see the need to lift the slider to x = .60, and I'm checking the striker head's center at x = .625. Alright, keeping track of these details!
+
+**Analyzing design parameters**
+
+I need to consider how the lip overlaps with the bridge rails and the floor below. The ball should go over the cup, which has internal measurements of x1.212 to 1.78 at the front top and 1.18 at the rear top and sides. The width is around ±0.18, while the inner dimension is approximately ±0.16. When the ball drops into the cup, gravity affects how it interacts with the bottom and top. There’s quite a bit to analyze!
+
+**Evaluating lift mechanisms**
+
+I'm thinking about how a vertical slider lift should function without power. It seems essential that the lift remains securely at its lower stop until the lever reaches the designated position. The initial range of the lift's slide joint has to be between "0 0.65," and it looks like the lower limit, q=0, should hold it against gravity. It's critical to ensure everything functions safely and reliably in this setup!
