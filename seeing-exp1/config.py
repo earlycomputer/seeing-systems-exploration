@@ -43,4 +43,5 @@ SEEDS = (0, 1, 2)
 # Raised to $285 on 2026-10-08: 16-step worlds cost about $1.30, so the full ladder is about $63; Jono chose "Full
 # ladder" on the card asking to raise the cap to about $285 ($222.57 spent).
 # Raised to $295 on 2026-10-08: seed 1 plus the judge comes to about $35 with $32.52 left; Jono chose "Raise to $295".
-SPEND_CAP_USD = 295.0
+# Raised to $500 on 2026-10-08 19:28: Jono, in the project chat, "Raise the cap to $500 for now".
+SPEND_CAP_USD = 500.0

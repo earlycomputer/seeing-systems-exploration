@@ -34,4 +34,6 @@ SEEDS = (0, 1)
 # the cap raised "to about $250": "Run the complexity ladder experiment". $213.26 was spent before it.
 # Raised to $68 the same day: a 16-step world costs about $1.30, not $0.30; Jono chose "Full ladder" (about $63).
 # Raised to $78 with the cap to $295 (Jono, "Raise to $295"), for seed 1 and the judge.
-CEILING_1J_USD = 78.0
+# Raised to $120 when Jono raised the program cap to $500 ("Raise the cap to $500 for now"), so seed 1 and the judge
+# finish without another pause.
+CEILING_1J_USD = 120.0
