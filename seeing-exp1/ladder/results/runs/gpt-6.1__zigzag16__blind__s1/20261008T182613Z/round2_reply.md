@@ -1,0 +1,222 @@
+Nothing will be simulated from my last response: the XML was cut off inside `ball3_guide_front`’s `solref` attribute, so MuJoCo will reject it before starting the run.
+
+Here is a complete replacement, including the remaining mechanisms and the `start` keyframe. It is an unverified design—not evidence that the full sequence succeeds within 20 seconds. The JSON below assesses the previously posted file.
+
+```xml
+<mujoco model="complete_chain_reaction">
+  <compiler angle="degree" autolimits="true" inertiafromgeom="auto"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100" tolerance="1e-10" cone="elliptic" impratio="5"/>
+  <size njmax="3000" nconmax="1000"/>
+
+  <!-- All initial velocities are zero. No motors or timed triggers are used. -->
+  <!-- Contact damping ratio 0.71565 approximates restitution 0.04. -->
+  <!-- Auxiliary springs are retained by passive contact-released latches. -->
+
+  <worldbody>
+    <light name="main_light" pos="2 -3 7" dir="0 0 -1" directional="true"/>
+    <camera name="overview" pos="2.8 -7 4" xyaxes="1 0 0 0 .447214 .894427"/>
+    <geom name="floor" type="plane" size="8 3 .1" friction=".72 .005 .0001" solref=".004 .71565" rgba=".24 .27 .30 1"/>
+
+    <body name="ball1" pos="-.285 0 .962020143">
+      <freejoint name="ball1_free"/>
+      <geom name="ball1_sphere" type="sphere" size=".05" mass=".20" friction=".72 .005 .0001" solref=".004 .71565" rgba=".95 .25 .12 1"/>
+    </body>
+
+    <!-- Octagonal capsule ring, with minimum clear diameter 0.16 m. -->
+    <body name="ring1" pos="-.285 0 .662020143">
+      <geom name="ring1_1" type="capsule" fromto=".097415298 0 0 .068883018 .068883018 0" size=".01" friction=".72 .005 .0001" solref=".004 .71565"/>
+      <geom name="ring1_2" type="capsule" fromto=".068883018 .068883018 0 0 .097415298 0" size=".01" friction=".72 .005 .0001" solref=".004 .71565"/>
+      <geom name="ring1_3" type="capsule" fromto="0 .097415298 0 -.068883018 .068883018 0" size=".01" friction=".72 .005 .0001" solref=".004 .71565"/>
+      <geom name="ring1_4" type="capsule" fromto="-.068883018 .068883018 0 -.097415298 0 0" size=".01" friction=".72 .005 .0001" solref=".004 .71565"/>
+      <geom name="ring1_5" type="capsule" fromto="-.097415298 0 0 -.068883018 -.068883018 0" size=".01" friction=".72 .005 .0001" solref=".004 .71565"/>
+      <geom name="ring1_6" type="capsule" fromto="-.068883018 -.068883018 0 0 -.097415298 0" size=".01" friction=".72 .005 .0001" solref=".004 .71565"/>
+      <geom name="ring1_7" type="capsule" fromto="0 -.097415298 0 .068883018 -.068883018 0" size=".01" friction=".72 .005 .0001" solref=".004 .71565"/>
+      <geom name="ring1_8" type="capsule" fromto=".068883018 -.068883018 0 .097415298 0 0" size=".01" friction=".72 .005 .0001" solref=".004 .71565"/>
+    </body>
+
+    <body name="lever1" pos="0 0 .342020143">
+      <joint name="lever1_hinge" type="hinge" axis="0 -1 0" range="0 45" damping=".04" solreflimit=".004 1" solimplimit=".99 .999 .001"/>
+      <geom name="lever1_beam" type="box" size=".30 .05 .02" mass=".50" friction=".72 .005 .0001" solref=".004 .71565" rgba=".25 .55 .85 1"/>
+    </body>
+
+    <!-- Steep underside cam avoids the original shallow-cam self-locking geometry. -->
+    <body name="cart1" pos=".35 0 .542220143">
+      <joint name="cart1_slide" type="slide" axis="1 0 0" range="0 .46" damping=".20" stiffness="5" springref=".46" solreflimit=".004 1"/>
+      <geom name="cart1_chassis" type="box" size=".11 .09 .05" mass=".50" friction=".72 .005 .0001" solref=".004 .71565" rgba=".30 .70 .40 1"/>
+      <geom name="cart1_drive_cam" type="capsule" fromto="-.18 0 .05 -.02 0 -.19" size=".01" mass="0" friction=".72 .005 .0001" solref=".004 .71565"/>
+    </body>
+
+    <!-- Ball1 depresses this receiver beside the lever's left tip. -->
+    <!-- Dry slide friction prevents the latch falling open under its own weight. -->
+    <body name="cart1_latch" pos="0 0 .342020143">
+      <joint name="cart1_latch_slide" type="slide" axis="0 0 -1" range="0 .28" damping=".20" frictionloss=".30"/>
+      <geom name="cart1_latch_receiver" type="box" pos="-.32 0 .021698730" size=".01 .018 .005" mass=".025" friction=".72 .005 .0001" solref=".004 .71565"/>
+      <geom name="cart1_latch_pin" type="box" pos=".475 .080 .158" size=".009 .018 .012" mass="0" condim="1" friction=".72 .005 .0001" solref=".004 .71565" solimp=".99 .999 .001"/>
+      <geom name="cart1_latch_link" type="capsule" fromto="-.32 .11 .021698730 .475 .11 .158" size=".004" mass="0" friction=".72 .005 .0001" solref=".004 .71565"/>
+    </body>
+
+    <!-- Horizontal starting perch prevents ball2 moving before domino1 arrives. -->
+    <body name="upper_platform" pos="1.035 0 .472020143">
+      <geom name="upper_platform_deck" type="box" size=".19 .15 .02" friction=".72 .005 .0001" solref=".004 .71565"/>
+    </body>
+
+    <body name="domino1" pos=".92 0 .612220143">
+      <freejoint name="domino1_free"/>
+      <geom name="domino1_box" type="box" size=".04 .02 .12" mass=".25" friction=".72 .005 .0001" solref=".004 .71565" rgba=".90 .85 .70 1"/>
+    </body>
+
+    <body name="ball2" pos="1.19 0 .542220143">
+      <freejoint name="ball2_free"/>
+      <geom name="ball2_sphere" type="sphere" size=".05" mass=".20" friction=".72 .005 .0001" solref=".004 .71565" rgba=".95 .25 .12 1"/>
+    </body>
+
+    <!-- Main ramp is 1.00 m long, 0.30 m wide, and inclined at 20 degrees. -->
+    <!-- Its low top-surface endpoint is (2.164692621,0,0.15). -->
+    <body name="ramp1">
+      <geom name="ramp1_surface" type="box" pos="1.688005908 0 .302216219" euler="0 20 0" size=".50 .15 .02" friction=".72 .005 .0001" solref=".004 .71565" rgba=".45 .55 .62 1"/>
+      <geom name="ramp1_left_rail" type="box" pos="1.706817016 .16 .353899313" euler="0 20 0" size=".50 .01 .035" friction=".72 .005 .0001" solref=".004 .71565"/>
+      <geom name="ramp1_right_rail" type="box" pos="1.706817016 -.16 .353899313" euler="0 20 0" size=".50 .01 .035" friction=".72 .005 .0001" solref=".004 .71565"/>
+    </body>
+
+    <!-- Door spring supplies energy for the subsequent floor-friction work. -->
+    <body name="door1" pos="2.284692621 0 .09">
+      <joint name="door1_hinge" type="hinge" axis="0 1 0" range="0 70" damping=".04" stiffness="75" springref="70" solreflimit=".004 1" solimplimit=".99 .999 .001"/>
+      <geom name="door1_panel" type="box" pos="0 0 .21" size=".02 .16 .21" mass=".45" friction=".72 .005 .0001" solref=".004 .71565" rgba=".65 .35 .20 1"/>
+    </body>
+
+    <!-- Ball2 pushes the diagonal paddle, withdrawing the transverse bolt. -->
+    <!-- Normal-only bolt contact represents a bearing-supported locking pin. -->
+    <body name="door1_latch" pos="2.284692621 0 0">
+      <joint name="door1_latch_slide" type="slide" axis="0 1 0" range="0 .085" damping=".20" frictionloss=".012"/>
+      <geom name="door1_latch_paddle" type="box" pos="-.065 0 .18" euler="0 0 45" size=".006 .04 .06" mass=".025" friction=".72 .005 .0001" solref=".004 .71565"/>
+      <geom name="door1_latch_bolt" type="box" pos=".035 .167 .44" size=".011 .025 .025" mass="0" condim="1" friction=".72 .005 .0001" solref=".004 .71565" solimp=".99 .999 .001"/>
+    </body>
+
+    <!-- Pivot-to-lowest-point length is 0.50 m; total mass is 0.35 kg. -->
+    <!-- Initial cant is held by dry friction until the door strikes. -->
+    <!-- Joint travel changes the cant from -19 to +19 degrees. -->
+    <body name="pendulum1" pos="2.684692621 0 .505" euler="0 19 0">
+      <joint name="pendulum1_hinge" type="hinge" axis="0 -1 0" range="0 38" damping=".04" frictionloss=".46" solreflimit=".004 1" solimplimit=".99 .999 .001"/>
+      <geom name="pendulum1_rod" type="capsule" fromto="0 0 0 0 0 -.465" size=".012" mass=".10" friction=".72 .005 .0001" solref=".004 .71565"/>
+      <geom name="pendulum1_bob" type="sphere" pos="0 0 -.465" size=".035" mass=".25" friction=".72 .005 .0001" solref=".004 .71565" rgba=".35 .40 .65 1"/>
+    </body>
+
+    <!-- Bob first meets the cube near its centre height at approximately 36 degrees. -->
+    <body name="block1" pos="2.915645464 0 .0602">
+      <freejoint name="block1_free"/>
+      <geom name="block1_cube" type="box" size=".06 .06 .06" mass=".35" friction=".72 .005 .0001" solref=".004 .71565" rgba=".75 .30 .65 1"/>
+    </body>
+
+    <!-- Block1's front face reaches cart2 after 0.35 m of translation. -->
+    <body name="cart2" pos="3.435645464 0 .0502">
+      <joint name="cart2_slide" type="slide" axis="1 0 0" range="0 .46" damping=".20" solreflimit=".004 1"/>
+      <geom name="cart2_chassis" type="box" size=".11 .09 .05" mass=".50" friction=".72 .005 .0001" solref=".004 .71565" rgba=".30 .70 .40 1"/>
+      <geom name="cart2_striker_mast" type="box" pos=".08 0 .58" size=".012 .02 .57" mass="0" friction=".72 .005 .0001" solref=".004 .71565"/>
+      <geom name="cart2_drive_cam" type="capsule" fromto=".09 0 .9998 .25 0 1.1698" size=".012" mass="0" friction=".72 .005 .0001" solref=".004 .71565"/>
+      <geom name="cart2_latch_cam" type="capsule" fromto=".09 .075 .9998 .25 .075 1.1698" size=".012" mass="0" friction=".72 .005 .0001" solref=".004 .71565"/>
+      <geom name="cart2_cam_crossbar" type="capsule" fromto=".09 0 .9998 .09 .075 .9998" size=".008" mass="0" friction=".72 .005 .0001" solref=".004 .71565"/>
+    </body>
+
+    <!-- Cart2's nose reaches the left end after 0.42 m of translation. -->
+    <body name="seesaw1" pos="4.442645464 0 1.20">
+      <joint name="seesaw1_hinge" type="hinge" axis="0 -1 0" range="0 42" damping=".04" stiffness="3" springref="42" solreflimit=".004 1" solimplimit=".99 .999 .001"/>
+      <geom name="seesaw1_beam" type="box" size=".325 .05 .02" mass=".55" friction=".72 .005 .0001" solref=".004 .71565" rgba=".25 .55 .85 1"/>
+    </body>
+
+    <body name="seesaw1_latch" pos="4.442645464 0 1.21">
+      <joint name="seesaw1_latch_slide" type="slide" axis="0 1 0" range="0 .07" damping=".20" frictionloss=".012"/>
+      <geom name="seesaw1_latch_paddle" type="box" pos="-.3037 .082 0" euler="0 0 45" size=".005 .025 .022" mass=".025" friction=".72 .005 .0001" solref=".004 .71565"/>
+      <geom name="seesaw1_latch_bolt" type="box" pos="-.285 .060 -.042" size=".025 .020 .010" mass="0" condim="1" friction=".72 .005 .0001" solref=".004 .71565" solimp=".99 .999 .001"/>
+    </body>
+
+    <body name="ball3" pos="4.757645464 0 1.27">
+      <freejoint name="ball3_free"/>
+      <geom name="ball3_sphere" type="sphere" size=".05" mass=".20" contype="3" conaffinity="3" friction=".72 .005 .0001" solref=".004 .71565" rgba=".95 .25 .12 1"/>
+    </body>
+
+    <!-- Idealized ball-only guide faces permit the beam to retract through the guide. -->
+    <body name="ball3_guide" pos="4.757645464 0 1.29">
+      <geom name="ball3_guide_left" type="box" pos="-.066 0 0" size=".012 .054 .56" contype="2" conaffinity="2" friction=".72 .005 .0001" solref=".004 .71565" rgba=".50 .65 .75 .22"/>
+      <geom name="ball3_guide_right" type="box" pos=".066 0 0" size=".012 .054 .56" contype="2" conaffinity="2" friction=".72 .005 .0001" solref=".004 .71565" rgba=".50 .65 .75 .22"/>
+      <geom name="ball3_guide_front" type="box" pos="0 -.066 0" size=".078 .012 .56" contype="2" conaffinity="2" friction=".72 .005 .0001" solref=".004 .71565" rgba=".50 .65 .75 .22"/>
+      <geom name="ball3_guide_back" type="box" pos="0 .066 0" size=".078 .012 .56" contype="2" conaffinity="2" friction=".72 .005 .0001" solref=".004 .71565" rgba=".50 .65 .75 .22"/>
+    </body>
+
+    <body name="ring2" pos="4.757645464 0 .95">
+      <geom name="ring2_1" type="capsule" fromto=".097415298 0 0 .068883018 .068883018 0" size=".01" friction=".72 .005 .0001" solref=".004 .71565"/>
+      <geom name="ring2_2" type="capsule" fromto=".068883018 .068883018 0 0 .097415298 0" size=".01" friction=".72 .005 .0001" solref=".004 .71565"/>
+      <geom name="ring2_3" type="capsule" fromto="0 .097415298 0 -.068883018 .068883018 0" size=".01" friction=".72 .005 .0001" solref=".004 .71565"/>
+      <geom name="ring2_4" type="capsule" fromto="-.068883018 .068883018 0 -.097415298 0 0" size=".01" friction=".72 .005 .0001" solref=".004 .71565"/>
+      <geom name="ring2_5" type="capsule" fromto="-.097415298 0 0 -.068883018 -.068883018 0" size=".01" friction=".72 .005 .0001" solref=".004 .71565"/>
+      <geom name="ring2_6" type="capsule" fromto="-.068883018 -.068883018 0 0 -.097415298 0" size=".01" friction=".72 .005 .0001" solref=".004 .71565"/>
+      <geom name="ring2_7" type="capsule" fromto="0 -.097415298 0 .068883018 -.068883018 0" size=".01" friction=".72 .005 .0001" solref=".004 .71565"/>
+      <geom name="ring2_8" type="capsule" fromto=".068883018 -.068883018 0 .097415298 0 0" size=".01" friction=".72 .005 .0001" solref=".004 .71565"/>
+    </body>
+
+    <!-- Offset upper-corner impact supplies a forward tipping impulse. -->
+    <!-- Nominal ball-centre contact height is 0.24 m below ring2. -->
+    <body name="domino2" pos="4.822645464 0 .546698730">
+      <freejoint name="domino2_free"/>
+      <geom name="domino2_box" type="box" size=".04 .02 .12" mass=".25" friction=".72 .005 .0001" solref=".004 .71565" rgba=".90 .85 .70 1"/>
+    </body>
+
+    <body name="domino2_platform" pos="4.947645464 0 .406698730">
+      <geom name="domino2_platform_deck" type="box" size=".195 .12 .02" friction=".72 .005 .0001" solref=".004 .71565"/>
+    </body>
+
+    <!-- Vertical-axis panel swings clockwise when viewed from above. -->
+    <!-- Panel bottom clears the shelf top by 1 mm. -->
+    <body name="flap1" pos="5.062645464 -.19 .641">
+      <joint name="flap1_hinge" type="hinge" axis="0 0 -1" range="0 60" damping=".04" stiffness=".6" springref="60" solreflimit=".004 1" solimplimit=".99 .999 .001"/>
+      <geom name="flap1_panel" type="box" pos="0 .19 0" size=".02 .19 .09" mass=".28" friction=".72 .005 .0001" solref=".004 .71565" rgba=".65 .35 .20 1"/>
+    </body>
+
+    <!-- Dry-friction breakaway pin holds the flap's spring preload. -->
+    <!-- Domino2's impact moves the pin until the rotating distal edge clears it. -->
+    <body name="flap1_latch" pos="5.097645464 .1958 .641">
+      <joint name="flap1_latch_slide" type="slide" axis="1 0 0" range="0 .08" damping=".20" frictionloss="1.7"/>
+      <geom name="flap1_latch_pin" type="box" size=".006 .006 .035" mass=".012" condim="1" friction=".72 .005 .0001" solref=".004 .71565" solimp=".99 .999 .001"/>
+    </body>
+
+    <body name="ball4" pos="5.444645464 0 .6002">
+      <freejoint name="ball4_free"/>
+      <geom name="ball4_sphere" type="sphere" size=".05" mass=".20" friction=".72 .005 .0001" solref=".004 .71565" rgba=".95 .25 .12 1"/>
+    </body>
+
+    <body name="shelf1" pos="5.309645464 0 .53">
+      <geom name="shelf1_board" type="box" size=".15 .125 .02" friction=".72 .005 .0001" solref=".004 .71565" rgba=".45 .55 .62 1"/>
+    </body>
+
+    <!-- Cup interior: 0.30 by 0.30 m, with 0.20 m high, 0.02 m thick walls. -->
+    <!-- The inner floor is at z=0; shelf top is 0.55 m above it. -->
+    <body name="cup1" pos="5.624645464 .035 0">
+      <geom name="cup1_base" type="box" pos="0 0 -.01" size=".17 .17 .01" friction=".72 .005 .0001" solref=".004 .71565" rgba=".20 .60 .70 1"/>
+      <geom name="cup1_left_wall" type="box" pos="-.16 0 .10" size=".01 .17 .10" friction=".72 .005 .0001" solref=".004 .71565" rgba=".20 .60 .70 1"/>
+      <geom name="cup1_right_wall" type="box" pos=".16 0 .10" size=".01 .17 .10" friction=".72 .005 .0001" solref=".004 .71565" rgba=".20 .60 .70 1"/>
+      <geom name="cup1_front_wall" type="box" pos="0 -.16 .10" size=".15 .01 .10" friction=".72 .005 .0001" solref=".004 .71565" rgba=".20 .60 .70 1"/>
+      <geom name="cup1_back_wall" type="box" pos="0 .16 .10" size=".15 .01 .10" friction=".72 .005 .0001" solref=".004 .71565" rgba=".20 .60 .70 1"/>
+    </body>
+
+    <!-- Separate catch funnel intercepts excess horizontal motion above the cup. -->
+    <!-- The flared left face guides a slow departure from the shelf into the cup. -->
+    <body name="catch_funnel">
+      <geom name="catch_funnel_left" type="box" pos="5.415100664 .035 .357017250" euler="0 -17.354025 0" size=".01 .17 .167630546" friction=".72 .005 .0001" solref=".004 .71565" rgba=".20 .60 .70 .35"/>
+      <geom name="catch_funnel_right" type="box" pos="5.784645464 .035 .425" size=".01 .17 .225" friction=".72 .005 .0001" solref=".004 .71565" rgba=".20 .60 .70 .35"/>
+      <geom name="catch_funnel_front" type="box" pos="5.574645464 -.125 .425" size=".21 .01 .225" friction=".72 .005 .0001" solref=".004 .71565" rgba=".20 .60 .70 .35"/>
+      <geom name="catch_funnel_back" type="box" pos="5.574645464 .195 .425" size=".21 .01 .225" friction=".72 .005 .0001" solref=".004 .71565" rgba=".20 .60 .70 .35"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start" time="0"/>
+  </keyframe>
+</mujoco>
+```
+
+```json
+{
+  "what_happens": "MuJoCo cannot load the previously posted scene because its XML is truncated inside a geom attribute, so no simulation starts.",
+  "works": false,
+  "problem": "The previous file is incomplete XML and omits the remaining scene elements and closing tags."
+}
+```

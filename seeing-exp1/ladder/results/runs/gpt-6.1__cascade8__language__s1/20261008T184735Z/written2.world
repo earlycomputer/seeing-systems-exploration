@@ -1,0 +1,329 @@
+world  passive ramp domino and lever cascade
+
+-- MuJoCo's standard gravity is 9.81 m/s².
+-- All bodies start with zero velocity.
+-- Dead contacts approximate, but do not specify, restitution 0.05.
+-- Cart guides approximate a horizontal slide, without linear damping.
+-- Springs store the energy needed to overcome the cart's contact friction.
+-- The domino-operated latch keeps the striking flap stationary initially.
+
+floor
+  size      8 m
+  friction  0.70, spinning 0, rolling 0
+
+-- Ramp endpoints lie on the deck's midplane.
+-- These heights put its lower upper surface at 0.15 m.
+-- Endpoint separation is 1.00 m, inclined at 20 degrees.
+
+ramp1 high
+  is a  point
+  at    0.939693 m behind floor, 0.11 m to the left, 0.473226 m up
+
+ramp1 low
+  is a  point
+  at    0 m along, 0.11 m to the left, 0.131206 m up
+
+ramp1
+  is a      plank from ramp1 high to ramp1 low, 0.30 m wide, 0.04 m thick
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+
+ball1
+  is a      sphere 0.10 m across, 0.20 kg
+  rolls
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  moves     freely
+  at        0.915751 m behind ramp1 low, 0.11 m to the left, 0.539005 m up
+
+-- The first domino's near face is 0.10 m beyond the deck's exit.
+-- Domino centre spacing is 0.18 m.
+
+domino1
+  is a      box 0.08 by 0.04 by 0.24 m, 0.25 kg
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  moves     freely
+  stands    on floor, 0.146840 m along, 0.11 m to the left
+
+domino2
+  is a      box 0.08 by 0.04 by 0.24 m, 0.25 kg
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  moves     freely
+  stands    on floor, 0.18 m beyond domino1, 0.11 m to the left
+
+-- Upright panel: 0.40 m tall, 0.20 m wide, 0.04 m thick.
+-- Its bottom hinge is 0.10 m above the floor.
+-- Positive rotation tips the panel forward toward the cart.
+
+flap1
+  is a           box 0.04 by 0.20 by 0.40 m, 0.30 kg
+  friction       0.70, spinning 0, rolling 0
+  bounce         dead
+  at             0.18 m beyond domino2, 0 m to the left, 0.30 m up
+  turns on       flap hinge, about y, at its bottom
+  swings         from 0° to 65°
+  spring         5 N·m/rad toward 65°
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+
+-- Lightweight rigid links connect the flap to its latch.
+-- They run outside the domino path.
+
+flap latch upper link
+  is a         box 0.04 by 0.12 by 0.004 m, 0.001 kg
+  friction     0.70, spinning 0, rolling 0
+  bounce       dead
+  at           0.506840 m along, 0.14 m to the left, 0.30 m up
+  attached to  flap1
+
+flap latch upright
+  is a         box 0.012 by 0.012 by 0.12 m, 0.001 kg
+  friction     0.70, spinning 0, rolling 0
+  bounce       dead
+  at           0.506840 m along, 0.19 m to the left, 0.24 m up
+  attached to  flap1
+
+flap latch nose
+  is a         box 0.20 by 0.012 by 0.003 m, 0.001 kg
+  friction     0.70, spinning 0, rolling 0
+  bounce       dead
+  at           0.606840 m along, 0.19 m to the left, 0.18 m up
+  attached to  flap1
+
+-- Domino2 depresses the long rear end of this release bar.
+-- The flap load acts near the bar's pivot, reducing release effort.
+
+release pivot
+  is a  point
+  at    0.749840 m along, 0.135 m to the left, 0.18 m up
+
+release bar
+  is a           box 0.29 by 0.06 by 0.003 m, 0.015 kg
+  friction       0.70, spinning 0, rolling 0
+  bounce         dead
+  at             0.604840 m along, 0.135 m to the left, 0.16 m up
+  turns on       release hinge, about y, at release pivot
+  swings         from -20° to 0°
+  spring         0.30 N·m/rad toward 30°
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+
+release upright
+  is a         box 0.003 by 0.02 by 0.02 m, 0.001 kg
+  friction     0.70, spinning 0, rolling 0
+  bounce       dead
+  at           0.708340 m along, 0.16 m to the left, 0.17 m up
+  attached to  release bar
+
+release stop
+  is a         box 0.003 by 0.06 by 0.003 m, 0.001 kg
+  friction     0.70, spinning 0, rolling 0
+  bounce       dead
+  at           0.708340 m along, 0.185 m to the left, 0.18 m up
+  attached to  release bar
+
+-- Elevated horizontal cart track.
+-- Side guides and narrow overhead guides restrain yaw and tipping.
+-- They are contact guides, not a prismatic joint.
+
+cart track
+  is a      box 0.84 by 0.22 by 0.02 m
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  at        0.951840 m along, 0 m to the left, 0.4102 m up
+
+cart left guide
+  is a      box 0.84 by 0.02 by 0.125 m
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  at        0.951840 m along, 0.1005 m to the left, 0.4727 m up
+
+cart right guide
+  is a      box 0.84 by 0.02 by 0.125 m
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  at        0.951840 m along, 0.1005 m to the right, 0.4727 m up
+
+cart left overhead guide
+  is a      box 0.84 by 0.014 by 0.012 m
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  at        0.951840 m along, 0.079 m to the left, 0.5272 m up
+
+cart right overhead guide
+  is a      box 0.84 by 0.014 by 0.012 m
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  at        0.951840 m along, 0.079 m to the right, 0.5272 m up
+
+cart1
+  is a      box 0.22 by 0.18 by 0.10 m, 0.50 kg
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  moves     freely
+  at        0.676840 m along, 0 m to the left, 0.4702 m up
+
+ramp2 high
+  is a  point
+  at    1.259227 m along, 0 m to the left, 0.473226 m up
+
+ramp2 low
+  is a  point
+  at    2.198920 m along, 0 m to the left, 0.131206 m up
+
+ramp2
+  is a      plank from ramp2 high to ramp2 low, 0.30 m wide, 0.04 m thick
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+
+-- This small fixed crossbar holds ball2 at the high end.
+-- The cart must push the ball over it before the second descent.
+-- Its crest requires approximately 0.016 m of centre rise.
+
+ball2 catch left
+  is a  point
+  at    1.321168 m along, 0.15 m to the left, 0.500637 m up
+
+ball2 catch right
+  is a  point
+  at    1.321168 m along, 0.15 m to the right, 0.500637 m up
+
+ball2 catch
+  is a      rod 0.008 m thick, from ball2 catch left to ball2 catch right
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+
+-- The cart's upper front corner first contacts ball2 after 0.45 m.
+
+ball2
+  is a      sphere 0.10 m across, 0.20 kg
+  rolls
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  moves     freely
+  at        1.283168 m along, 0 m to the left, 0.539005 m up
+
+-- The lever starts inclined, with its right end high.
+-- Its leftmost starting corner is 0.12 m beyond ramp2's exit.
+-- A negative y rotation lowers the left end and raises the right end.
+-- The initial inclination also keeps the complete sweep above the floor.
+
+lever pivot
+  is a  point
+  at    2.514216 m along, 0 m to the left, 0.374274 m up
+
+lever1
+  is a           box 0.60 by 0.10 by 0.04 m, 0.50 kg
+  friction       0.70, spinning 0, rolling 0
+  bounce         dead
+  at             lever pivot
+  turns on       lever hinge, about y, at lever pivot
+  swings         from -100° to -55°
+  damping        0.04 N·m·s/rad
+  starts turned  -55°
+
+-- Upper guide walls retain ball3 on the inclined lever initially.
+-- They constrain the launch vertically but remain open underneath.
+-- The final lever position clears the falling-ball path.
+
+launch near guide
+  is a      box 0.008 by 0.12 by 0.55 m
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  at        2.574948 m along, 0 m to the left, 0.920170 m up
+
+launch far guide
+  is a      box 0.008 by 0.12 by 0.55 m
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  at        2.684948 m along, 0 m to the left, 0.920170 m up
+
+launch left guide
+  is a      box 0.118 by 0.008 by 0.55 m
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  at        2.629948 m along, 0.056 m to the left, 0.920170 m up
+
+launch right guide
+  is a      box 0.118 by 0.008 by 0.55 m
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  at        2.629948 m along, 0.056 m to the right, 0.920170 m up
+
+ball3
+  is a      sphere 0.10 m across, 0.20 kg
+  rolls
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  moves     freely
+  at        2.628948 m along, 0 m to the left, 0.660170 m up
+
+-- A 0.168 m rim centreline diameter and 0.008 m tube give
+-- a nominal clear diameter of 0.160 m.
+-- Ring centre height is 0.35 m below ball3's initial centre.
+
+ring1
+  is a      ring 0.168 m across, 0.008 m thick
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  at        2.628948 m along, 0 m to the left, 0.310170 m up
+
+-- The pendulum hangs vertically.
+-- Pivot-to-bob-centre length is 0.50 m.
+-- Bob and rod masses sum to 0.35 kg.
+-- Its lateral offset clears the falling ball from the suspension rod.
+-- Nominal first bob contact occurs at ball-centre height 0.060170 m,
+-- 0.25 m below the ring.
+
+pendulum pivot
+  is a  point
+  at    2.703441 m along, 0 m to the left, 0.531 m up
+
+pendulum1
+  is a           sphere 0.06 m across, 0.34 kg
+  friction       0.70, spinning 0, rolling 0
+  bounce         dead
+  at             2.703441 m along, 0 m to the left, 0.031 m up
+  turns on       pendulum hinge, about y, at pendulum pivot
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+
+pendulum rod
+  is a         rod 0.005 m thick, from pendulum pivot to pendulum1's top
+  weighs       0.01 kg
+  friction     0.70, spinning 0, rolling 0
+  bounce       dead
+  attached to  pendulum1
+
+pendulum support top
+  is a  point
+  at    2.703441 m along, 0.16 m to the left, 0.531 m up
+
+pendulum support post
+  is a      post 0.02 m square, from floor to pendulum support top
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+
+pendulum support arm
+  is a      rod 0.012 m thick, from pendulum support top to pendulum pivot
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+
+-- These are simulation targets, not claims of a verified run.
+
+expect
+  ball1 touches ramp1
+  ball1 touches domino1
+  domino1 touches domino2
+  domino2 touches flap1
+  flap1 reaches its upper stop
+  flap1 touches cart1
+  cart1 touches ball2
+  ball2 touches ramp2
+  ball2 touches lever1
+  lever1 reaches its lower stop
+  lever1 touches ball3
+  ball3 drops through ring1
+  ball3 touches pendulum1

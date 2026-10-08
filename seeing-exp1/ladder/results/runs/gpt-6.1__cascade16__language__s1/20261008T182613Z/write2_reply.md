@@ -1,0 +1,482 @@
+Removed the redundant across-y clause from `ball1`’s ramp placement.
+
+```parts
+part stopped rigid pendulum
+  needs  pivot height
+
+  pivot
+    is a  point
+    at    pivot height up
+
+  bob
+    is a           sphere 3 cm across, 340 g
+    at             50 cm below pivot
+    turns on       pendulum hinge, about y, at pivot
+    swings         from -40° to 0°
+    damping        0.04 N·m·s/rad
+    starts turned  0°
+
+  rod
+    is a         rod 5 mm thick, from pivot to bob's top
+    weighs       10 g
+    attached to  bob
+
+
+part clear catch bin
+  base
+    is a  box 36 by 36 by 2 cm
+    on    floor
+
+  near wall
+    is a  box 2 by 36 by 20 cm
+    on    base, 17 cm behind base, 0 cm to the left
+
+  far wall
+    is a  box 2 by 36 by 20 cm
+    on    base, 17 cm beyond base, 0 cm to the left
+
+  left wall
+    is a  box 32 by 2 by 20 cm
+    on    base, 0 cm along, 17 cm left of base
+
+  right wall
+    is a  box 32 by 2 by 20 cm
+    on    base, 0 cm along, 17 cm right of base
+```
+
+```world
+world  gravity chain with guided carts
+
+-- MuJoCo's default gravity is 9.81 m/s².
+-- No launches, spins, or nonzero starting joint velocities are used.
+-- All moving bodies therefore start from rest.
+--
+-- Unsupported requirements:
+-- numeric restitution 0.05 and linear slide damping 0.20 N·s/m.
+-- Dead contacts and physical cart guides are approximations.
+-- The complete chain has not been simulated or verified.
+--
+-- Ramp endpoints below describe deck centre lines.
+-- The 4 cm decks have their low upper surfaces 0.15 m above floor.
+-- Each deck is 1.00 m long, 0.30 m wide, and inclined at 20°.
+
+floor
+  size      20 m
+  friction  0.70, spinning 0, rolling 0
+
+
+ramp1 high
+  is a  point
+  at    0 m along, 0 m to the left, 0.473226 m up
+
+ramp1 low
+  is a  point
+  at    0.939693 m along, 0 m to the left, 0.131206 m up
+
+ramp1
+  is a      plank from ramp1 high to ramp1 low, 30 cm wide, 4 cm thick
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    wood
+
+ball1
+  is a      sphere 10 cm across, 200 g
+  moves     freely
+  rolls
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+  rests     on ramp1, 0 cm from the top
+
+
+domino1
+  is a      box 8 by 4 by 24 cm, 250 g
+  moves     freely
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    white
+  stands    on floor, 1.079693 m along, 0 m to the left
+
+domino2 support
+  is a      box 8 by 6 by 15 cm
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+  stands    on floor, 1.259693 m along, 0 m to the left
+
+domino2
+  is a      box 8 by 4 by 24 cm, 250 g
+  moves     freely
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    white
+  rests     on domino2 support, centred over domino2 support
+
+flap1
+  is a           box 4 by 20 by 40 cm, 300 g
+  friction       0.70, spinning 0, rolling 0
+  bounce         dead
+  colour         wood
+  at             1.439693 m along, 0 m to the left, 0.40 m up
+  turns on       flap1 hinge, about y, at its bottom
+  swings         from 0° to 65°
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+
+
+cart1 track
+  is a      box 80 by 24 by 3 cm
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+  at        2.12 m along, 0 m to the left, 0.415 m up
+
+cart1 left guide
+  is a      box 80 by 2 by 12 cm
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+  at        2.12 m along, 0.102 m to the left, 0.49 m up
+
+cart1 right guide
+  is a      box 80 by 2 by 12 cm
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+  at        2.12 m along, 0.102 m to the right, 0.49 m up
+
+cart1
+  is a      box 22 by 18 by 10 cm, 500 g
+  moves     freely
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+  at        1.85 m along, 0 m to the left, 0.48 m up
+
+
+ramp2 high
+  is a  point
+  at    2.498535 m along, 0 m to the left, 0.473226 m up
+
+ramp2 low
+  is a  point
+  at    3.438228 m along, 0 m to the left, 0.131206 m up
+
+ramp2
+  is a      plank from ramp2 high to ramp2 low, 30 cm wide, 4 cm thick
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    wood
+
+ball2 starting pad
+  is a      box 8 by 12 by 2 cm
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    wood
+  at        2.458535 m along, 0 m to the left, 0.482020 m up
+
+-- The horizontal pad holds ball2 at rest until it is pushed onto ramp2.
+ball2
+  is a      sphere 10 cm across, 200 g
+  moves     freely
+  rolls
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+  rests     on ball2 starting pad, centred over ball2 starting pad
+
+
+lever1 left tip
+  is a  point
+  at    3.558228 m along, 0 m to the left, 0.12 m up
+
+lever1 right tip
+  is a  point
+  at    3.902374 m along, 0 m to the left, 0.611491 m up
+
+lever1 pivot
+  is a  point
+  at    3.730301 m along, 0 m to the left, 0.365746 m up
+
+-- The initial lever geometry is tilted upward toward its right end.
+-- The beam and attached scoop have a combined mass of 0.50 kg.
+lever1
+  is a           plank from lever1 left tip to lever1 right tip, 10 cm wide, 4 cm thick
+  weighs         499 g
+  friction       0.70, spinning 0, rolling 0
+  bounce         dead
+  colour         wood
+  turns on       lever1 hinge, about y, at lever1 pivot
+  swings         from -45° to 0°
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+
+lever1 scoop
+  is a         box 9 by 10 by 1 cm, 1 g
+  friction     0.70, spinning 0, rolling 0
+  bounce       dead
+  colour       wood
+  at           3.902374 m along, 0 m to the left, 0.636491 m up
+  attached to  lever1
+
+ball3
+  is a      sphere 10 cm across, 200 g
+  moves     freely
+  rolls
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+  rests     on lever1 scoop, centred over lever1 scoop
+
+-- These guides constrain lateral launch motion without holding the scoop.
+ball3 rear guide
+  is a      box 1 by 12 by 39 cm
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+  at        3.842374 m along, 0 m to the left, 0.905 m up
+
+ball3 front guide
+  is a      box 1 by 12 by 60 cm
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+  at        3.962374 m along, 0 m to the left, 0.80 m up
+
+ball3 left guide
+  is a      box 11 by 1 by 60 cm
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+  at        3.902374 m along, 0.06 m to the left, 0.80 m up
+
+ball3 right guide
+  is a      box 11 by 1 by 60 cm
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+  at        3.902374 m along, 0.06 m to the right, 0.80 m up
+
+-- A 17 cm rim centreline diameter with a 1 cm tube leaves 16 cm clear.
+ring1
+  is a      ring 17 cm across, 1 cm thick
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+  at        3.902374 m along, 0 m to the left, 0.341491 m up
+
+-- The bob is offset from the falling column to obtain a turning impulse.
+-- Bob and rod together weigh 0.35 kg; pivot-to-bob-centre length is 0.50 m.
+pendulum1
+  is a          stopped rigid pendulum
+  pivot height  0.545529 m
+  friction      0.70, spinning 0, rolling 0
+  bounce        dead
+  colour        grey
+  at            3.948336 m along, 0 m to the left
+
+domino3
+  is a      box 8 by 4 by 24 cm, 250 g
+  moves     freely
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    white
+  stands    on floor, 4.301934 m along, 0 m to the left
+
+door1
+  is a           box 4 by 32 by 42 cm, 450 g
+  friction       0.70, spinning 0, rolling 0
+  bounce         dead
+  colour         wood
+  at             4.481934 m along, 0 m to the left, 0.21 m up
+  turns on       door1 hinge, about y, at its bottom
+  swings         from 0° to 70°
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+
+block1
+  is a      cube 12 cm, 350 g
+  moves     freely
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    wood
+  rests     on floor, 4.841934 m along, 0 m to the left
+
+
+cart2 left guide
+  is a      box 78 by 2 by 12 cm
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+  stands    on floor, 5.611934 m along, 0.102 m to the left
+
+cart2 right guide
+  is a      box 78 by 2 by 12 cm
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+  stands    on floor, 5.611934 m along, 0.102 m to the right
+
+-- Cart2 and its attached high-end pusher have a combined mass of 0.50 kg.
+cart2
+  is a      box 22 by 18 by 10 cm, 499 g
+  moves     freely
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+  stands    on floor, 5.361934 m along, 0 m to the left
+
+cart2 pusher
+  is a         box 2 by 4 by 46 cm, 1 g
+  friction     0.70, spinning 0, rolling 0
+  bounce       dead
+  colour       grey
+  at           5.471934 m along, 0 m to the left, 0.33 m up
+  attached to  cart2
+
+
+ramp3 high
+  is a  point
+  at    5.991934 m along, 0 m to the left, 0.473226 m up
+
+ramp3 low
+  is a  point
+  at    6.931627 m along, 0 m to the left, 0.131206 m up
+
+ramp3
+  is a      plank from ramp3 high to ramp3 low, 30 cm wide, 4 cm thick
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    wood
+
+ball4 starting pad
+  is a      box 8 by 12 by 2 cm
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    wood
+  at        5.951934 m along, 0 m to the left, 0.482020 m up
+
+ball4
+  is a      sphere 10 cm across, 200 g
+  moves     freely
+  rolls
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+  rests     on ball4 starting pad, centred over ball4 starting pad
+
+
+-- Flap2's panel and attached striking extension total 0.28 kg.
+flap2
+  is a           box 4 by 18 by 38 cm, 278 g
+  friction       0.70, spinning 0, rolling 0
+  bounce         dead
+  colour         wood
+  at             7.051627 m along, 0 m to the left, 0.24 m up
+  turns on       flap2 hinge, about y, at its bottom
+  swings         from 0° to 60°
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+
+flap2 striker tip
+  is a  point
+  at    7.051627 m along, 0 m to the left, 1.02 m up
+
+flap2 striker
+  is a         rod 1 cm thick, from flap2's top to flap2 striker tip
+  weighs       2 g
+  friction     0.70, spinning 0, rolling 0
+  bounce       dead
+  colour       wood
+  attached to  flap2
+
+shelf1
+  is a      box 30 by 25 by 4 cm
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    wood
+  at        7.241627 m along, 0 m to the left, 0.78 m up
+
+ball5
+  is a      sphere 10 cm across, 200 g
+  moves     freely
+  rolls
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+  rests     on shelf1, 7.381627 m along, 0 m to the left
+
+-- The front guide arrests outward travel after the ball clears the shelf.
+ball5 front guide
+  is a      box 1 by 12 by 50 cm
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+  at        7.521627 m along, 0 m to the left, 0.65 m up
+
+ball5 rear guide
+  is a      box 1 by 12 by 38 cm
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+  at        7.401627 m along, 0 m to the left, 0.56 m up
+
+ball5 left guide
+  is a      box 11 by 1 by 50 cm
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+  at        7.461627 m along, 0.06 m to the left, 0.65 m up
+
+ball5 right guide
+  is a      box 11 by 1 by 50 cm
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+  at        7.461627 m along, 0.06 m to the right, 0.65 m up
+
+ring2
+  is a      ring 17 cm across, 1 cm thick
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+  at        7.461627 m along, 0 m to the left, 0.55 m up
+
+-- Inner footprint: 32 by 32 cm.
+-- Walls: 20 cm above the inner base, 2 cm thick.
+-- Inner base top: 15 cm above floor.
+bin1
+  is a      clear catch bin
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+  at        7.461627 m along, 0 m to the left, raised 13 cm
+
+
+-- Requested outcomes, to be checked rather than assumed.
+expect
+  ball1 touches ramp1
+  ball1 touches domino1
+  domino1 touches domino2
+  domino2 touches flap1
+  flap1 reaches its upper stop
+  flap1 touches cart1
+  cart1 touches ball2
+  ball2 touches ramp2
+  ball2 touches lever1
+  lever1 reaches its lower stop
+  ball3 drops through ring1
+  ball3 touches pendulum1
+  pendulum1 touches domino3
+  domino3 touches door1
+  door1 reaches its upper stop
+  door1 touches block1
+  block1 touches cart2
+  cart2 touches ball4
+  ball4 touches ramp3
+  ball4 touches flap2
+  flap2 reaches its upper stop
+  flap2 touches ball5
+  ball5 drops through ring2
+  ball5 comes to rest in bin1
+```

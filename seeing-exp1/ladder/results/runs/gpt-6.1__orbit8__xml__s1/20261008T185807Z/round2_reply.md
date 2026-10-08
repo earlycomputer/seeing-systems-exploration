@@ -1,0 +1,177 @@
+No. This run completes the chain through ball2:
+
+- Pendulum1 strikes ball1, which rolls down ramp1 and hits cart1.
+- Cart1 tips domino1 into flap1.
+- Flap1 strikes ball2 and reaches its nominal 65° stop.
+- Ball2 rolls down ramp2 and hits seesaw1 at 3.38 s.
+- **Seesaw1 only rocks to 0.9°**, then returns to its starting stop. Block1 settles back onto its shelf; it is not launched, does not descend through ring1, and never strikes door1.
+- Both balls finish at rest on the floor.
+
+The complete revision below targets the launcher stall by reducing its release threshold and replacing the tight block guide with a wide, flared catch guide that leaves the launching sweep clear. It has **not been rerun**. It retains the requested dimensions, so the separate incompatibility between the rigid cube and the 0.16 m clear circular opening remains unresolved.
+
+```xml
+<mujoco model="passive_chain_launcher_revision">
+  <compiler angle="degree" autolimits="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100" tolerance="1e-10"/>
+  <size njmax="3000" nconmax="800"/>
+  <visual>
+    <global azimuth="135" elevation="-20"/>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.65 0.65 0.65" specular="0.15 0.15 0.15"/>
+  </visual>
+
+  <!-- Contact damping approximates restitution 0.05. -->
+  <!-- Tangential friction is 0.68 throughout. -->
+  <!-- All bodies start from rest; there are no actuators or timed controls. -->
+  <!-- The launcher uses a passive preloaded over-centre spring. -->
+
+  <worldbody>
+    <light name="main_light" pos="1.5 -3 5" dir="0 0 -1"/>
+    <camera name="overview" pos="2 -5 2.8" xyaxes="1 0 0 0 0.4 0.916515"/>
+    <geom name="floor" type="plane" pos="0 0 0" size="6 3 0.1" condim="6" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.24 0.26 0.28 1"/>
+
+    <!-- Body orientation supplies the 55-degree release angle. -->
+    <!-- Pivot-to-lowest-point length is 0.55 m; total mass is 0.40 kg. -->
+    <body name="pendulum1" pos="-0.001991 0 1.012032" quat="0.887010833 0 0.461748613 0">
+      <joint name="pendulum1_hinge" type="hinge" axis="0 1 0" range="-110 0" damping="0.04" solreflimit="0.004 1" solimplimit="0.99 0.999 0.0001"/>
+      <geom name="pendulum1_rod" type="capsule" fromto="0 0 -0.012 0 0 -0.510" size="0.012" mass="0.10" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.75 0.55 0.20 1"/>
+      <geom name="pendulum1_tip" type="sphere" pos="0 0 -0.525" size="0.025" mass="0.30" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.90 0.68 0.25 1"/>
+    </body>
+
+    <body name="ball1" pos="0.073009 0 0.487032">
+      <freejoint name="ball1_free"/>
+      <geom name="ball1_geom" type="sphere" size="0.05" mass="0.20" condim="6" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.90 0.20 0.15 1"/>
+    </body>
+
+    <!-- Deck: 0.95 m long, 0.30 m wide, inclined 19 degrees. -->
+    <!-- The low-end upper surface is at z=0.15 m. -->
+    <body name="ramp1" pos="0.442610 0 0.285735" quat="0.986285602 0 0.165047606 0">
+      <geom name="ramp1_deck" type="box" size="0.475 0.15 0.02" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.32 0.46 0.60 1"/>
+      <geom name="ramp1_chock" type="cylinder" fromto="-0.394604 -0.15 0.02 -0.394604 0.15 0.02" size="0.004" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.65 0.70 0.75 1"/>
+      <geom name="ramp1_left_rail" type="box" pos="0 -0.17 0.055" size="0.475 0.02 0.065" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.25 0.35 0.48 1"/>
+      <geom name="ramp1_right_rail" type="box" pos="0 0.17 0.055" size="0.475 0.02 0.065" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.25 0.35 0.48 1"/>
+      <geom name="ramp1_upper_guard" type="box" pos="0.075 0 0.135" size="0.40 0.15 0.01" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.45 0.62 0.75 0.22"/>
+    </body>
+
+    <!-- Initial ramp-exit-to-cart-face gap is 0.12 m. -->
+    <!-- Domino contact occurs at slide position 0.40 m. -->
+    <!-- The extra 0.01 m separates the domino impact from the cart's joint stop. -->
+    <body name="cart1" pos="1.128243 0 0.15">
+      <joint name="cart1_slide" type="slide" axis="1 0 0" range="0 0.41" damping="0.20" solreflimit="0.004 1" solimplimit="0.99 0.999 0.0001"/>
+      <geom name="cart1_geom" type="box" size="0.11 0.09 0.05" mass="0.50" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.20 0.65 0.35 1"/>
+    </body>
+
+    <body name="cart1_track" pos="1.333243 0 0">
+      <geom name="cart1_track_left" type="box" pos="0 -0.065 0.0485" size="0.315 0.012 0.0485" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.40 0.42 0.44 1"/>
+      <geom name="cart1_track_right" type="box" pos="0 0.065 0.0485" size="0.315 0.012 0.0485" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.40 0.42 0.44 1"/>
+    </body>
+
+    <!-- The 0.04 m dimension faces the tipping direction. -->
+    <body name="domino1" pos="1.658243 0 0.12">
+      <freejoint name="domino1_free"/>
+      <geom name="domino1_geom" type="box" size="0.02 0.04 0.12" mass="0.25" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.88 0.83 0.65 1"/>
+    </body>
+
+    <!-- Domino forward floor edge to flap face is 0.18 m. -->
+    <body name="flap1" pos="1.878243 0 0.08">
+      <joint name="flap1_hinge" type="hinge" axis="0 1 0" range="0 65" damping="0.04" solreflimit="0.004 1" solimplimit="0.99 0.999 0.0001"/>
+      <geom name="flap1_geom" type="box" pos="0 0 0.20" size="0.02 0.10 0.20" mass="0.30" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.78 0.40 0.16 1"/>
+    </body>
+
+    <body name="ball2" pos="1.978252 0.1325 0.487032">
+      <freejoint name="ball2_free"/>
+      <geom name="ball2_geom" type="sphere" size="0.05" mass="0.20" condim="6" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.20 0.45 0.95 1"/>
+    </body>
+
+    <!-- The upper side strip leaves clearance for the flap's sweep. -->
+    <!-- Deck length is 0.95 m; the lower deck spans the full 0.30 m width. -->
+    <body name="ramp2" pos="2.347853 0 0.285735" quat="0.986285602 0 0.165047606 0">
+      <geom name="ramp2_upper_strip" type="box" pos="-0.265 0.1325 0" size="0.21 0.0175 0.02" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.32 0.46 0.60 1"/>
+      <geom name="ramp2_lower_deck" type="box" pos="0.21 0 0" size="0.265 0.15 0.02" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.32 0.46 0.60 1"/>
+      <geom name="ramp2_chock" type="cylinder" fromto="-0.394604 0.115 0.02 -0.394604 0.15 0.02" size="0.004" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.65 0.70 0.75 1"/>
+      <geom name="ramp2_outer_rail" type="box" pos="0 0.1975 0.075" size="0.475 0.015 0.055" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.25 0.35 0.48 1"/>
+      <geom name="ramp2_lower_inner_rail" type="box" pos="0.21 -0.17 0.055" size="0.265 0.02 0.065" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.25 0.35 0.48 1"/>
+      <geom name="ramp2_upper_guard" type="box" pos="0.075 0 0.135" size="0.40 0.15 0.01" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.45 0.62 0.75 0.22"/>
+    </body>
+
+    <body name="seesaw1_spring_anchor" pos="2.899274 0.1325 0.263806">
+      <site name="seesaw1_spring_anchor_site" type="sphere" size="0.006" rgba="0.85 0.85 0.85 1"/>
+    </body>
+
+    <!-- Initial beam inclination is 35 degrees. -->
+    <!-- Its leftmost surface is 0.10 m beyond the ramp exit. -->
+    <!-- Beam and carrying shelf together have mass 0.55 kg. -->
+    <!-- Initial spring torque is just below the loaded gravitational torque. -->
+    <!-- Its moment increases after positive motion, reducing the impact needed for release. -->
+    <body name="seesaw1" pos="3.181182 0.1325 0.366412" quat="0.953716951 0 -0.300705800 0">
+      <joint name="seesaw1_hinge" type="hinge" axis="0 -1 0" range="0 40" damping="0.04" solreflimit="0.004 1" solimplimit="0.99 0.999 0.0001"/>
+      <geom name="seesaw1_beam" type="box" size="0.325 0.05 0.02" mass="0.52" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.65 0.32 0.65 1"/>
+      <geom name="seesaw1_shelf" type="box" pos="0.345075 0 0.028670" quat="0.953716951 0 0.300705800 0" size="0.07 0.07 0.006" mass="0.03" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.72 0.42 0.72 1"/>
+      <site name="seesaw1_spring_attachment" type="sphere" pos="0.10 0 0" size="0.005" rgba="0.85 0.85 0.85 1"/>
+    </body>
+
+    <body name="block1" pos="3.447406 0.1325 0.653825">
+      <freejoint name="block1_free"/>
+      <geom name="block1_geom" type="box" size="0.06 0.06 0.06" mass="0.35" contype="3" conaffinity="3" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.95 0.70 0.15 1"/>
+    </body>
+
+    <!-- Wide flared catch guide replaces the close-fitting vertical shaft. -->
+    <!-- Inner opening is 1.40 m square at z=1.05 and 0.18 m square at z=0.43. -->
+    <!-- It leaves the initial block and its launching sweep clear. -->
+    <!-- Collision bit 2 restricts this apparatus to block1, leaving the launcher unobstructed. -->
+    <body name="block1_guide" pos="3.447406 0.1325 0.74">
+      <geom name="block1_guide_left" type="box" pos="-0.405693 0 -0.010520" quat="0.925428 0 -0.378925 0" size="0.015 0.72 0.434885" contype="2" conaffinity="2" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.55 0.60 0.65 0.20"/>
+      <geom name="block1_guide_right" type="box" pos="0.405693 0 -0.010520" quat="0.925428 0 0.378925 0" size="0.015 0.72 0.434885" contype="2" conaffinity="2" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.55 0.60 0.65 0.20"/>
+      <geom name="block1_guide_front" type="box" pos="0 -0.405693 -0.010520" quat="0.925428 0.378925 0 0" size="0.72 0.015 0.434885" contype="2" conaffinity="2" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.55 0.60 0.65 0.20"/>
+      <geom name="block1_guide_back" type="box" pos="0 0.405693 -0.010520" quat="0.925428 -0.378925 0 0" size="0.72 0.015 0.434885" contype="2" conaffinity="2" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.55 0.60 0.65 0.20"/>
+    </body>
+
+    <!-- Ring plane is 0.30 m below block1's initial center. -->
+    <!-- Capsule chords have centerline apothem 0.087 m and tube radius 0.007 m. -->
+    <!-- The inscribed clear diameter is therefore 0.16 m. -->
+    <!-- The rigid cube cannot clear this opening; its requested dimensions are preserved. -->
+    <body name="ring1" pos="3.447406 0.1325 0.353825">
+      <geom name="ring1_segment01" type="capsule" fromto="0.088704 0 0 0.081952 0.033945 0" size="0.007" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.85 0.85 0.88 1"/>
+      <geom name="ring1_segment02" type="capsule" fromto="0.081952 0.033945 0 0.062724 0.062724 0" size="0.007" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.85 0.85 0.88 1"/>
+      <geom name="ring1_segment03" type="capsule" fromto="0.062724 0.062724 0 0.033945 0.081952 0" size="0.007" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.85 0.85 0.88 1"/>
+      <geom name="ring1_segment04" type="capsule" fromto="0.033945 0.081952 0 0 0.088704 0" size="0.007" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.85 0.85 0.88 1"/>
+      <geom name="ring1_segment05" type="capsule" fromto="0 0.088704 0 -0.033945 0.081952 0" size="0.007" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.85 0.85 0.88 1"/>
+      <geom name="ring1_segment06" type="capsule" fromto="-0.033945 0.081952 0 -0.062724 0.062724 0" size="0.007" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.85 0.85 0.88 1"/>
+      <geom name="ring1_segment07" type="capsule" fromto="-0.062724 0.062724 0 -0.081952 0.033945 0" size="0.007" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.85 0.85 0.88 1"/>
+      <geom name="ring1_segment08" type="capsule" fromto="-0.081952 0.033945 0 -0.088704 0 0" size="0.007" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.85 0.85 0.88 1"/>
+      <geom name="ring1_segment09" type="capsule" fromto="-0.088704 0 0 -0.081952 -0.033945 0" size="0.007" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.85 0.85 0.88 1"/>
+      <geom name="ring1_segment10" type="capsule" fromto="-0.081952 -0.033945 0 -0.062724 -0.062724 0" size="0.007" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.85 0.85 0.88 1"/>
+      <geom name="ring1_segment11" type="capsule" fromto="-0.062724 -0.062724 0 -0.033945 -0.081952 0" size="0.007" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.85 0.85 0.88 1"/>
+      <geom name="ring1_segment12" type="capsule" fromto="-0.033945 -0.081952 0 0 -0.088704 0" size="0.007" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.85 0.85 0.88 1"/>
+      <geom name="ring1_segment13" type="capsule" fromto="0 -0.088704 0 0.033945 -0.081952 0" size="0.007" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.85 0.85 0.88 1"/>
+      <geom name="ring1_segment14" type="capsule" fromto="0.033945 -0.081952 0 0.062724 -0.062724 0" size="0.007" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.85 0.85 0.88 1"/>
+      <geom name="ring1_segment15" type="capsule" fromto="0.062724 -0.062724 0 0.081952 -0.033945 0" size="0.007" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.85 0.85 0.88 1"/>
+      <geom name="ring1_segment16" type="capsule" fromto="0.081952 -0.033945 0 0.088704 0 0" size="0.007" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.85 0.85 0.88 1"/>
+    </body>
+
+    <!-- Door upper surface is 0.25 m below the ring plane. -->
+    <body name="door1" pos="3.237406 0.1325 0.083825">
+      <joint name="door1_hinge" type="hinge" axis="0 1 0" range="0 8" damping="0.04" stiffness="1.50" springref="-40" solreflimit="0.004 1" solimplimit="0.99 0.999 0.0001"/>
+      <geom name="door1_geom" type="box" pos="0.21 0 0" size="0.21 0.16 0.02" mass="0.45" friction="0.68 0.005 0.001" solref="0.006 0.6901" solimp="0.95 0.99 0.001" rgba="0.40 0.65 0.70 1"/>
+    </body>
+  </worldbody>
+
+  <tendon>
+    <spatial name="seesaw1_launch_spring" stiffness="520" springlength="0.30" damping="0" width="0.004" rgba="0.80 0.80 0.85 1">
+      <site site="seesaw1_spring_anchor_site"/>
+      <site site="seesaw1_spring_attachment"/>
+    </spatial>
+  </tendon>
+
+  <keyframe>
+    <key name="start"/>
+  </keyframe>
+</mujoco>
+```
+
+```json
+{
+  "what_happens": "The pendulum drives ball1 into cart1, which tips domino1 into flap1. Flap1 strikes ball2 and reaches its 65-degree stop. Ball2 rolls down ramp2 and hits seesaw1 at 3.38 seconds, but the seesaw rocks only to 0.9 degrees and returns to its starting stop. Block1 settles back onto its shelf, never descends through ring1, and never strikes door1; both balls finish at rest on the floor.",
+  "works": false,
+  "problem": "Seesaw1 fails to reach its 40-degree stop or launch block1, and the specified rigid cube is also too large for the 0.16 m clear circular opening."
+}
+```

@@ -1,0 +1,233 @@
+<mujoco model="passive_chain_reaction">
+  <compiler angle="degree" autolimits="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100" cone="elliptic" o_solref="0.006 0.6901" o_solimp="0.95 0.99 0.001" o_friction="0.70 0.005 0.0001">
+    <flag override="enable"/>
+  </option>
+  <size njmax="4000" nconmax="1000"/>
+  <visual>
+    <global azimuth="135" elevation="-25"/>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.65 0.65 0.65" specular="0.2 0.2 0.2"/>
+  </visual>
+  <statistic center="4 0 0.55" extent="5"/>
+
+  <!-- Contact restitution is approximate, not a constant MuJoCo material property. -->
+  <!-- All generalized velocities default to zero in the start keyframe. -->
+  <!-- Flat high-end decks retain ball2 and ball4 until their carts arrive. -->
+  <!-- Preloaded spatial springs supply energy only after impact displaces their mechanisms. -->
+  <!-- Auxiliary ball guides use collision masks to model clearance around striking mechanisms. -->
+
+  <worldbody>
+    <light name="main_light" pos="3 -4 7" dir="0 0 -1" directional="true"/>
+    <camera name="overview" pos="4 -8 5" xyaxes="1 0 0 0 0.49 0.872"/>
+    <geom name="floor" type="plane" size="12 4 0.1" rgba="0.23 0.26 0.29 1"/>
+
+    <site name="lever_spring_anchor" pos="3.344186 0 0.70" size="0.008" rgba="0.8 0.3 0.2 1"/>
+    <site name="pendulum_spring_anchor" pos="4.039186 0 0.833830" size="0.008" rgba="0.8 0.3 0.2 1"/>
+    <site name="door_spring_anchor" pos="4.594186 0 -0.28" size="0.008" rgba="0.8 0.3 0.2 1"/>
+
+    <body name="ramp1" pos="0 0 0.492020">
+      <geom name="ramp1_surface" type="box" pos="0.463006 0 -0.189804" quat="0.984807753 0 0.173648178 0" size="0.50 0.15 0.02" rgba="0.55 0.65 0.75 1"/>
+      <geom name="ramp1_rail_left" type="box" pos="0.483527 0.145 -0.133422" quat="0.984807753 0 0.173648178 0" size="0.50 0.005 0.06" rgba="0.35 0.45 0.55 1"/>
+      <geom name="ramp1_rail_right" type="box" pos="0.483527 -0.145 -0.133422" quat="0.984807753 0 0.173648178 0" size="0.50 0.005 0.06" rgba="0.35 0.45 0.55 1"/>
+    </body>
+
+    <body name="ball1" pos="0.064086 0 0.521904">
+      <freejoint name="ball1_free"/>
+      <geom name="ball1_sphere" type="sphere" size="0.05" mass="0.20" rgba="0.95 0.24 0.12 1"/>
+    </body>
+
+    <body name="domino1" pos="1.059693 0 0.12">
+      <freejoint name="domino1_free"/>
+      <geom name="domino1_box" type="box" size="0.02 0.04 0.12" mass="0.25" rgba="0.92 0.78 0.24 1"/>
+    </body>
+
+    <body name="domino2" pos="1.239693 0 0.12">
+      <freejoint name="domino2_free"/>
+      <geom name="domino2_box" type="box" size="0.02 0.04 0.12" mass="0.25" rgba="0.92 0.78 0.24 1"/>
+    </body>
+
+    <body name="flap1" pos="1.419693 0 0.08">
+      <joint name="flap1_hinge" type="hinge" axis="0 1 0" range="0 65" damping="0.04" solreflimit="0.004 1"/>
+      <geom name="flap1_panel" type="box" pos="0 0 0.20" size="0.02 0.10 0.20" mass="0.30" rgba="0.30 0.70 0.48 1"/>
+    </body>
+
+    <body name="cart1" pos="1.669693 0 0.49">
+      <joint name="cart1_slide" type="slide" axis="1 0 0" range="0 0.85" damping="0.20" solreflimit="0.004 1"/>
+      <geom name="cart1_box" type="box" size="0.11 0.09 0.05" mass="0.50" rgba="0.45 0.32 0.75 1"/>
+    </body>
+
+    <body name="ramp2" pos="2.334493 0 0.492020">
+      <geom name="ramp2_surface" type="box" pos="0.463006 0 -0.189804" quat="0.984807753 0 0.173648178 0" size="0.50 0.15 0.02" rgba="0.55 0.65 0.75 1"/>
+      <geom name="ramp2_rail_left" type="box" pos="0.483527 0.145 -0.133422" quat="0.984807753 0 0.173648178 0" size="0.50 0.005 0.06" rgba="0.35 0.45 0.55 1"/>
+      <geom name="ramp2_rail_right" type="box" pos="0.483527 -0.145 -0.133422" quat="0.984807753 0 0.173648178 0" size="0.50 0.005 0.06" rgba="0.35 0.45 0.55 1"/>
+      <geom name="ramp2_release_deck" type="box" pos="-0.06 0 -0.01" size="0.06 0.15 0.01" rgba="0.55 0.65 0.75 1"/>
+    </body>
+
+    <body name="ball2" pos="2.279493 0 0.542020">
+      <freejoint name="ball2_free"/>
+      <geom name="ball2_sphere" type="sphere" size="0.05" mass="0.20" rgba="0.95 0.24 0.12 1"/>
+    </body>
+
+    <!-- The hanging strike tab transmits the low ramp impact to the elevated lever. -->
+    <body name="lever1" pos="3.694186 0 0.70">
+      <joint name="lever1_hinge" type="hinge" axis="0 -1 0" range="0 45" damping="0.04" solreflimit="0.004 1"/>
+      <geom name="lever1_panel" type="box" size="0.30 0.05 0.02" mass="0.48" rgba="0.25 0.65 0.65 1"/>
+      <geom name="lever1_strike_tab" type="box" pos="-0.285 0 -0.29" size="0.015 0.045 0.29" mass="0.02" rgba="0.25 0.65 0.65 1"/>
+      <site name="lever1_spring_attachment" pos="0.28 0 0" size="0.008" rgba="0.8 0.3 0.2 1"/>
+    </body>
+
+    <body name="ball3" pos="3.979186 0 0.77">
+      <freejoint name="ball3_free"/>
+      <geom name="ball3_sphere" type="sphere" size="0.05" mass="0.20" contype="2" conaffinity="1" rgba="0.95 0.24 0.12 1"/>
+    </body>
+
+    <!-- Ball-only launch guides leave the horizontal ring aperture unobstructed. -->
+    <body name="ball3_guide" pos="3.979186 0 1.04">
+      <geom name="ball3_guide_xminus" type="box" pos="-0.061 0 0" size="0.008 0.075 0.56" contype="4" conaffinity="2" rgba="0.55 0.65 0.75 0.25"/>
+      <geom name="ball3_guide_xplus" type="box" pos="0.061 0 0" size="0.008 0.075 0.56" contype="4" conaffinity="2" rgba="0.55 0.65 0.75 0.25"/>
+      <geom name="ball3_guide_yminus" type="box" pos="0 -0.061 0" size="0.053 0.008 0.56" contype="4" conaffinity="2" rgba="0.55 0.65 0.75 0.25"/>
+      <geom name="ball3_guide_yplus" type="box" pos="0 0.061 0" size="0.053 0.008 0.56" contype="4" conaffinity="2" rgba="0.55 0.65 0.75 0.25"/>
+    </body>
+
+    <!-- Sixteen capsules give a minimum clear diameter of approximately 0.16 m. -->
+    <body name="ring1" pos="3.979186 0 0.42">
+      <geom name="ring1_segment01" type="capsule" fromto="0.091763 0 0 0.084778 0.035115 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring1_segment02" type="capsule" fromto="0.084778 0.035115 0 0.064888 0.064888 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring1_segment03" type="capsule" fromto="0.064888 0.064888 0 0.035115 0.084778 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring1_segment04" type="capsule" fromto="0.035115 0.084778 0 0 0.091763 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring1_segment05" type="capsule" fromto="0 0.091763 0 -0.035115 0.084778 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring1_segment06" type="capsule" fromto="-0.035115 0.084778 0 -0.064888 0.064888 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring1_segment07" type="capsule" fromto="-0.064888 0.064888 0 -0.084778 0.035115 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring1_segment08" type="capsule" fromto="-0.084778 0.035115 0 -0.091763 0 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring1_segment09" type="capsule" fromto="-0.091763 0 0 -0.084778 -0.035115 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring1_segment10" type="capsule" fromto="-0.084778 -0.035115 0 -0.064888 -0.064888 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring1_segment11" type="capsule" fromto="-0.064888 -0.064888 0 -0.035115 -0.084778 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring1_segment12" type="capsule" fromto="-0.035115 -0.084778 0 0 -0.091763 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring1_segment13" type="capsule" fromto="0 -0.091763 0 0.035115 -0.084778 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring1_segment14" type="capsule" fromto="0.035115 -0.084778 0 0.064888 -0.064888 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring1_segment15" type="capsule" fromto="0.064888 -0.064888 0 0.084778 -0.035115 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring1_segment16" type="capsule" fromto="0.084778 -0.035115 0 0.091763 0 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+    </body>
+
+    <!-- The rigid pendulum rod is routed sideways to clear the falling-ball line. -->
+    <body name="pendulum1" pos="4.039186 0 0.583830">
+      <joint name="pendulum1_hinge" type="hinge" axis="0 -1 0" range="0 40" damping="0.04" solreflimit="0.004 1"/>
+      <geom name="pendulum1_rod" type="capsule" fromto="0 0.12 -0.03 0 0.12 -0.46" size="0.012" mass="0.04" rgba="0.55 0.58 0.62 1"/>
+      <geom name="pendulum1_elbow" type="capsule" fromto="0 0.12 -0.46 0 0 -0.50" size="0.012" mass="0.01" rgba="0.55 0.58 0.62 1"/>
+      <geom name="pendulum1_bob" type="sphere" pos="0 0 -0.50" size="0.055" mass="0.30" rgba="0.25 0.35 0.72 1"/>
+      <site name="pendulum1_spring_attachment" pos="0 0 -0.50" size="0.008" rgba="0.8 0.3 0.2 1"/>
+    </body>
+
+    <body name="domino3" pos="4.414186 0 0.12">
+      <freejoint name="domino3_free"/>
+      <geom name="domino3_box" type="box" size="0.02 0.04 0.12" mass="0.25" rgba="0.92 0.78 0.24 1"/>
+    </body>
+
+    <!-- A lightweight strike shoe reaches the floor-level block before the 70-degree stop. -->
+    <body name="door1" pos="4.594186 0 0.02">
+      <joint name="door1_hinge" type="hinge" axis="0 1 0" range="0 70" damping="0.04" frictionloss="0.10" solreflimit="0.004 1"/>
+      <geom name="door1_panel" type="box" pos="0 0 0.21" size="0.02 0.16 0.21" mass="0.45" rgba="0.35 0.70 0.42 1"/>
+      <geom name="door1_strike_shoe" type="capsule" fromto="0 0 0.40 0.08 0 0.40" size="0.01" mass="0" rgba="0.35 0.70 0.42 1"/>
+      <site name="door1_spring_attachment" pos="0 0 0.38" size="0.008" rgba="0.8 0.3 0.2 1"/>
+    </body>
+
+    <body name="block1" pos="5.044186 0 0.06">
+      <freejoint name="block1_free"/>
+      <geom name="block1_cube" type="box" size="0.06 0.06 0.06" mass="0.35" rgba="0.75 0.43 0.22 1"/>
+    </body>
+
+    <!-- The cart's side-mounted push arm clears the high-end release deck. -->
+    <body name="cart2" pos="5.564186 0 0.055">
+      <joint name="cart2_slide" type="slide" axis="1 0 0" range="0 0.85" damping="0.20" solreflimit="0.004 1"/>
+      <geom name="cart2_box" type="box" size="0.11 0.09 0.05" mass="0.50" rgba="0.45 0.32 0.75 1"/>
+      <geom name="cart2_side_mast" type="box" pos="0.09 0.20 0.22" size="0.015 0.015 0.24" mass="0" rgba="0.45 0.32 0.75 1"/>
+      <geom name="cart2_push_bar" type="box" pos="0.09 0.10 0.487020" size="0.02 0.115 0.02" mass="0" rgba="0.45 0.32 0.75 1"/>
+    </body>
+
+    <body name="ramp3" pos="6.199186 0 0.492020">
+      <geom name="ramp3_surface" type="box" pos="0.463006 0 -0.189804" quat="0.984807753 0 0.173648178 0" size="0.50 0.15 0.02" rgba="0.55 0.65 0.75 1"/>
+      <geom name="ramp3_rail_left" type="box" pos="0.483527 0.145 -0.133422" quat="0.984807753 0 0.173648178 0" size="0.50 0.005 0.06" rgba="0.35 0.45 0.55 1"/>
+      <geom name="ramp3_rail_right" type="box" pos="0.483527 -0.145 -0.133422" quat="0.984807753 0 0.173648178 0" size="0.50 0.005 0.06" rgba="0.35 0.45 0.55 1"/>
+      <geom name="ramp3_release_deck" type="box" pos="-0.06 0 -0.01" size="0.06 0.15 0.01" rgba="0.55 0.65 0.75 1"/>
+    </body>
+
+    <body name="ball4" pos="6.144186 0 0.542020">
+      <freejoint name="ball4_free"/>
+      <geom name="ball4_sphere" type="sphere" size="0.05" mass="0.20" rgba="0.95 0.24 0.12 1"/>
+    </body>
+
+    <!-- A side-routed extension transfers the low flap strike to the elevated shelf. -->
+    <body name="flap2" pos="7.258879 0 0.04">
+      <joint name="flap2_hinge" type="hinge" axis="0 1 0" range="0 60" damping="0.04" solreflimit="0.004 1"/>
+      <geom name="flap2_panel" type="box" pos="0 0 0.19" size="0.02 0.09 0.19" mass="0.28" rgba="0.30 0.70 0.48 1"/>
+      <geom name="flap2_arm_root" type="capsule" fromto="0 0 0.35 0 0.17 0.35" size="0.008" mass="0" rgba="0.30 0.70 0.48 1"/>
+      <geom name="flap2_side_arm" type="capsule" fromto="0 0.17 0.35 0 0.17 1.01" size="0.008" mass="0" rgba="0.30 0.70 0.48 1"/>
+      <geom name="flap2_shelf_striker" type="capsule" fromto="0 -0.07 1.01 0 0.17 1.01" size="0.006" mass="0" rgba="0.30 0.70 0.48 1"/>
+    </body>
+
+    <body name="shelf1" pos="7.738879 0 0.78">
+      <geom name="shelf1_top" type="box" size="0.15 0.125 0.02" rgba="0.55 0.45 0.35 1"/>
+    </body>
+
+    <body name="ball5" pos="7.868879 0 0.85">
+      <freejoint name="ball5_free"/>
+      <geom name="ball5_sphere" type="sphere" size="0.05" mass="0.20" contype="8" conaffinity="1" rgba="0.95 0.24 0.12 1"/>
+    </body>
+
+    <!-- An open-sided receiving guide removes lateral motion above ring2. -->
+    <body name="ball5_guide" pos="7.958879 0 0">
+      <geom name="ball5_guide_right" type="box" pos="0.067 0 0.825" size="0.008 0.075 0.225" contype="16" conaffinity="8" rgba="0.55 0.65 0.75 0.25"/>
+      <geom name="ball5_guide_left" type="box" pos="-0.067 0 0.66" size="0.008 0.075 0.06" contype="16" conaffinity="8" rgba="0.55 0.65 0.75 0.25"/>
+      <geom name="ball5_guide_front" type="box" pos="0 -0.067 0.825" size="0.059 0.008 0.225" contype="16" conaffinity="8" rgba="0.55 0.65 0.75 0.25"/>
+      <geom name="ball5_guide_back" type="box" pos="0 0.067 0.825" size="0.059 0.008 0.225" contype="16" conaffinity="8" rgba="0.55 0.65 0.75 0.25"/>
+    </body>
+
+    <body name="ring2" pos="7.958879 0 0.55">
+      <geom name="ring2_segment01" type="capsule" fromto="0.091763 0 0 0.084778 0.035115 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring2_segment02" type="capsule" fromto="0.084778 0.035115 0 0.064888 0.064888 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring2_segment03" type="capsule" fromto="0.064888 0.064888 0 0.035115 0.084778 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring2_segment04" type="capsule" fromto="0.035115 0.084778 0 0 0.091763 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring2_segment05" type="capsule" fromto="0 0.091763 0 -0.035115 0.084778 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring2_segment06" type="capsule" fromto="-0.035115 0.084778 0 -0.064888 0.064888 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring2_segment07" type="capsule" fromto="-0.064888 0.064888 0 -0.084778 0.035115 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring2_segment08" type="capsule" fromto="-0.084778 0.035115 0 -0.091763 0 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring2_segment09" type="capsule" fromto="-0.091763 0 0 -0.084778 -0.035115 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring2_segment10" type="capsule" fromto="-0.084778 -0.035115 0 -0.064888 -0.064888 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring2_segment11" type="capsule" fromto="-0.064888 -0.064888 0 -0.035115 -0.084778 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring2_segment12" type="capsule" fromto="-0.035115 -0.084778 0 0 -0.091763 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring2_segment13" type="capsule" fromto="0 -0.091763 0 0.035115 -0.084778 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring2_segment14" type="capsule" fromto="0.035115 -0.084778 0 0.064888 -0.064888 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring2_segment15" type="capsule" fromto="0.064888 -0.064888 0 0.084778 -0.035115 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+      <geom name="ring2_segment16" type="capsule" fromto="0.084778 -0.035115 0 0.091763 0 0" size="0.01" rgba="0.95 0.65 0.12 1"/>
+    </body>
+
+    <!-- Raised bin floor makes first ball-floor contact occur at center height 0.20 m. -->
+    <body name="bin1" pos="7.958879 0 0.15">
+      <geom name="bin1_pedestal" type="box" pos="0 0 -0.08" size="0.18 0.18 0.07" rgba="0.30 0.34 0.38 1"/>
+      <geom name="bin1_bottom" type="box" pos="0 0 -0.01" size="0.18 0.18 0.01" rgba="0.30 0.55 0.72 1"/>
+      <geom name="bin1_wall_xminus" type="box" pos="-0.17 0 0.10" size="0.01 0.18 0.10" rgba="0.30 0.55 0.72 1"/>
+      <geom name="bin1_wall_xplus" type="box" pos="0.17 0 0.10" size="0.01 0.18 0.10" rgba="0.30 0.55 0.72 1"/>
+      <geom name="bin1_wall_yminus" type="box" pos="0 -0.17 0.10" size="0.16 0.01 0.10" rgba="0.30 0.55 0.72 1"/>
+      <geom name="bin1_wall_yplus" type="box" pos="0 0.17 0.10" size="0.16 0.01 0.10" rgba="0.30 0.55 0.72 1"/>
+    </body>
+  </worldbody>
+
+  <tendon>
+    <spatial name="lever1_assist" stiffness="50" damping="0.02" springlength="0.25" width="0.003" rgba="0.8 0.3 0.2 0.7">
+      <site site="lever_spring_anchor"/>
+      <site site="lever1_spring_attachment"/>
+    </spatial>
+    <spatial name="pendulum1_assist" stiffness="40" damping="0.02" springlength="0.25" width="0.003" rgba="0.8 0.3 0.2 0.7">
+      <site site="pendulum_spring_anchor"/>
+      <site site="pendulum1_spring_attachment"/>
+    </spatial>
+    <spatial name="door1_assist" stiffness="220" damping="0.02" springlength="0.20" width="0.003" rgba="0.8 0.3 0.2 0.7">
+      <site site="door_spring_anchor"/>
+      <site site="door1_spring_attachment"/>
+    </spatial>
+  </tendon>
+
+  <keyframe>
+    <key name="start"/>
+  </keyframe>
+</mujoco>

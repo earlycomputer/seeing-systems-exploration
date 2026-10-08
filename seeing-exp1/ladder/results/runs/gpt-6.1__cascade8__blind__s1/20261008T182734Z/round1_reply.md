@@ -1,0 +1,146 @@
+Ball1 will roll down ramp1, while ball2 initially remains on its level shelf. The intended domino–flap–cart cascade may follow, but the file alone does not establish that every impact succeeds.
+
+The original lever has a specific geometric problem: it starts at 50° and permits another 45°, ending at 95°. During the last 5°, its **left end rises and its right end falls**, contrary to the intended motion into a lower stop. Its balanced beam also has no stored-energy assistance to ensure that a dissipative impact completes the stroke. I therefore would not mark the original scene as working.
+
+The correction below uses a 45°-to-90° lever stroke, a raised launch tray, and a passive preloaded hinge spring. Ball3’s initial load holds the lever against its starting stop; after the impact releases that load, the spring assists completion of the stroke. Ball2’s shelf is also shortened in the direction it must travel before entering ramp2. These are file-level corrections, not a simulation-verified result.
+
+```xml
+<mujoco model="passive_chain_reaction_corrected">
+  <compiler angle="degree" autolimits="true" inertiafromgeom="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100" tolerance="1e-9"/>
+  <size njmax="2000" nconmax="500"/>
+  <statistic center="2 0 0.6" extent="4.5"/>
+
+  <!-- Contact damping approximates restitution 0.05; MuJoCo has no exact restitution coefficient. -->
+  <!-- Friction entries are sliding, torsional, and rolling. All initial velocities are zero. -->
+
+  <worldbody>
+    <light name="main_light" pos="1 -3 6" dir="0 0 -1" directional="true"/>
+    <camera name="overview" pos="5 -7 4" xyaxes="0.919 0.394 0 -0.185 0.432 0.883"/>
+    <geom name="floor" type="plane" size="8 4 0.1" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.24 0.27 0.30 1"/>
+
+    <!-- Each inclined surface is 1.00 m long, 0.30 m wide, and inclined at 20 degrees. -->
+    <!-- Its high surface endpoint is at z = 0.49202014 and its low endpoint at z = 0.15. -->
+    <body name="ramp1" pos="0 0 0.49202014">
+      <geom name="ramp1_surface" type="box" pos="0.46300591 0 -0.18980392" euler="0 20 0" size="0.50 0.15 0.02" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.48 0.55 0.64 1"/>
+      <geom name="ramp1_left_rail" type="box" pos="0.47668671 0.155 -0.15221622" euler="0 20 0" size="0.50 0.008 0.035" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.32 0.39 0.48 1"/>
+      <geom name="ramp1_right_rail" type="box" pos="0.47668671 -0.155 -0.15221622" euler="0 20 0" size="0.50 0.008 0.035" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.32 0.39 0.48 1"/>
+    </body>
+
+    <body name="ball1" pos="0.09227642 0 0.51164316">
+      <freejoint name="ball1_free"/>
+      <geom name="ball1_sphere" type="sphere" size="0.05" mass="0.20" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.92 0.22 0.16 1"/>
+    </body>
+
+    <!-- Domino1's near face is 0.10 m beyond ramp1's low surface endpoint. -->
+    <body name="domino1" pos="1.07969262 0 0.12">
+      <freejoint name="domino1_free"/>
+      <geom name="domino1_block" type="box" size="0.04 0.02 0.12" mass="0.25" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.95 0.72 0.19 1"/>
+    </body>
+
+    <body name="domino2" pos="1.25969262 0 0.12">
+      <freejoint name="domino2_free"/>
+      <geom name="domino2_block" type="box" size="0.04 0.02 0.12" mass="0.25" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.95 0.61 0.15 1"/>
+    </body>
+
+    <!-- Flap near face is 0.18 m beyond domino2's initial center. -->
+    <!-- Bottom hinging allows gravity to assist its clockwise swing after the domino impact. -->
+    <body name="flap1" pos="1.45969262 0 0.15">
+      <joint name="flap1_hinge" type="hinge" axis="0 1 0" range="0 65" damping="0.04" armature="0" solreflimit="0.004 1" solimplimit="0.99 0.999 0.0001"/>
+      <geom name="flap1_panel" type="box" pos="0 0 0.20" size="0.02 0.10 0.20" mass="0.30" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.30 0.70 0.43 1"/>
+    </body>
+
+    <!-- Ball2's near surface is reached after 0.45 m of cart translation. -->
+    <body name="cart1" pos="1.59969262 0 0.555">
+      <joint name="cart1_slide" type="slide" axis="1 0 0" range="0 0.68" damping="0.20" armature="0" solreflimit="0.004 1" solimplimit="0.99 0.999 0.0001"/>
+      <geom name="cart1_chassis" type="box" size="0.11 0.09 0.05" mass="0.50" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.23 0.56 0.86 1"/>
+    </body>
+
+    <!-- Ball2 rests 0.005 m behind the shelf edge, requiring only a short initiating push. -->
+    <body name="ramp2" pos="2.21469262 0 0.49202014">
+      <geom name="ramp2_surface" type="box" pos="0.46300591 0 -0.18980392" euler="0 20 0" size="0.50 0.15 0.02" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.48 0.55 0.64 1"/>
+      <geom name="ramp2_start_shelf" type="box" pos="-0.10 0 -0.01" size="0.10 0.15 0.01" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.48 0.55 0.64 1"/>
+      <geom name="ramp2_left_rail" type="box" pos="0.47668671 0.155 -0.15221622" euler="0 20 0" size="0.50 0.008 0.035" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.32 0.39 0.48 1"/>
+      <geom name="ramp2_right_rail" type="box" pos="0.47668671 -0.155 -0.15221622" euler="0 20 0" size="0.50 0.008 0.035" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.32 0.39 0.48 1"/>
+    </body>
+
+    <body name="ball2" pos="2.20969262 0 0.54202014">
+      <freejoint name="ball2_free"/>
+      <geom name="ball2_sphere" type="sphere" size="0.05" mass="0.20" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.93 0.38 0.13 1"/>
+    </body>
+
+    <!-- Initial beam inclination is 45 degrees; the hinge allows another 45 degrees to vertical. -->
+    <!-- The left leading corner is 0.12 m beyond ramp2's low surface endpoint. -->
+    <!-- Beam, launch post, and tray masses sum to 0.50 kg. -->
+    <!-- Spring preload is initially smaller than the opposing moment of the carried ball and fixture. -->
+    <body name="lever1" pos="3.50065941 0 0.33713203" euler="0 -45 0">
+      <joint name="lever1_hinge" type="hinge" axis="0 -1 0" range="0 45" damping="0.04" stiffness="0.22" springref="90" armature="0" solreflimit="0.004 1" solimplimit="0.99 0.999 0.0001"/>
+      <geom name="lever1_beam" type="box" size="0.30 0.05 0.02" mass="0.46" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.61 0.39 0.77 1"/>
+      <geom name="lever1_launch_post" type="box" pos="0.33021887 0 0.06151829" euler="0 45 0" size="0.008 0.008 0.060" mass="0.025" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.51 0.31 0.67 1"/>
+      <geom name="lever1_launch_tray" type="box" pos="0.37476659 0 0.10606602" euler="0 45 0" size="0.060 0.050 0.006" mass="0.015" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.70 0.48 0.84 1"/>
+    </body>
+
+    <body name="ball3" pos="3.69065941 0 0.73313203">
+      <freejoint name="ball3_free"/>
+      <geom name="ball3_sphere" type="sphere" size="0.05" mass="0.20" contype="1" conaffinity="3" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.96 0.82 0.22 1"/>
+    </body>
+
+    <!-- Only ball3 collides with these passive vertical guide walls. -->
+    <!-- The guide has 0.104 m internal width and ends 0.10 m above the ring. -->
+    <body name="ball3_guide" pos="3.69065941 0 1.38313203">
+      <geom name="ball3_guide_left" type="box" pos="-0.060 0 0" size="0.008 0.075 0.900" contype="2" conaffinity="0" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.65 0.79 0.88 0.20"/>
+      <geom name="ball3_guide_right" type="box" pos="0.060 0 0" size="0.008 0.075 0.900" contype="2" conaffinity="0" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.65 0.79 0.88 0.20"/>
+      <geom name="ball3_guide_front" type="box" pos="0 -0.060 0" size="0.052 0.008 0.900" contype="2" conaffinity="0" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.65 0.79 0.88 0.20"/>
+      <geom name="ball3_guide_back" type="box" pos="0 0.060 0" size="0.052 0.008 0.900" contype="2" conaffinity="0" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.65 0.79 0.88 0.20"/>
+    </body>
+
+    <!-- Ring center is 0.35 m below ball3's initial center. -->
+    <!-- Capsule segments form a horizontal ring with a 0.16 m clear inscribed diameter. -->
+    <body name="ring1" pos="3.69065941 0 0.38313203">
+      <geom name="ring1_segment01" type="capsule" fromto="0.086666 0 0 0.080069 0.033167 0" size="0.005" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.88 0.88 0.92 1"/>
+      <geom name="ring1_segment02" type="capsule" fromto="0.080069 0.033167 0 0.061282 0.061282 0" size="0.005" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.88 0.88 0.92 1"/>
+      <geom name="ring1_segment03" type="capsule" fromto="0.061282 0.061282 0 0.033167 0.080069 0" size="0.005" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.88 0.88 0.92 1"/>
+      <geom name="ring1_segment04" type="capsule" fromto="0.033167 0.080069 0 0 0.086666 0" size="0.005" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.88 0.88 0.92 1"/>
+      <geom name="ring1_segment05" type="capsule" fromto="0 0.086666 0 -0.033167 0.080069 0" size="0.005" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.88 0.88 0.92 1"/>
+      <geom name="ring1_segment06" type="capsule" fromto="-0.033167 0.080069 0 -0.061282 0.061282 0" size="0.005" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.88 0.88 0.92 1"/>
+      <geom name="ring1_segment07" type="capsule" fromto="-0.061282 0.061282 0 -0.080069 0.033167 0" size="0.005" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.88 0.88 0.92 1"/>
+      <geom name="ring1_segment08" type="capsule" fromto="-0.080069 0.033167 0 -0.086666 0 0" size="0.005" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.88 0.88 0.92 1"/>
+      <geom name="ring1_segment09" type="capsule" fromto="-0.086666 0 0 -0.080069 -0.033167 0" size="0.005" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.88 0.88 0.92 1"/>
+      <geom name="ring1_segment10" type="capsule" fromto="-0.080069 -0.033167 0 -0.061282 -0.061282 0" size="0.005" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.88 0.88 0.92 1"/>
+      <geom name="ring1_segment11" type="capsule" fromto="-0.061282 -0.061282 0 -0.033167 -0.080069 0" size="0.005" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.88 0.88 0.92 1"/>
+      <geom name="ring1_segment12" type="capsule" fromto="-0.033167 -0.080069 0 0 -0.086666 0" size="0.005" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.88 0.88 0.92 1"/>
+      <geom name="ring1_segment13" type="capsule" fromto="0 -0.086666 0 0.033167 -0.080069 0" size="0.005" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.88 0.88 0.92 1"/>
+      <geom name="ring1_segment14" type="capsule" fromto="0.033167 -0.080069 0 0.061282 -0.061282 0" size="0.005" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.88 0.88 0.92 1"/>
+      <geom name="ring1_segment15" type="capsule" fromto="0.061282 -0.061282 0 0.080069 -0.033167 0" size="0.005" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.88 0.88 0.92 1"/>
+      <geom name="ring1_segment16" type="capsule" fromto="0.080069 -0.033167 0 0.086666 0 0" size="0.005" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.88 0.88 0.92 1"/>
+    </body>
+
+    <!-- The vertical rod is 0.06 m off the fall axis, allowing ball3 to reach the bob without hitting the rod. -->
+    <!-- With radii 0.05 and 0.025 m, nominal contact occurs after a further 0.25 m center-height fall. -->
+    <body name="pendulum1" pos="3.75065941 0 0.58813203">
+      <joint name="pendulum1_hinge" type="hinge" axis="0 1 0" damping="0.04" armature="0"/>
+      <geom name="pendulum1_rod" type="capsule" fromto="0 0 0 0 0 -0.50" size="0.005" mass="0.03" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.68 0.72 0.77 1"/>
+      <geom name="pendulum1_bob" type="sphere" pos="0 0 -0.50" size="0.025" mass="0.32" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.6901" rgba="0.21 0.73 0.72 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start" time="0"/>
+  </keyframe>
+</mujoco>
+```
+
+```json
+{
+  "what_happens": "In the original file, ball1 rolls down ramp1 while ball2 waits on its shelf. The intended collisions may propagate through the dominoes, flap, and cart. If they reach lever1, its impact-driven stroke is not assured to reach the stop, and its last five degrees of permitted travel raise the left end and lower the right end. Completion of the requested chain and final ball rest are not established by an observed run.",
+  "works": false,
+  "problem": "The original lever travels past vertical, reversing the intended end motion near its stop, and lacks passive assistance ensuring completion of its impact-driven stroke."
+}
+```
+
+---
+thinking (summarized):
+
+**Calculating ball dynamics**
+
+It seems I'm evaluating the rotations and parameters of a lever with the balls involved. I want to check if ball 2 could pass below the lever when I calculate carefully. I’ve got some exit calculations for the rolling sphere, with coordinates being around x=3.246486 and z=0.196985. The velocity tangents look to be around 1.6, but I need to consider the drop and loss more effectively to refine my assessment.
