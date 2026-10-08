@@ -1,0 +1,96 @@
+The supplied grammar cannot encode the requested slider, axial spring, slide damping, or exact restitution. This is a complete **passive layout**, not a working implementation of the spring-driven sequence; it does not hide those omissions behind a substitute launch.
+
+```world
+world  cart ramp pendulum layout
+
+-- All moving bodies start from rest.
+-- Unsupported requirements remain unimplemented:
+-- axial slide joint, 18 N/m axial spring compressed 0.20 m,
+-- 0.20 N s/m slide damping, and numeric restitution 0.05.
+-- The language also provides no explicit gravity-setting fact.
+-- No substitute drive or initial velocity is supplied.
+
+floor
+  size      6 m
+  friction  0.68
+
+ramp high surface
+  is a  point
+  at    0 m along, 0 m to the left, 0.492020143 m up
+
+ramp low surface
+  is a  point
+  at    0.939692621 m along, 0 m to the left, 0.15 m up
+
+-- These centreline endpoints account for the deck's thickness.
+-- The upper surface is 1.00 m long, inclined at 20 degrees,
+-- and its low endpoint is 0.15 m above the floor.
+
+ramp high axis
+  is a  point
+  at    0.003420201 m behind ramp high surface, 0 m to the left, 0.482623217 m up
+
+ramp low axis
+  is a  point
+  at    0.003420201 m behind ramp low surface, 0 m to the left, 0.140603074 m up
+
+ramp1
+  is a      plank from ramp high axis to ramp low axis, 0.30 m wide, 0.02 m thick
+  friction  0.68
+  colour    wood
+
+launch deck
+  is a      box 1.10 by 0.30 by 0.02 m
+  at        0.55 m behind ramp high surface, 0 m to the left, 0.482020143 m up
+  friction  0.68
+  colour    grey
+
+-- The cart and ball initially have a 0.50 m surface-to-surface
+-- separation along the intended direction of cart travel.
+-- cart1 is free here, not constrained by an unavailable slide joint.
+
+cart1
+  is a      box 0.22 by 0.18 by 0.10 m, 0.50 kg
+  moves     freely
+  rests     on launch deck, 0.71 m behind ramp high surface, 0 m to the left
+  friction  0.68
+  colour    grey
+
+-- The ball waits immediately before the ramp's high endpoint.
+-- Without the missing cart drive, it will remain on this level deck.
+
+ball1
+  is a      sphere 0.10 m across, 0.20 kg
+  moves     freely
+  rolls
+  rests     on launch deck, 0.05 m behind ramp high surface, 0 m to the left
+  friction  0.68
+  colour    orange
+
+-- The resting bob's near face is 0.10 m beyond the ramp's
+-- low surface endpoint.
+
+pendulum1
+  is a               pendulum
+  pivot height       0.64 m
+  length             0.50 m
+  bob size           0.10 m across
+  bob mass           0.20 kg
+  rod thickness      0.01 m
+  rod mass           0.02 kg
+  starts swung back  0°
+  damping            0.04 N·m·s/rad
+  friction           0.68
+  at                 1.089692621 m along, 0 m to the left
+```
+
+---
+thinking (summarized):
+
+**Clarifying comments and structure**
+
+The comments anticipate only the ball ramp pendulum, excluding cart1 contact. However, a scaffold is needed for fulfilling the residual subset. I must clarify in block comments that the spring isn’t part of the fulfillment. The user desires a corrected world, but a static one won’t do. I need to present an informative partial world with precise dimensions and proper contact friction. It's essential to use exact part names, and the setup will reflect that the cart doesn’t move freely as expected.
+
+**Addressing user expectations**
+
+I realized I can't use expect block assertions that aren't supported. I could incorporate expectations like "ball1 touches ramp1" and "pendulum1," though without checking due to a lack of tools, it must be labeled as "unverified." I should clearly state, "This is an untested, partial scene..." The user is looking for a complete corrected world, but a partial one doesn't fulfill that need. However, I can suggest an alternative code world utilizing a workable physical spring workaround through torsional hinges and an external cam track.

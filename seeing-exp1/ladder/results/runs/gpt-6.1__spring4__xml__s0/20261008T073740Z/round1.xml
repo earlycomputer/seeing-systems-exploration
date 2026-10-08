@@ -1,0 +1,107 @@
+<mujoco model="passive_cart_ball_pendulum_door_revised">
+  <compiler angle="degree" inertiafromgeom="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" cone="elliptic" iterations="100" tolerance="1e-10"/>
+  <size njmax="2000" nconmax="400"/>
+
+  <visual>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.65 0.65 0.65" specular="0.2 0.2 0.2"/>
+    <map znear="0.01" zfar="30"/>
+  </visual>
+
+  <!--
+    Sliding friction is 0.68 throughout.
+    Torsional and rolling friction are 0.005 m and 0.002 m.
+    Contact damping approximately targets restitution 0.05;
+    MuJoCo does not expose a direct restitution coefficient.
+    All moving bodies start from rest.
+  -->
+
+  <worldbody>
+    <light name="scene_light" pos="-0.5 -2 4" dir="0.1 0.4 -1"/>
+    <camera name="overview" pos="-0.6 -4.5 2.8" xyaxes="1 0 0 0 0.5 0.8660254"/>
+
+    <geom name="floor" type="plane" size="5 5 0.1" pos="0 0 0" friction="0.68 0.005 0.002" condim="6" solref="0.008 0.69010673" solimp="0.95 0.99 0.001 0.5 2" rgba="0.22 0.24 0.27 1"/>
+
+    <!--
+      The guide constraint supports cart1 without deck friction.
+      Its leading face initially has 0.50 m clearance from ball1.
+    -->
+    <body name="cart1" pos="0.72 0 0.5420201433">
+      <joint name="cart1_slide" type="slide" axis="-1 0 0" damping="0.20" limited="true" range="0 0.64" solreflimit="0.004 1" solimplimit="0.999 0.9999 0.0001 0.5 2"/>
+      <geom name="cart1_chassis" type="box" size="0.11 0.09 0.05" mass="0.50" friction="0.68 0.005 0.002" condim="6" solref="0.008 0.69010673" solimp="0.95 0.99 0.001 0.5 2" rgba="0.85 0.28 0.12 1"/>
+    </body>
+
+    <body name="ball1" pos="0.06 0 0.5420201433">
+      <freejoint name="ball1_free"/>
+      <geom name="ball1_sphere" type="sphere" size="0.05" mass="0.20" contype="1" conaffinity="5" friction="0.68 0.005 0.002" condim="6" solref="0.008 0.69010673" solimp="0.95 0.99 0.001 0.5 2" rgba="0.95 0.72 0.12 1"/>
+    </body>
+
+    <body name="launch_deck" pos="0.55 0 0.4720201433">
+      <geom name="launch_deck_surface" type="box" size="0.55 0.15 0.02" contype="4" conaffinity="0" friction="0.68 0.005 0.002" condim="6" solref="0.008 0.69010673" solimp="0.95 0.99 0.001 0.5 2" rgba="0.36 0.40 0.46 1"/>
+    </body>
+
+    <!--
+      Ramp top is 1.00 m long and 0.30 m wide at 20 degrees.
+      High endpoint: (0, 0, 0.4920201433).
+      Low endpoint: (-0.9396926208, 0, 0.15).
+    -->
+    <body name="ramp1" pos="-0.4698463104 0 0.3210100717" euler="0 -20 0">
+      <geom name="ramp1_surface" type="box" pos="0 0 -0.01" size="0.50 0.15 0.01" friction="0.68 0.005 0.002" condim="6" solref="0.008 0.69010673" solimp="0.95 0.99 0.001 0.5 2" rgba="0.24 0.53 0.72 1"/>
+    </body>
+
+    <!--
+      Pivot-to-bob length is 0.50 m; total pendulum mass is 0.35 kg.
+      Positive hinge motion is clockwise viewed from above.
+      The bob's initial ramp-facing surface is 0.10 m beyond the
+      ramp's low endpoint. At approximately 40 degrees it touches door1.
+    -->
+    <body name="pendulum1" pos="-1.0896926208 0.4974937186 0.23">
+      <joint name="pendulum1_hinge" type="hinge" axis="0 0.1 -0.9949874371" damping="0.04" limited="true" range="-5 100" solreflimit="0.004 1" solimplimit="0.999 0.9999 0.0001 0.5 2"/>
+      <geom name="pendulum1_rod" type="capsule" fromto="0 0 0 0 -0.4974937186 -0.05" size="0.009" mass="0.025" friction="0.68 0.005 0.002" condim="6" solref="0.008 0.69010673" solimp="0.95 0.99 0.001 0.5 2" rgba="0.65 0.68 0.73 1"/>
+      <geom name="pendulum1_bob" type="sphere" pos="0 -0.4974937186 -0.05" size="0.05" mass="0.325" friction="0.68 0.005 0.002" condim="6" solref="0.008 0.69010673" solimp="0.95 0.99 0.001 0.5 2" rgba="0.65 0.25 0.75 1"/>
+    </body>
+
+    <!--
+      Panel dimensions are 0.42 by 0.32 by 0.04 m; mass is 0.45 kg.
+      The tilted hinge makes positive motion clockwise viewed from above.
+      At its exact initial equilibrium it remains still until struck.
+      Opening lowers its center of mass, providing passive assistance.
+      The joint limit supplies the 70-degree hard stop.
+    -->
+    <body name="door1" pos="-1.4810864256 0.52 0.12">
+      <joint name="door1_hinge" type="hinge" axis="0 -0.3420201433 -0.9396926208" damping="0.04" limited="true" range="0 70" solreflimit="0.004 1" solimplimit="0.999 0.9999 0.0001 0.5 2"/>
+      <geom name="door1_panel" type="box" pos="0 -0.21 0.16" size="0.02 0.21 0.16" mass="0.45" friction="0.68 0.005 0.002" condim="6" solref="0.008 0.69010673" solimp="0.95 0.99 0.001 0.5 2" rgba="0.18 0.65 0.42 1"/>
+    </body>
+
+    <!--
+      A narrow stationary pedestal supports block1 at rest.
+      Its small support footprint lets the block topple after impact.
+      The revised location delays door contact until approximately
+      68 degrees, rather than obstructing the panel near 55 degrees.
+    -->
+    <body name="block1_pedestal" pos="-1.995 0.375 0.075">
+      <geom name="block1_pedestal_column" type="box" size="0.012 0.012 0.075" friction="0.68 0.005 0.002" condim="6" solref="0.008 0.69010673" solimp="0.95 0.99 0.001 0.5 2" rgba="0.42 0.44 0.48 1"/>
+    </body>
+
+    <body name="block1" pos="-1.995 0.375 0.21">
+      <freejoint name="block1_free"/>
+      <geom name="block1_cube" type="box" size="0.06 0.06 0.06" mass="0.35" friction="0.68 0.005 0.002" condim="6" solref="0.008 0.69010673" solimp="0.95 0.99 0.001 0.5 2" rgba="0.92 0.52 0.18 1"/>
+    </body>
+  </worldbody>
+
+  <!--
+    Tendon length equals cart1_slide displacement.
+    Initial compression is 0.20 m, with stiffness 18 N/m.
+    The spring becomes slack at displacement 0.20 m, allowing the
+    cart to coast onward to its first ball contact at 0.50 m.
+  -->
+  <tendon>
+    <fixed name="cart1_axial_spring" stiffness="18" damping="0" springlength="0.20 2.00">
+      <joint joint="cart1_slide" coef="1"/>
+    </fixed>
+  </tendon>
+
+  <keyframe>
+    <key name="start" time="0" qpos="0 0.06 0 0.5420201433 1 0 0 0 0 0 -1.995 0.375 0.21 1 0 0 0" qvel="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+  </keyframe>
+</mujoco>

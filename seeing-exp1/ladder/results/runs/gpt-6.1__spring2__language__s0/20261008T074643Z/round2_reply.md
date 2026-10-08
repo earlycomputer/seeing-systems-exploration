@@ -1,0 +1,116 @@
+Cart1 strikes ball1 at 0.41 s. Ball1 leaves its seat and rolls down ramp1 from 0.51 to 1.33 s, but then misses the pendulum bob by 0.04 m laterally. It hits the floor at 1.44 s and is still moving at 2.11 m/s after 6 seconds. Pendulum1 never moves, so the sequence does **not** work.
+
+The revision below explicitly centers the pendulum bob on the ball’s lane instead of positioning the library part as a whole. This revision is untested and retains the previously disclosed hinge-based approximation of the axial slider; it does not exactly implement all the brief’s physical parameters.
+
+```world
+world  spring cart ramp aligned pendulum
+
+-- All moving bodies start from rest.
+--
+-- The supplied grammar does not expose axial slide joints,
+-- axial springs, slide damping, explicit gravity, or numeric
+-- restitution.
+--
+-- cart1 therefore retains the approximate inclined slide:
+-- a 100 m radius guide hinge with equivalent axial stiffness
+-- approximately 18 N/m and damping approximately 0.20 N s/m.
+-- Its initial spring deflection corresponds to 0.20 m.
+-- Its initial 0.50 m of arc travel brings it to ball1.
+--
+-- Unlike the previous library-part placement, pendulum1's bob
+-- and hinge pivot are positioned explicitly on y = 0.
+
+floor
+  size      6 m
+  friction  0.68
+
+ramp high surface
+  is a  point
+  at    0 m along, 0 m to the left, 0.492020143 m up
+
+ramp low surface
+  is a  point
+  at    0.939692621 m along, 0 m to the left, 0.15 m up
+
+-- These centreline endpoints account for deck thickness.
+-- The upper surface is 1.00 m long at 20 degrees.
+
+ramp high axis
+  is a  point
+  at    0.003420201 m behind ramp high surface, 0 m to the left, 0.482623217 m up
+
+ramp low axis
+  is a  point
+  at    0.003420201 m behind ramp low surface, 0 m to the left, 0.140603074 m up
+
+ramp1
+  is a      plank from ramp high axis to ramp low axis, 0.30 m wide, 0.02 m thick
+  friction  0.68
+  colour    wood
+
+ball seat
+  is a      box 0.06 by 0.16 by 0.02 m
+  at        0.05 m behind ramp high surface, 0 m to the left, 0.482020143 m up
+  friction  0.68
+  colour    grey
+
+cart guide pivot
+  is a  point
+  at    33.756984540 m along, 0 m to the left, 94.596493516 m up
+
+cart1
+  is a           box 0.22 by 0.18 by 0.10 m, 0.50 kg
+  at             0.679845821 m behind ramp high surface, 0 m to the left, 0.713030036 m up
+  turns on       cart guide hinge, about y, at cart guide pivot
+  spring         180000 N·m/rad toward -0.114591559°
+  damping        2000 N·m·s/rad
+  starts turned  0°
+  friction       0.68
+  colour         grey
+
+ball1
+  is a      sphere 0.10 m across, 0.20 kg
+  moves     freely
+  rolls
+  rests     on ball seat, 0.05 m behind ramp high surface, 0 m to the left
+  friction  0.68
+  colour    orange
+
+pendulum pivot
+  is a  point
+  at    1.089692621 m along, 0 m to the left, 0.64 m up
+
+-- The bob's near face is 0.10 m beyond the ramp's low endpoint.
+-- Both its centre and its pivot are explicitly on the ball's lane.
+
+pendulum1
+  is a           sphere 0.10 m across, 0.20 kg
+  at             1.089692621 m along, 0 m to the left, 0.14 m up
+  turns on       pendulum hinge, about y, at pendulum pivot
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+  friction       0.68
+  colour         grey
+
+pendulum rod
+  is a         rod 0.01 m thick, from pendulum pivot to pendulum1's top
+  weighs       0.02 kg
+  attached to  pendulum1
+  friction     0.68
+  colour       grey
+
+-- Intended checks for this revision; not yet verified by a run.
+
+expect
+  cart1 touches ball1
+  ball1 touches ramp1
+  ball1 touches pendulum1
+```
+
+```json
+{
+  "what_happens": "Cart1 strikes ball1 at 0.41 s; ball1 rolls down ramp1, misses the pendulum bob laterally by 0.04 m, hits the floor, and is still moving at 2.11 m/s after 6 seconds, while pendulum1 remains still.",
+  "works": false,
+  "problem": "Ball1 misses the laterally offset pendulum bob, and cart1 remains a hinge-based approximation rather than the required axial slider."
+}
+```

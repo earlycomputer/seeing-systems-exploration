@@ -1,0 +1,62 @@
+```xml
+<mujoco model="ramp_ball_domino_chain">
+  <compiler angle="degree" inertiafromgeom="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100" cone="elliptic"/>
+
+  <!-- MuJoCo uses compliant contacts: damping ratio 0.690107 approximates restitution 0.05. -->
+  <!-- Sliding friction is 0.70. Small torsional and rolling resistance help the ball settle. -->
+  <!-- All moving bodies have free joints; there are no hinge or slide joints requiring damping. -->
+
+  <visual>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.75 0.75 0.75" specular="0.2 0.2 0.2"/>
+  </visual>
+
+  <worldbody>
+    <light name="overhead" pos="0 -1 3" dir="0 0 -1"/>
+    <camera name="overview" pos="0.25 -2.5 1.45" xyaxes="1 0 0 0 0.4614 0.8872"/>
+
+    <geom name="floor" type="plane" pos="0 0 0" size="3 2 0.1" friction="0.70 0.005 0.005" condim="6" solref="0.006 0.690107" solimp="0.95 0.99 0.001" rgba="0.78 0.80 0.82 1"/>
+
+    <!-- The upper surface is 1.00 m long and 0.30 m wide, descending toward +x at 20 degrees. -->
+    <!-- Its low endpoint is (0.4698463104, 0, 0.15). -->
+    <body name="ramp1" pos="0 0 0.3210100717" quat="0.9848077530 0 0.1736481777 0">
+      <geom name="ramp1_surface" type="box" pos="0 0 -0.02" size="0.50 0.15 0.02" friction="0.70 0.005 0.005" condim="6" solref="0.006 0.690107" solimp="0.95 0.99 0.001" rgba="0.36 0.45 0.56 1"/>
+    </body>
+
+    <!-- Sphere center is one radius above the high endpoint, along the ramp normal. -->
+    <body name="ball1" pos="-0.4527453032 0 0.5390047744">
+      <freejoint name="ball1_free"/>
+      <geom name="ball1_sphere" type="sphere" size="0.05" mass="0.20" friction="0.70 0.005 0.005" condim="6" solref="0.006 0.690107" solimp="0.95 0.99 0.001" rgba="0.90 0.20 0.12 1"/>
+    </body>
+
+    <!-- Domino thickness is along x, width along y, and height along z. -->
+    <!-- Domino1's upstream face is exactly 0.10 m beyond the ramp's low endpoint. -->
+    <body name="domino1" pos="0.5898463104 0 0.12">
+      <freejoint name="domino1_free"/>
+      <geom name="domino1_box" type="box" size="0.02 0.04 0.12" mass="0.25" friction="0.70 0.005 0.005" condim="6" solref="0.006 0.690107" solimp="0.95 0.99 0.001" rgba="0.95 0.67 0.15 1"/>
+    </body>
+
+    <!-- Domino centers are separated by exactly 0.18 m. -->
+    <body name="domino2" pos="0.7698463104 0 0.12">
+      <freejoint name="domino2_free"/>
+      <geom name="domino2_box" type="box" size="0.02 0.04 0.12" mass="0.25" friction="0.70 0.005 0.005" condim="6" solref="0.006 0.690107" solimp="0.95 0.99 0.001" rgba="0.20 0.55 0.85 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <!-- Omitted qpos uses the body poses above; all 18 velocity coordinates are zero. -->
+    <key name="start" time="0" qvel="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+  </keyframe>
+</mujoco>
+```
+
+---
+thinking (summarized):
+
+**Thinking through geometry**
+
+I'm needing to be careful with my geometry calculations. I've got a ramp with specific dimensions and angles, and I'm trying to establish various positions and orientations for it and an associated box. The box’s orientation related to its quaternions affects where it’s placed. I’ve also got a sphere starting from a certain position with offsets I need to calculate. Lastly, I’m interpreting how a domino interacts with these geometrical elements, considering gaps and surfaces. It's a bit complex!
+
+**Defining domino parameters**
+
+I'm defining the parameters for domino1. Its upstream face is set at x = 0.5698463, which helps establish where it starts. The center position at x = 0.5898463 takes into account its thickness of 0.04 along the x-axis. Plus, I need to remember the width of 0.08 along the y-axis. It’s all about getting those dimensions right to ensure proper placement and functionality!
