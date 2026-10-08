@@ -205,7 +205,12 @@ class OpenAIChat(Chat):
         r = self.client.responses.create(
             model=self.spec.model_id, instructions=self.system, input=[{"role": "user", "content": content}],
             previous_response_id=self.previous_id, reasoning={"effort": self.effort, "summary": "auto"},
-            max_output_tokens=32000)
+            max_output_tokens=32000, background=True)
+        # Background mode, polled: 1j's 16-step worlds take minutes to write, and a connection held open that long
+        # was dropped ("Connection error") every time. Same request, same result; only the waiting changed.
+        while r.status in ("queued", "in_progress"):
+            time.sleep(5)
+            r = self.client.responses.retrieve(r.id)
         self.previous_id = r.id
         thinking = "\n\n".join(s.text for item in r.output if item.type == "reasoning" for s in (item.summary or []))
         return Reply(
