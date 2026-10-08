@@ -1,0 +1,82 @@
+<mujoco model="passive_domino_flap_chain">
+  <compiler angle="degree" autolimits="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100" tolerance="1e-10" cone="elliptic"/>
+
+  <visual>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.70 0.70 0.70" specular="0.20 0.20 0.20"/>
+    <map znear="0.01" zfar="30"/>
+  </visual>
+
+  <!-- Contact damping ratio 0.690107 approximates restitution 0.05. -->
+  <!-- Sliding friction is 0.70 throughout. Floor rolling resistance arrests the balls. -->
+  <worldbody>
+    <light name="overhead" pos="0.6 -1.0 4.0" dir="0 0 -1" directional="true"/>
+    <camera name="side" pos="0.65 -3.7 1.70" xyaxes="1 0 0 0 0.3420201433 0.9396926208"/>
+
+    <geom name="floor" type="plane" pos="0 0 0" size="5 3 0.1" friction="0.70 0.005 0.010" condim="6" solref="0.006 0.690107" solimp="0.95 0.99 0.001" rgba="0.76 0.78 0.80 1"/>
+
+    <!-- Ramp top endpoints: (-0.939693, 0, 0.492020) and (0, 0, 0.150000). -->
+    <body name="ramp1" pos="-0.4698463104 0 0.3210100717" euler="0 20 0">
+      <geom name="ramp1_surface" type="box" pos="0 0 -0.020" size="0.500 0.150 0.020" density="0" friction="0.70 0.005 0.0001" condim="6" solref="0.006 0.690107" solimp="0.95 0.99 0.001" rgba="0.34 0.46 0.61 1"/>
+    </body>
+
+    <!-- Ball contact point is 10 mm inside the high end of ramp1. -->
+    <body name="ball1" pos="-0.9131946875 0 0.5355845729">
+      <freejoint/>
+      <geom name="ball1_sphere" type="sphere" size="0.050" mass="0.20" friction="0.70 0.005 0.0001" condim="6" solref="0.006 0.690107" solimp="0.95 0.99 0.001" rgba="0.90 0.23 0.17 1"/>
+    </body>
+
+    <!-- The upstream face of domino1 is 0.10 m beyond ramp1's low endpoint. -->
+    <body name="domino1" pos="0.140 0 0.120">
+      <freejoint/>
+      <geom name="domino1_box" type="box" size="0.040 0.020 0.120" mass="0.25" friction="0.70 0.005 0.0001" condim="6" solref="0.006 0.690107" solimp="0.95 0.99 0.001" rgba="0.95 0.67 0.14 1"/>
+    </body>
+
+    <body name="domino2" pos="0.320 0 0.120">
+      <freejoint/>
+      <geom name="domino2_box" type="box" size="0.040 0.020 0.120" mass="0.25" friction="0.70 0.005 0.0001" condim="6" solref="0.006 0.690107" solimp="0.95 0.99 0.001" rgba="0.95 0.52 0.12 1"/>
+    </body>
+
+    <!-- Positive rotation about +y is clockwise in the side camera. -->
+    <!-- The panel initially spans z=0.15 to 0.55; domino2 strikes its lower half. -->
+    <body name="flap1" pos="0.500 0 0.150">
+      <joint name="flap1_hinge" type="hinge" axis="0 1 0" limited="true" range="0 65" damping="0.04" frictionloss="0" armature="0" margin="0" solreflimit="0.004 1" solimplimit="0.999 0.9999 0.0001"/>
+      <geom name="flap1_panel" type="box" pos="0 0 0.200" size="0.020 0.100 0.200" mass="0.30" friction="0.70 0.005 0.0001" condim="6" solref="0.006 0.690107" solimp="0.95 0.99 0.001" rgba="0.28 0.68 0.38 1"/>
+    </body>
+
+    <!-- Non-colliding bearing supports show the fixed hinge mounting. -->
+    <body name="flap1_mount" pos="0.500 0 0">
+      <geom name="flap1_mount_left" type="box" pos="0 -0.130 0.075" size="0.035 0.020 0.075" density="0" contype="0" conaffinity="0" friction="0.70 0.005 0.0001" rgba="0.25 0.27 0.30 1"/>
+      <geom name="flap1_mount_right" type="box" pos="0 0.130 0.075" size="0.035 0.020 0.075" density="0" contype="0" conaffinity="0" friction="0.70 0.005 0.0001" rgba="0.25 0.27 0.30 1"/>
+    </body>
+
+    <!-- Cart front starts at x=0.81; ball2's upstream surface is at x=1.26. -->
+    <body name="cart1" pos="0.700 0 0.545">
+      <joint name="cart1_slide" type="slide" axis="1 0 0" limited="true" range="0 0.62" damping="0.20" frictionloss="0" armature="0" margin="0" solreflimit="0.004 1" solimplimit="0.999 0.9999 0.0001"/>
+      <geom name="cart1_box" type="box" size="0.110 0.090 0.050" mass="0.50" friction="0.70 0.005 0.0001" condim="6" solref="0.006 0.690107" solimp="0.95 0.99 0.001" rgba="0.25 0.46 0.86 1"/>
+    </body>
+
+    <!-- The slide joint supplies the actual support; these rails are visual only. -->
+    <body name="cart1_track" pos="0.960 0 0.487">
+      <geom name="cart1_track_left" type="box" pos="0 -0.075 0" size="0.500 0.010 0.008" density="0" contype="0" conaffinity="0" friction="0.70 0.005 0.0001" rgba="0.35 0.37 0.40 1"/>
+      <geom name="cart1_track_right" type="box" pos="0 0.075 0" size="0.500 0.010 0.008" density="0" contype="0" conaffinity="0" friction="0.70 0.005 0.0001" rgba="0.35 0.37 0.40 1"/>
+    </body>
+
+    <!-- Ramp2 has the same length, width, inclination, and low-end elevation. -->
+    <body name="ramp2" pos="1.7533483770 0 0.3210100717" euler="0 20 0">
+      <geom name="ramp2_surface" type="box" pos="0 0 -0.020" size="0.500 0.150 0.020" density="0" friction="0.70 0.005 0.0001" condim="6" solref="0.006 0.690107" solimp="0.95 0.99 0.001" rgba="0.34 0.46 0.61 1"/>
+      <!-- A shallow transverse lip creates a passive resting pocket at the high end. -->
+      <geom name="ramp2_retaining_lip" type="cylinder" pos="-0.4580625612 0 0.004" quat="0.7071067812 0.7071067812 0 0" size="0.006 0.130" density="0" friction="0.70 0.005 0.0001" condim="6" solref="0.006 0.690107" solimp="0.95 0.99 0.001" rgba="0.23 0.32 0.44 1"/>
+    </body>
+
+    <body name="ball2" pos="1.310 0 0.5355845729">
+      <freejoint/>
+      <geom name="ball2_sphere" type="sphere" size="0.050" mass="0.20" friction="0.70 0.005 0.0001" condim="6" solref="0.006 0.690107" solimp="0.95 0.99 0.001" rgba="0.65 0.28 0.83 1"/>
+    </body>
+  </worldbody>
+
+  <!-- Omitted qpos uses the body poses and zero hinge/slide coordinates above. -->
+  <keyframe>
+    <key name="start" time="0" qvel="0 0 0 0 0 0  0 0 0 0 0 0  0 0 0 0 0 0  0 0  0 0 0 0 0 0"/>
+  </keyframe>
+</mujoco>
