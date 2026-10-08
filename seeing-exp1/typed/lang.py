@@ -405,6 +405,10 @@ def relate(c: str, me: Item, scope: dict, line: Line, put, whole: Item, along: f
         put(1, 2, length(m.group(1)) * (1 if m.group(2) == "left" else -1), c, me)
     elif m := re.fullmatch(r"(.+?) up", c):
         put(2, 2, length(m.group(1)), c, me)
+    elif (m := re.fullmatch(r"(?:at )?(?:the )?(.+)", c)) and m.group(1).split(".")[0] in scope:
+        lo, hi = box(m.group(1))  # `at pivot`: centred on that part, in all three directions
+        for axis in range(3):
+            put(axis, 2, (lo[axis] + hi[axis]) / 2, c, me)
     else:
         raise line.problem("I CAN'T READ THIS POSITION", c, "a place like `on floor`, `in bucket`, `1 m beyond ball`, "
                            "`2 m along`, `40 cm up`, `raised 2 cm`, `at base's near end`, `outside frame's left side`, "
@@ -585,8 +589,10 @@ class Reader:
         self.lib, self.problems = lib, problems
 
     # A body is a list of pieces, read top to bottom; each may refer only to pieces above it.
-    def body(self, nodes: list[Node], values: dict, file: str, prefix: str) -> list[Item]:
-        scope, items = {"floor": GROUND}, []
+    def body(self, nodes: list[Node], values: dict, file: str, prefix: str, outer: dict | None = None) -> list[Item]:
+        # A part's pieces also see the parts written above it in the world (`high end  at ramp top`); its own
+        # pieces come later in the dict, so a piece's name wins over a world part of the same name.
+        scope, items = {**(outer or {}), "floor": GROUND}, []
         for node in nodes:
             name = node.text
             try:
@@ -641,7 +647,7 @@ class Reader:
         isv, isl = next((v, l) for k, v, l in lines if k in ("is a", "is an"))
         if part:
             item.kind = part
-            self.instance(item, part, lines, file, path)
+            self.instance(item, part, lines, file, path, scope)
         else:
             kind = isv.split(",")[0].split(" ")[0]
             if kind not in PRIMITIVES:
@@ -665,7 +671,7 @@ class Reader:
         made = self.copies(item, copies, lines)
         return made
 
-    def instance(self, item: Item, part: str, lines, file: str, path: str) -> None:
+    def instance(self, item: Item, part: str, lines, file: str, path: str, outer: dict | None = None) -> None:
         d = self.lib[part]
         needs = {nd[0] for nd in d.needs}
         given = {k: (v, ln) for k, v, ln in lines if k in needs}
@@ -681,7 +687,7 @@ class Reader:
                                   f"a `{need}` line under {item.name}: {part} needs "
                                   + ", ".join(nd[0] for nd in d.needs if nd[1] is None), "",
                                   f"add `  {need} ...` under {item.name}"))
-        item.children = self.body(d.pieces, values, "library ", f"{path}.")
+        item.children = self.body(d.pieces, values, "library ", f"{path}.", outer)
         if len(item.children) != len(d.pieces):
             raise Bad(None)  # a piece failed: its problem is already reported
 

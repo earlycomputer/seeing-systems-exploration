@@ -37,3 +37,13 @@ SEEDS = (0, 1)
 # Raised to $120 when Jono raised the program cap to $500 ("Raise the cap to $500 for now"), so seed 1 and the judge
 # finish without another pause.
 CEILING_1J_USD = 120.0
+
+# 1k: the language arm again at 8 and 16 steps, after two fixes to the language's positions (typed/lang.py): a part's
+# needs may name parts written above it in the world (`high end  ramp top`), and `at pivot` centres a thing on a part.
+# 1j's language worlds spent their three tries on these. Overlaps are still refused, as lint.py refuses them for the
+# xml arm. Prompts, briefs, model and seeds as 1j. Jono chose "Fix language, rerun" (2026-10-08, about $17).
+RESULTS_1K_DIR = LADDER_DIR / "results_1k"
+RUNS_1K_DIR = RESULTS_1K_DIR / "runs"
+JUDGE_1K_DIR = RESULTS_1K_DIR / "judge"
+SPEND_LEDGER_1K = RESULTS_1K_DIR / "spend.jsonl"
+CEILING_1K_USD = 25.0
