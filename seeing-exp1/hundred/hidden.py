@@ -18,12 +18,18 @@ Fixed after 1h (2026-10-08, Jono: "Go for it!" on the fixes in hundred/results/f
 - Lines in order within ORDER_SLACK count as in order. 6 of 16 order failures in 1h were closer than 0.1 s, below what
   a brief's "then" can mean when contacts chatter at 500 Hz.
 
+- A name means the thing with that name, not everything whose name starts with it. 1h's test took "ball2" to mean
+  ball2 and ball2_support, and watched the support for "drops through": 12 worlds failed because a fixed stand never
+  fell through the hoop (found by the judge, 2026-10-08). When a body has exactly the name, only its geoms count.
+
 `strict=True` gives 1h's original reading, for reproducing its results.
 """
 
 from __future__ import annotations
 
 import re
+
+import numpy as np
 
 from langrun import expect
 from hundred.settings import ORDER_SLACK
@@ -32,8 +38,37 @@ from worlds.tests import Run, aabb
 STOP_FORM = re.compile(r"(.+?) (?:reaches its (?:lower|upper) stop|swings to a stop)")
 
 
-def _touch_start(run: Run, a: str, b: str, owner) -> tuple[float | None, str]:
-    A, B = set(expect.geoms(run, a, owner)), set(expect.geoms(run, b, owner))
+def _geoms(run: Run, name: str, owner, strict: bool) -> list[int]:
+    """The geoms of the body with exactly this name, if there is one; else expect.geoms (names starting with it)."""
+    m, k = run.model, expect.key(name)
+    exact = [g for g in range(m.ngeom) if expect.key(m.body(m.geom_bodyid[g]).name) == k]
+    return exact if exact and not strict else expect.geoms(run, name, owner)
+
+
+def _drops_through(run: Run, a: str, b: str, owner) -> tuple[bool, float | None, str]:
+    """expect.py's "drops through", watching the loose body of that name."""
+    A, B = _geoms(run, a, owner, False), _geoms(run, b, owner, False)
+    if not A or not B:
+        return False, None, f"there is no thing named {a if not A else b}"
+    loose = [x for x in expect.bodies(run, A) if expect.free_joint_or_none(run, x) is not None]
+    x = (loose or expect.bodies(run, A))[0]
+    z = run.xpos[:, x, 2]
+    nearest = None
+    for i in range(len(z) - 1):
+        lo, hi = aabb(run, B, i)
+        cz = (lo[2] + hi[2]) / 2
+        if z[i] >= cz > z[i + 1]:
+            off = float(np.linalg.norm(run.xpos[i, x, :2] - (lo[:2] + hi[:2]) / 2))
+            if off < min(hi[0] - lo[0], hi[1] - lo[1]) / 2:
+                return True, float(run.times[i]), f"through at {run.times[i]:.2f} s, {off * 100:.0f} cm from its centre"
+            nearest = off if nearest is None else min(nearest, off)
+    if nearest is None:
+        return False, None, f"{a} never comes down through {b}'s height"
+    return False, None, f"{a} comes down through {b}'s height {nearest:.2f} m from its centre, outside it"
+
+
+def _touch_start(run: Run, a: str, b: str, owner, strict: bool = False) -> tuple[float | None, str]:
+    A, B = set(_geoms(run, a, owner, strict)), set(_geoms(run, b, owner, strict))
     if not A or not B:
         return None, f"there is no thing named {a if not A else b}"
     on = [any((x in A and y in B) or (x in B and y in A) for x, y in pairs) for pairs in run.contacts]
@@ -69,8 +104,10 @@ def one(line: str, run: Run, owner, strict: bool = False, after: float = 0.0) ->
     low = line.strip().rstrip(".").lower()
     if not strict and (m := STOP_FORM.fullmatch(low)):
         return _either_stop(m[1], run, owner, after)
+    if not strict and (m := re.fullmatch(r"(.+?) drops through (.+)", low)):
+        return _drops_through(run, m[1], m[2], owner)
     if m := re.fullmatch(r"(.+?) touches (.+)", low):
-        t, why = _touch_start(run, m[1], m[2], owner)
+        t, why = _touch_start(run, m[1], m[2], owner, strict)
         return t is not None, t, why
     ok, why = expect.one(line, run, owner)
     if not ok:

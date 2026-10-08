@@ -3,6 +3,7 @@
     python -m hundred.judge                     # every 1h world with a built final file, judged by GPT-6.1
     python -m hundred.judge --dry               # plumbing test, no calls
     python -m hundred.judge --words openings    # the run in words with openings and stops by height (words.py)
+    python -m hundred.judge --retest            # no calls: re-score saved verdicts against the current hidden test
 
 1h's authors said "it works" about 17 to 25 of 50 broken worlds in the XML arms (hundred/results/results.md). The
 judge never sees the hidden test or the author's claim; it gets the brief, its thing names, the settle check and the
@@ -66,6 +67,21 @@ def judge_one(rec: dict, run_dir: Path, judge: str, out_dir: Path, dry: bool, ki
     return res
 
 
+def retest() -> int:
+    """Re-score every saved verdict against hidden.py as it is now, without asking the judge again."""
+    runs = {json.loads(Path(f).read_text())["world"]: Path(f).parent for f in glob.glob(str(RUNS_DIR / "*/*/world.json"))}
+    changed = 0
+    for f in sorted(glob.glob(str(JUDGE_DIR / "**" / "*__*.json"), recursive=True)):
+        res = json.loads(Path(f).read_text())
+        rec = json.loads((runs[res["world"]] / "world.json").read_text())
+        truth = hidden.judge(rec["test"], run_world(final_xml(rec, runs[res["world"]]), seconds=SIM_SECONDS))
+        changed += truth["passed"] != res["test_passed"]
+        res |= {"test_passed": truth["passed"], "test_checks": truth["checks"], "test_evidence": truth["evidence"]}
+        Path(f).write_text(json.dumps(res, indent=2) + "\n")
+    print(f"{changed} verdicts' truth changed")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--dry", action="store_true")
@@ -73,7 +89,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--judge", default="gpt-6.1", choices=list(MODELS))
     ap.add_argument("--words", default="plain", choices=("plain", "openings"))
     ap.add_argument("--limit", type=int, default=None, help="judge only the first N worlds (for a cost check)")
+    ap.add_argument("--retest", action="store_true")
     args = ap.parse_args(argv)
+    if args.retest:
+        return retest()
     out_dir = ((DRYRUN_DIR / "judge") if args.dry else JUDGE_DIR) / ("openings" if args.words == "openings" else "")
     out_dir.mkdir(parents=True, exist_ok=True)
     todo = []
