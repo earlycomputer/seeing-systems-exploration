@@ -26,15 +26,15 @@ The hidden test is 3 to 6 lines, in the order they happen, each in one of these 
 <thing> touches <thing>
 <thing> comes to rest in <thing>
 <thing> drops through <thing>
-<thing> reaches its lower stop
-<thing> reaches its upper stop
+<thing> swings to a stop
 ```
 
 Rules for the test:
 
+- Lines closer than 0.1 s count as in order, so don't rely on the order of near-simultaneous events.
 - Each line is something that happens during the run: a touch that begins after the start, a thing coming to rest in
-  a container it did not start in, a thing falling down through a ring or opening, a hinged thing swinging to the
-  end of its range. Never a touch with `floor`.
+  a container it did not start in, a thing falling down through a ring or opening, a hinged thing swinging to an
+  end of its range (say which way it swings in the brief, and test it by what it then does). Never a touch with `floor`.
 - Every line must hold in any world that does what the brief says, and the lines together should fail any world that
   doesn't.
 - `comes to rest in` means slower than 5 cm/s at the end of a {seconds} s run, inside the container's footprint and

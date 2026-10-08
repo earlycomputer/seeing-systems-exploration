@@ -31,6 +31,8 @@ RUNS_DIR = RESULTS_DIR / "runs"
 READS_DIR = RESULTS_DIR / "reads"
 QUIZ_DIR = RESULTS_DIR / "quiz"
 SPEND_LEDGER = RESULTS_DIR / "spend.jsonl"
+JUDGE_DIR = RESULTS_DIR / "judge"
+JUDGE_LEDGER = JUDGE_DIR / "spend.jsonl"
 DRYRUN_DIR = ROOT / ".dryrun" / "hundred"
 BRIEFS_FILE = HUNDRED_DIR / "briefs.json"  # written once by briefs.py, committed before any world is run
 DRY_BRIEFS_FILE = HUNDRED_DIR / "dry_briefs.json"  # 1f's held-out ledge and chain, for plumbing tests only
@@ -44,6 +46,7 @@ MAX_ROUNDS = 3
 MAX_LOAD_RETRIES = 2
 SIM_SECONDS = 6.0
 REST = 0.05  # m/s; at rest, as every earlier experiment
+ORDER_SLACK = 0.1  # s: hidden-test lines this close count as in order (after 1h; hidden.py)
 QUIZ_WORLDS = 40  # final runs quizzed, chosen by seeded draw among worlds that built
 QUIZ_SEED = 0
 RAW_HZ = 10  # raw-state rows per second in the quiz's raw representation; contacts within each 0.1 s are all listed
@@ -52,3 +55,7 @@ RAW_HZ = 10  # raw-state rows per second in the quiz's raw representation; conta
 # plus reads, "about $12"): "go for it". The pilot spent $46.15, so 1h stops here.
 # It cost more than estimated ($0.23 a world, not $0.13) and stopped at the program cap; Jono: "Continue on!" (2026-10-07).
 CEILING_1H_USD = 72.0
+
+# The independent judge on 1h's runs (judge.py). Jono, 2026-10-08 03:51: "Go for it!" on the fixes before the
+# complexity ladder, which named "an independent judge on 1h's 150 runs (~$5)".
+JUDGE_CEILING_USD = 7.0

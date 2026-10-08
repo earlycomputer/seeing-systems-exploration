@@ -36,4 +36,6 @@ SEEDS = (0, 1, 2)
 # Raised to $210 on 2026-10-07: GPT-6.1 cost $0.23 a world on 1h's new briefs, so the extension stopped at the cap after
 # 69 of 90 worlds; Jono: "Continue on!" (02:41) to finish them and their reads. This ledger view does not include
 # other branches' runs.
-SPEND_CAP_USD = 210.0
+# Raised to $217 on 2026-10-08: Jono, "Go for it!" (03:51) on the fixes before the complexity ladder, which included an
+# independent judge on 1h's 150 runs, "~$5" (ceiling $7 in hundred/settings.py); $209.10 was spent before it.
+SPEND_CAP_USD = 217.0

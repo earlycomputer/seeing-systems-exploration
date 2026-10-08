@@ -26,7 +26,7 @@ from loop.models import MODELS, extract_block, open_chat, text
 from typed.compiler import render
 from typed.lang import LIBRARY, compile_program, parse
 from worlds.tests import run as run_world
-from hundred import briefs as briefs_mod, budget, hidden
+from hundred import briefs as briefs_mod, budget, hidden, settle
 from hundred.settings import (ARMS, BRIEFS_FILE, DRY_BRIEFS_FILE, DRYRUN_DIR, MAX_LOAD_RETRIES, MAX_ROUNDS, PROMPTS,
                               RUNS_DIR, SIM_SECONDS, SPEND_LEDGER)
 
@@ -57,7 +57,8 @@ def judge_xml(arm: str, test: list[str], xml: str) -> dict:
     if problem:
         return {"loaded": True, "problem": problem, "lint": True}
     r = run_world(xml, seconds=SIM_SECONDS)
-    return {"loaded": True, "problem": None, "run": r, "diverged": r.diverged, "test": hidden.judge(test, r)}
+    return {"loaded": True, "problem": None, "run": r, "diverged": r.diverged, "test": hidden.judge(test, r),
+            "settle": [] if arm == "blind" else settle.problems(xml)}
 
 
 def judge(arm: str, test: list[str], reply: str, label: str, out) -> dict | None:
@@ -199,7 +200,7 @@ def main(argv: list[str] | None = None) -> int:
                 if arm == "blind":
                     h, verb_words = own("see_blind"), "will happen when it runs"
                 else:
-                    h = see_history(current["run"], "your")
+                    h = settle.say(current.get("settle")) + see_history(current["run"], "your")
                     verb_words = "happens in the run"
                 (out / f"round{rnd}_history.md").write_text(h)
                 parts = [text(h), text(langrun_prompt(see_task, verb=verb_words))]
