@@ -57,5 +57,6 @@ RAW_HZ = 10  # raw-state rows per second in the quiz's raw representation; conta
 CEILING_1H_USD = 72.0
 
 # The independent judge on 1h's runs (judge.py). Jono, 2026-10-08 03:51: "Go for it!" on the fixes before the
-# complexity ladder, which named "an independent judge on 1h's 150 runs (~$5)".
+# complexity ladder, which named "an independent judge on 1h's 150 runs (~$5)". It cost $2.25; Jono: "yes do it!"
+# (2026-10-08 05:31) to judging again with openings and stops by height in the run in words, about $2.25 more.
 JUDGE_CEILING_USD = 7.0

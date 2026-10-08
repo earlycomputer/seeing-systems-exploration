@@ -18,7 +18,6 @@ import time
 
 from config import ROOT
 from harder.run import parse_verdict
-from history.run import see_history
 from langrun import expect, lint
 from langrun.run import prompt as langrun_prompt
 from langrun.settings import FIXTURES as LANGRUN_FIXTURES, PROMPTS as LANGRUN_PROMPTS
@@ -26,7 +25,7 @@ from loop.models import MODELS, extract_block, open_chat, text
 from typed.compiler import render
 from typed.lang import LIBRARY, compile_program, parse
 from worlds.tests import run as run_world
-from hundred import briefs as briefs_mod, budget, hidden, settle
+from hundred import briefs as briefs_mod, budget, hidden, settle, words
 from hundred.settings import (ARMS, BRIEFS_FILE, DRY_BRIEFS_FILE, DRYRUN_DIR, MAX_LOAD_RETRIES, MAX_ROUNDS, PROMPTS,
                               RUNS_DIR, SIM_SECONDS, SPEND_LEDGER)
 
@@ -200,7 +199,7 @@ def main(argv: list[str] | None = None) -> int:
                 if arm == "blind":
                     h, verb_words = own("see_blind"), "will happen when it runs"
                 else:
-                    h = settle.say(current.get("settle")) + see_history(current["run"], "your")
+                    h = settle.say(current.get("settle")) + words.see(current["run"], "your")
                     verb_words = "happens in the run"
                 (out / f"round{rnd}_history.md").write_text(h)
                 parts = [text(h), text(langrun_prompt(see_task, verb=verb_words))]
