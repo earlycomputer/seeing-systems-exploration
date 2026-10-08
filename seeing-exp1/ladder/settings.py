@@ -32,4 +32,5 @@ SEEDS = (0, 1)
 
 # 1j's own ceiling. Jono, 2026-10-08 06:15, on the coordinator's summary saying the ladder costs "about $30" and needs
 # the cap raised "to about $250": "Run the complexity ladder experiment". $213.26 was spent before it.
-CEILING_1J_USD = 35.0
+# Raised to $68 the same day: a 16-step world costs about $1.30, not $0.30; Jono chose "Full ladder" (about $63).
+CEILING_1J_USD = 68.0

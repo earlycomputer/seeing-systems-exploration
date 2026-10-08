@@ -40,4 +40,6 @@ SEEDS = (0, 1, 2)
 # independent judge on 1h's 150 runs, "~$5" (ceiling $7 in hundred/settings.py); $209.10 was spent before it.
 # Raised to $250 on 2026-10-08: Jono, "Run the complexity ladder experiment" (06:15), on a summary saying it costs about
 # $30 and needs the cap "to about $250"; $213.26 spent before it (1j ceiling $35 in ladder/settings.py).
-SPEND_CAP_USD = 250.0
+# Raised to $285 on 2026-10-08: 16-step worlds cost about $1.30, so the full ladder is about $63; Jono chose "Full
+# ladder" on the card asking to raise the cap to about $285 ($222.57 spent).
+SPEND_CAP_USD = 285.0
