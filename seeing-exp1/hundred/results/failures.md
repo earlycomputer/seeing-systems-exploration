@@ -14,8 +14,8 @@ Each failed world counted once, by its first failing hidden-test line.
 | comes to rest outside the target | 5 | 2 | 0 | 7 |
 | the chain breaks: two things never touch | 1 | 0 | 2 | 3 |
 | starts in its end state | 1 | 1 | 0 | 2 |
-| never built | 0 | 0 | 1 | 1 |
 | not at rest at the end | 1 | 0 | 0 | 1 |
+| never built | 0 | 0 | 1 | 1 |
 
 Out-of-order failures by gap: {'more than 0.1 s': 10, 'within 0.1 s': 6}.
 
@@ -24,8 +24,8 @@ Out-of-order failures by gap: {'more than 0.1 s': 10, 'within 0.1 s': 6}.
 In worlds that work under the fixed test, each stop line's hinge: the end it actually swings to, against the other end, by the height of the hinged part's centre of mass with everything else as at the start (closer than 1 cm counts as neither):
 
 - neither end lower: 6
-- the end it swings to is higher: 20
-- the end it swings to is lower: 35
+- the end it swings to is higher: 21
+- the end it swings to is lower: 37
 
 If some working worlds swing to the higher end, "lower" by height would fail working worlds too; the fixed test takes either end and leaves direction to the lines around it.
 
@@ -33,24 +33,24 @@ If some working worlds swing to the higher end, "lower" by height would fail wor
 
 | Arm | Worlds | Worked, original | Worked, fixed | Wrong "it works", original | Wrong "it works", fixed |
 |---|---|---|---|---|---|
-| blind | 50 | 25 | 33 | 25 | 17 |
-| xml | 50 | 33 | 37 | 17 | 13 |
-| language | 50 | 39 | 39 | 7 | 7 |
+| blind | 50 | 25 | 34 | 25 | 16 |
+| xml | 50 | 33 | 41 | 17 | 9 |
+| language | 50 | 39 | 44 | 7 | 2 |
 
-Fixed test, Fisher exact: language vs blind p = 0.265; language vs xml p = 0.815; xml vs blind p = 0.513.
+Fixed test, Fisher exact: language vs blind p = 0.028; language vs xml p = 0.577; xml vs blind p = 0.165.
 
 Failures under the fixed test, by first failing line:
 
 | Cause | blind | xml | language | All |
 |---|---|---|---|---|
-| misses the opening | 4 | 4 | 4 | 12 |
-| comes to rest outside the target | 7 | 3 | 0 | 10 |
-| events happen out of order | 2 | 3 | 4 | 9 |
+| comes to rest outside the target | 8 | 3 | 0 | 11 |
+| events happen out of order | 2 | 3 | 3 | 8 |
+| the chain breaks: two things never touch | 2 | 0 | 2 | 4 |
 | a hinge never reaches the named stop | 1 | 2 | 0 | 3 |
-| the chain breaks: two things never touch | 1 | 0 | 2 | 3 |
 | starts in its end state | 1 | 1 | 0 | 2 |
-| never built | 0 | 0 | 1 | 1 |
+| misses the opening | 1 | 0 | 0 | 1 |
 | not at rest at the end | 1 | 0 | 0 | 1 |
+| never built | 0 | 0 | 1 | 1 |
 
 ## What the settle check finds in 1h's final files
 
@@ -58,6 +58,6 @@ Final files where two moving things touch, or any two things overlap by more tha
 
 | Arm | Final files flagged | Worked when flagged | Worked when clean |
 |---|---|---|---|
-| blind | 15 | 10 of 15 | 23 of 35 |
-| xml | 17 | 8 of 17 | 29 of 33 |
-| language | 8 | 7 of 8 | 32 of 41 |
+| blind | 15 | 10 of 15 | 24 of 35 |
+| xml | 17 | 10 of 17 | 31 of 33 |
+| language | 8 | 8 of 8 | 36 of 41 |
