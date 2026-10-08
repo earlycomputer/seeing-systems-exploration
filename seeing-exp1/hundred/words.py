@@ -145,6 +145,6 @@ def history(run: Run) -> str:
     return text
 
 
-def see(run: Run, whose: str) -> str:
+def see(run: Run, whose: str, seconds: float = SIM_SECONDS) -> str:
     s = (HISTORY_PROMPTS / "see_history.md").read_text()
-    return s.replace("{whose}", whose).replace("{seconds}", f"{SIM_SECONDS:g}").replace("{history}", history(run))
+    return s.replace("{whose}", whose).replace("{seconds}", f"{seconds:g}").replace("{history}", history(run))

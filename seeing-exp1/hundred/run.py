@@ -2,6 +2,7 @@
 
     python -m hundred.run --model opus-5.5 --brief <id> --arm language --seed 0
     python -m hundred.run --model dry-run --brief chain --arm xml --dry-briefs      # plumbing test, no calls
+    python -m hundred.run --model gpt-6.1 --brief cascade16 --arm xml --ladder     # 1j, the complexity ladder
 
 1g's checked loop (langrun/run.py) with three arms (hundred/settings.py). The hidden test (hidden.py) judges the
 built MJCF; the model never sees it. The blind arm hears MuJoCo's load errors, as anyone would, and nothing about the
@@ -46,7 +47,7 @@ def own(name: str, **kw) -> str:
     return s
 
 
-def judge_xml(arm: str, test: list[str], xml: str) -> dict:
+def judge_xml(arm: str, test: list[str], xml: str, seconds: float = SIM_SECONDS) -> dict:
     try:
         problem = None if arm == "blind" else lint.report(xml)
         if arm == "blind":
@@ -55,18 +56,18 @@ def judge_xml(arm: str, test: list[str], xml: str) -> dict:
         return {"loaded": False, "problem": f"MuJoCo could not load the file: {e}"}
     if problem:
         return {"loaded": True, "problem": problem, "lint": True}
-    r = run_world(xml, seconds=SIM_SECONDS)
+    r = run_world(xml, seconds=seconds)
     return {"loaded": True, "problem": None, "run": r, "diverged": r.diverged, "test": hidden.judge(test, r),
             "settle": [] if arm == "blind" else settle.problems(xml)}
 
 
-def judge(arm: str, test: list[str], reply: str, label: str, out) -> dict | None:
+def judge(arm: str, test: list[str], reply: str, label: str, out, seconds: float = SIM_SECONDS) -> dict | None:
     if FORMAT[arm] == "xml":
         xml = extract_block(reply, "xml")
         if xml is None:
             return None
         (out / f"{label}.xml").write_text(xml)
-        j = judge_xml(arm, test, xml)
+        j = judge_xml(arm, test, xml, seconds)
         block = extract_block(reply, "expect")
         j["expect"] = expect.block(block) if block is not None else None
         j["chars"] = len(xml)
@@ -89,7 +90,7 @@ def judge(arm: str, test: list[str], reply: str, label: str, out) -> dict | None
                 j = {"loaded": False, "problem": render(c.problems)}
             else:
                 (out / f"{label}.compiled.xml").write_text(c.xml)
-                j = judge_xml(arm, test, c.xml)
+                j = judge_xml(arm, test, c.xml, seconds)
                 j["owner"] = c.owner
         j["expect"] = expect.section(world)
         j["chars"] = len(world) + len(parts or "")
@@ -100,6 +101,9 @@ def judge(arm: str, test: list[str], reply: str, label: str, out) -> dict | None
 
 def dry_script(model: str, brief: str, arm: str) -> list[str]:
     ok = '```json\n{"what_happens": "dry run", "works": true, "problem": ""}\n```'
+    empty = "```xml\n<mujoco/>\n```" if FORMAT[arm] == "xml" else "```world\nworld  empty\n\nfloor\n```"
+    if model != "dry-run":
+        return [empty] + [ok] * (MAX_ROUNDS + MAX_LOAD_RETRIES)
     if FORMAT[arm] == "xml":
         good = f"```xml\n{(LANGRUN_FIXTURES / f'{brief}.xml').read_text()}```\n\n```expect\nball touches floor\n```"
     else:
@@ -117,29 +121,41 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--effort", default="high")
     ap.add_argument("--dry-briefs", action="store_true", help="1f's ledge and chain, for plumbing tests")
     ap.add_argument("--full", action="store_true", help="past the pilot: 1h's own ceiling, not the pilot's")
+    ap.add_argument("--ladder", action="store_true", help="1j: ladder/briefs.json, results and ceiling (ladder/)")
     args = ap.parse_args(argv)
+    if args.ladder:
+        from ladder import briefs as ladder_briefs, budget as ladder_budget, settings as ladder_settings
+        runs_dir, ledger, experiment = ladder_settings.RUNS_DIR, ladder_settings.SPEND_LEDGER, "1j"
+        dry_dir = ladder_settings.DRYRUN_DIR / "runs"
+        check = ladder_budget.check
+    else:
+        runs_dir, ledger, experiment = RUNS_DIR, SPEND_LEDGER, "1h"
+        dry_dir = DRYRUN_DIR / "runs"
+        check = lambda: budget.check(pilot=not args.full)
 
     spec = MODELS[args.model]
     dry = spec.provider == "dry"
-    B = briefs_mod.load(DRY_BRIEFS_FILE if args.dry_briefs else BRIEFS_FILE)[args.brief]
+    B = (ladder_briefs.load() if args.ladder else briefs_mod.load(DRY_BRIEFS_FILE if args.dry_briefs else BRIEFS_FILE))[args.brief]
     arm, test = args.arm, B["test"]
+    seconds = B.get("seconds", SIM_SECONDS)
     wid = world_id(args.model, args.brief, arm, args.seed)
     stamp = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
-    out = (DRYRUN_DIR / "runs" if dry else RUNS_DIR) / wid / stamp
+    out = (dry_dir if dry else runs_dir) / wid / stamp
     out.mkdir(parents=True, exist_ok=True)
     script = dry_script(args.model, args.brief, arm) if dry else None
-    chat = open_chat(args.model, SYSTEM[arm], args.effort, tag=f"1h/{wid}", script=script,
-                     ledger=None if dry else SPEND_LEDGER)
+    chat = open_chat(args.model, SYSTEM[arm], args.effort, tag=f"{experiment}/{wid}", script=script,
+                     ledger=None if dry else ledger)
 
     rec = {"world": wid, "run_dir": str(out.relative_to(ROOT)) if not dry else str(out), "started_at": stamp,
-           "experiment": "1h", "model": args.model, "model_label": spec.label, "model_id": spec.model_id,
+           "experiment": experiment, "family": B.get("family"), "steps": B.get("steps", len(test)),
+           "sim_seconds": seconds, "model": args.model, "model_label": spec.label, "model_id": spec.model_id,
            "effort": args.effort, "brief": args.brief, "brief_text": B["brief"], "test": test, "arm": arm,
            "seed": args.seed, "dry_run": dry, "turns": [], "files": []}
     calls, t0 = [], time.monotonic()
 
     def send(parts, name):
         if not dry:
-            budget.check(pilot=not args.full)
+            check()
         r = chat.send(parts)
         calls.append(r)
         (out / f"{name}_reply.md").write_text(r.text + ("\n\n---\nthinking (summarized):\n\n" + r.thinking
@@ -158,12 +174,12 @@ def main(argv: list[str] | None = None) -> int:
         rec["files"].append({k: v for k, v in j.items() if k not in ("run", "owner")} | {"turn": turn})
 
     if FORMAT[arm] == "xml":
-        first = langrun_prompt("author_xml", brief=B["brief"], names=briefs_mod.names_xml(B), seconds=f"{SIM_SECONDS:g}")
+        first = langrun_prompt("author_xml", brief=B["brief"], names=briefs_mod.names_xml(B), seconds=f"{seconds:g}")
         first = first.rstrip() + "\n\n" + langrun_prompt("rest")
     else:
         guide = langrun_prompt("guide", library=LIBRARY.read_text().strip())
         first = langrun_prompt("author_language", brief=B["brief"], names=briefs_mod.names_language(B),
-                               seconds=f"{SIM_SECONDS:g}", guide=guide.strip(),
+                               seconds=f"{seconds:g}", guide=guide.strip(),
                                example=(LANGRUN_PROMPTS / "example.world").read_text().strip())
         first = first.rstrip() + "\n\n" + langrun_prompt("rest")
     (out / "author_prompt.md").write_text(first)
@@ -173,7 +189,7 @@ def main(argv: list[str] | None = None) -> int:
     message, current = [text(first)], None
     for attempt in range(MAX_LOAD_RETRIES + 1):
         r = send(message, f"write{attempt}")
-        j = judge(arm, test, r.text, f"written{attempt}", out)
+        j = judge(arm, test, r.text, f"written{attempt}", out, seconds)
         if j is None:
             j = {"loaded": False, "label": f"written{attempt}", "passed": False,
                  "problem": f"I could not find a ```{FORMAT[arm]} block in your reply."}
@@ -199,7 +215,7 @@ def main(argv: list[str] | None = None) -> int:
                 if arm == "blind":
                     h, verb_words = own("see_blind"), "will happen when it runs"
                 else:
-                    h = settle.say(current.get("settle")) + words.see(current["run"], "your")
+                    h = settle.say(current.get("settle")) + words.see(current["run"], "your", seconds)
                     verb_words = "happens in the run"
                 (out / f"round{rnd}_history.md").write_text(h)
                 parts = [text(h), text(langrun_prompt(see_task, verb=verb_words))]
@@ -207,7 +223,7 @@ def main(argv: list[str] | None = None) -> int:
             (out / f"round{rnd}_prompt.md").write_text("\n\n".join(p["text"] for p in parts))
             r = send(parts, f"round{rnd}")
             v = parse_verdict(r.text) if verb else {}
-            j = judge(arm, test, r.text, f"round{rnd}", out)
+            j = judge(arm, test, r.text, f"round{rnd}", out, seconds)
             turn = {"turn": f"round{rnd}", "verdict": v, "usage": r.summary(),
                     "current_passed": bool(current.get("passed")), "sent_file": j is not None}
             if j is not None:

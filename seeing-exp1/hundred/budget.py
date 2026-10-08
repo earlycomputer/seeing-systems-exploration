@@ -4,6 +4,7 @@ from config import SPEND_CAP_USD
 from history import budget as budget_1e_1g
 from loop.models import BudgetExceeded, spent_usd
 from hundred.settings import CEILING_1H_USD, JUDGE_CEILING_USD, JUDGE_LEDGER, SPEND_LEDGER
+from ladder.settings import SPEND_LEDGER as LEDGER_1J
 
 # Jono chose "Pilot first" on 2026-10-06 22:19: 5 briefs, 60 worlds, "about $20". Opus cost about $0.85 a world, so the
 # run stopped at the program cap after 25 worlds; Jono then chose "Finish it" (2026-10-07 00:04), about $40 in all.
@@ -13,7 +14,8 @@ PILOT_CEILING_USD = 47.0
 
 
 def spent() -> dict:
-    return budget_1e_1g.spent() | {"exp1h": spent_usd(SPEND_LEDGER), "exp1h_judge": spent_usd(JUDGE_LEDGER)}
+    return budget_1e_1g.spent() | {"exp1h": spent_usd(SPEND_LEDGER), "exp1h_judge": spent_usd(JUDGE_LEDGER),
+                                    "exp1j": spent_usd(LEDGER_1J)}
 
 
 def check(pilot: bool = True) -> None:

@@ -32,23 +32,26 @@ from worlds.tests import run as run_world
 THINGS = {b["id"]: b["things"] for b in json.loads(BRIEFS_FILE.read_text())}
 
 
-def prompt(rec: dict, xml: str, kind: str = "plain"):
-    r = run_world(xml, seconds=SIM_SECONDS)
-    things = ", ".join(f"{t['name']} ({t['kind']}, {t['what']})" for t in THINGS[rec["brief"]])
+def prompt(rec: dict, xml: str, kind: str = "plain", things_of: dict | None = None):
+    seconds = rec.get("sim_seconds", SIM_SECONDS)
+    r = run_world(xml, seconds=seconds)
+    things = ", ".join(f"{t['name']} ({t['kind']}, {t['what']})" for t in (things_of or THINGS)[rec["brief"]])
     p = ((PROMPTS / "judge.md").read_text().replace("{brief}", rec["brief_text"]).replace("{things}", things)
-         .replace("{seconds}", f"{SIM_SECONDS:g}").replace("{settle}", settle.say(settle.problems(xml)))
+         .replace("{seconds}", f"{seconds:g}").replace("{settle}", settle.say(settle.problems(xml)))
          .replace("{history}", (words.history if kind == "openings" else plain_history)(r)))
     return p, r
 
 
-def judge_one(rec: dict, run_dir: Path, judge: str, out_dir: Path, dry: bool, kind: str = "plain") -> dict:
+def judge_one(rec: dict, run_dir: Path, judge: str, out_dir: Path, dry: bool, kind: str = "plain",
+              ledger: Path = JUDGE_LEDGER, check=None, things_of: dict | None = None) -> dict:
     xml = final_xml(rec, run_dir)
-    p, r = prompt(rec, xml, kind)
+    p, r = prompt(rec, xml, kind, things_of)
     script = ['```json\n{"works": true, "first_failure": ""}\n```'] if dry else None
     chat = open_chat("dry-run" if dry else judge, "You judge whether physics simulations do what was asked.", "high",
-                     tag=f"1h/judge/{rec['world']}/{judge}", script=script, ledger=None if dry else JUDGE_LEDGER)
+                     tag=f"{rec.get('experiment', '1h')}/judge/{rec['world']}/{judge}", script=script,
+                     ledger=None if dry else ledger)
     if not dry:
-        budget.check_judge()
+        (check or budget.check_judge)()
     reply = chat.send([text(p)])
     try:
         v = json.loads(extract_block(reply.text, "json") or "null")

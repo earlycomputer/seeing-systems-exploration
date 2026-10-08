@@ -38,4 +38,6 @@ SEEDS = (0, 1, 2)
 # other branches' runs.
 # Raised to $217 on 2026-10-08: Jono, "Go for it!" (03:51) on the fixes before the complexity ladder, which included an
 # independent judge on 1h's 150 runs, "~$5" (ceiling $7 in hundred/settings.py); $209.10 was spent before it.
-SPEND_CAP_USD = 217.0
+# Raised to $250 on 2026-10-08: Jono, "Run the complexity ladder experiment" (06:15), on a summary saying it costs about
+# $30 and needs the cap "to about $250"; $213.26 spent before it (1j ceiling $35 in ladder/settings.py).
+SPEND_CAP_USD = 250.0
