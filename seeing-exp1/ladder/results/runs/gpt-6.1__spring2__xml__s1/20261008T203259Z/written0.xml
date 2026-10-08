@@ -1,0 +1,56 @@
+<mujoco model="spring_cart_ramp_pendulum">
+  <compiler angle="degree" autolimits="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" iterations="100"/>
+  <size njmax="1000" nconmax="200"/>
+
+  <visual>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.7 0.7 0.7" specular="0.2 0.2 0.2"/>
+  </visual>
+
+  <!-- solref damping ratio 0.69010673 targets restitution approximately 0.05. -->
+  <!-- Friction entries are sliding, torsional, and rolling, respectively. -->
+
+  <worldbody>
+    <light name="main_light" pos="0 -2 3" dir="0 0.5 -1" directional="true"/>
+    <camera name="overview" pos="0.25 -3 1.65" xyaxes="1 0 0 0 0.3420201433 0.9396926208"/>
+
+    <!-- Additional rolling resistance on the floor allows passive settling. -->
+    <geom name="floor" type="plane" pos="0 0 0" size="6 3 0.1" friction="0.68 0.005 0.005" condim="6" solref="0.008 0.69010673" solimp="0.95 0.99 0.001" rgba="0.72 0.74 0.77 1"/>
+
+    <!-- Ramp surface endpoints: (0,0,0.4920201433) and (0.9396926208,0,0.15). -->
+    <!-- The horizontal loading lip holds the initially stationary ball. -->
+    <body name="ramp1" pos="0 0 0">
+      <geom name="ramp1_slope" type="box" pos="0.4630059075 0 0.3022162192" quat="0.9848077530 0 0.1736481777 0" size="0.50 0.15 0.02" friction="0.68 0.005 0.0002" condim="6" solref="0.008 0.69010673" solimp="0.95 0.99 0.001" rgba="0.35 0.48 0.65 1"/>
+      <geom name="ramp1_loading_lip" type="box" pos="-0.10 0 0.4720201433" size="0.10 0.15 0.02" friction="0.68 0.005 0.0002" condim="6" solref="0.008 0.69010673" solimp="0.95 0.99 0.001" rgba="0.35 0.48 0.65 1"/>
+    </body>
+
+    <!-- The ideal axial guide descends parallel to the ramp. -->
+    <!-- q=0 compresses the spring by 0.20 m; first ball contact occurs at q=0.50 m. -->
+    <body name="cart1" pos="-0.6451971297 0 0.7677534379" quat="0.9848077530 0 0.1736481777 0">
+      <joint name="cart1_slide" type="slide" axis="1 0 0" limited="true" range="0 0.60" stiffness="18" springref="0.20" damping="0.20"/>
+      <geom name="cart1_chassis" type="box" size="0.11 0.09 0.05" mass="0.50" friction="0.68 0.005 0.0002" condim="6" solref="0.008 0.69010673" solimp="0.95 0.99 0.001" rgba="0.85 0.32 0.16 1"/>
+    </body>
+
+    <body name="ball1" pos="-0.025 0 0.5420201433">
+      <freejoint name="ball1_free"/>
+      <geom name="ball1_sphere" type="sphere" size="0.05" mass="0.20" friction="0.68 0.005 0.0002" condim="6" solref="0.008 0.69010673" solimp="0.95 0.99 0.001" rgba="0.95 0.72 0.12 1"/>
+    </body>
+
+    <!-- The bob's near surface is 0.10 m beyond the ramp's low endpoint. -->
+    <body name="pendulum1" pos="1.0896926208 0 0.75">
+      <joint name="pendulum1_hinge" type="hinge" axis="0 1 0" damping="0.04"/>
+      <geom name="pendulum1_rod" type="capsule" fromto="0 0 0 0 0 -0.55" size="0.005" mass="0.01" friction="0.68 0.005 0.0002" condim="6" solref="0.008 0.69010673" solimp="0.95 0.99 0.001" rgba="0.35 0.36 0.38 1"/>
+      <geom name="pendulum1_bob" type="sphere" pos="0 0 -0.60" size="0.05" mass="0.20" friction="0.68 0.005 0.0002" condim="6" solref="0.008 0.69010673" solimp="0.95 0.99 0.001" rgba="0.25 0.65 0.35 1"/>
+    </body>
+
+    <body name="pendulum1_support" pos="1.0896926208 0 0">
+      <geom name="pendulum1_support_column" type="capsule" fromto="0 -0.24 0.015 0 -0.24 0.75" size="0.012" contype="0" conaffinity="0" rgba="0.28 0.29 0.31 1"/>
+      <geom name="pendulum1_support_crossbar" type="capsule" fromto="0 -0.24 0.75 0 0.06 0.75" size="0.012" contype="0" conaffinity="0" rgba="0.28 0.29 0.31 1"/>
+    </body>
+  </worldbody>
+
+  <!-- Joint order: cart slide; ball free joint; pendulum hinge. All start from rest. -->
+  <keyframe>
+    <key name="start" qpos="0 -0.025 0 0.5420201433 1 0 0 0 0" qvel="0 0 0 0 0 0 0 0"/>
+  </keyframe>
+</mujoco>

@@ -1,0 +1,52 @@
+<mujoco model="spring_cart_ramp_pendulum">
+  <compiler angle="degree" autolimits="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" cone="elliptic" iterations="100" tolerance="1e-10"/>
+  <statistic center="0.55 0 0.35" extent="2.2"/>
+
+  <!-- MuJoCo has no direct restitution attribute. Contact damping ratio 0.6901 targets restitution 0.05. -->
+  <!-- Sliding friction is 0.68 throughout. Extra rolling resistance on the receiving deck helps the ball settle. -->
+  <!-- The cart slide points downhill: gravity assists the spring, allowing the 0.50 m approach from rest. -->
+
+  <worldbody>
+    <light name="main_light" pos="0.3 -1.5 2.5" dir="0.2 0.4 -1" diffuse="0.85 0.85 0.85"/>
+    <geom name="floor" type="plane" pos="0 0 0" size="3 2 0.1" friction="0.68 0.005 0.01" condim="6" solref="0.010 0.6901" solimp="0.95 0.95 0.001" rgba="0.78 0.80 0.82 1"/>
+
+    <!-- Local x points down the 20-degree slope. The top surface runs from x=0 to x=1 locally. -->
+    <!-- Its low edge is at world z=0.15. -->
+    <body name="ramp1" pos="0 0 0.492020143326" quat="0.984807753012 0 0.173648177667 0">
+      <geom name="ramp1_surface" type="box" pos="0.5 0 -0.02" size="0.5 0.15 0.02" friction="0.68 0.005 0.0001" condim="6" solref="0.010 0.6901" solimp="0.95 0.95 0.001" rgba="0.55 0.39 0.22 1"/>
+      <!-- A small detent holds the initially stationary ball until the cart nudges it over. -->
+      <geom name="ramp1_ball_detent" type="capsule" fromto="0.059641016151 -0.11 0.006 0.059641016151 0.11 0.006" size="0.006" friction="0.68 0.005 0.0001" condim="6" solref="0.010 0.6901" solimp="0.95 0.95 0.001" rgba="0.65 0.46 0.25 1"/>
+    </body>
+
+    <!-- At q=0, spring compression is 0.20 m and the cart's front face is 0.50 m from the ball. -->
+    <body name="cart1" pos="-0.574473504883 0 0.770282954689" quat="0.984807753012 0 0.173648177667 0">
+      <joint name="cart1_slide" type="slide" axis="1 0 0" damping="0.20" stiffness="18" springref="0.20" limited="true" range="0 0.56" solreflimit="0.010 0.6901" solimplimit="0.95 0.95 0.001"/>
+      <geom name="cart1_box" type="box" size="0.11 0.09 0.05" mass="0.50" friction="0.68 0.005 0.0001" condim="6" solref="0.010 0.6901" solimp="0.95 0.95 0.001" rgba="0.18 0.38 0.75 1"/>
+    </body>
+
+    <body name="ball1" pos="0.040593322686 0 0.530454270782">
+      <freejoint name="ball1_free"/>
+      <geom name="ball1_sphere" type="sphere" size="0.05" mass="0.20" friction="0.68 0.005 0.0001" condim="6" solref="0.010 0.6901" solimp="0.95 0.95 0.001" rgba="0.88 0.20 0.12 1"/>
+    </body>
+
+    <!-- The bob sits beyond the gap, in the ball's airborne path. -->
+    <body name="pendulum1" pos="1.189692620786 0 0.61">
+      <joint name="pendulum1_hinge" type="hinge" axis="0 1 0" damping="0.04" limited="true" range="-75 75" solreflimit="0.010 0.6901" solimplimit="0.95 0.95 0.001"/>
+      <geom name="pendulum1_rod" type="capsule" fromto="0 0 0 0 0 -0.39" size="0.006" mass="0.015" friction="0.68 0.005 0.0001" condim="6" solref="0.010 0.6901" solimp="0.95 0.95 0.001" rgba="0.25 0.27 0.30 1"/>
+      <geom name="pendulum1_bob" type="sphere" pos="0 0 -0.45" size="0.06" mass="0.20" friction="0.68 0.005 0.0001" condim="6" solref="0.010 0.6901" solimp="0.95 0.95 0.001" rgba="0.90 0.66 0.12 1"/>
+    </body>
+
+    <!-- Ramp low edge: x=0.939692620786. Receiving deck begins at x=1.039692620786: a 0.10 m gap. -->
+    <body name="catch_deck" pos="0 0 0">
+      <geom name="catch_deck_surface" type="box" pos="1.389692620786 0 0.0125" size="0.35 0.20 0.0125" friction="0.68 0.005 0.01" condim="6" solref="0.010 0.6901" solimp="0.95 0.95 0.001" rgba="0.35 0.48 0.40 1"/>
+      <geom name="catch_deck_end_wall" type="box" pos="1.759692620786 0 0.15" size="0.02 0.24 0.15" friction="0.68 0.005 0.01" condim="6" solref="0.010 0.6901" solimp="0.95 0.95 0.001" rgba="0.28 0.40 0.33 1"/>
+      <geom name="catch_deck_left_wall" type="box" pos="1.389692620786 0.22 0.10" size="0.35 0.02 0.10" friction="0.68 0.005 0.01" condim="6" solref="0.010 0.6901" solimp="0.95 0.95 0.001" rgba="0.28 0.40 0.33 1"/>
+      <geom name="catch_deck_right_wall" type="box" pos="1.389692620786 -0.22 0.10" size="0.35 0.02 0.10" friction="0.68 0.005 0.01" condim="6" solref="0.010 0.6901" solimp="0.95 0.95 0.001" rgba="0.28 0.40 0.33 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start" time="0" qpos="0 0.040593322686 0 0.530454270782 1 0 0 0 0" qvel="0 0 0 0 0 0 0 0"/>
+  </keyframe>
+</mujoco>

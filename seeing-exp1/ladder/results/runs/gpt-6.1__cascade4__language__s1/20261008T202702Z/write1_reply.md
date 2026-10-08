@@ -1,0 +1,168 @@
+This uses a long-radius hinge as an approximate slider, with equivalent translational damping of 0.20 N·s/m. Numeric restitution is unavailable in the supplied language, so contacts use `bounce dead`; the scene has not been simulation-verified.
+
+```world
+world  two ramps domino flap and cart
+
+-- Gravity relies on the compiler's standard 9.81 m/s² default.
+-- No body has a starting velocity or spin.
+-- bounce dead is qualitative, not an explicit restitution of 0.05.
+-- The cart guide approximates a horizontal slide:
+-- radius 1000 m, angular damping 200000 N·m·s/rad.
+-- Equivalent translational damping is 200000 / 1000² = 0.20 N·s/m.
+-- At 0.45 m travel, its vertical deviation is approximately 0.10 mm.
+
+floor
+  size      10 m
+  friction  0.70, spinning 0.005, rolling 0.002
+
+ramp1 high
+  is a  point
+  at    0 m along, 0 m to the left, 0.473226 m up
+
+ramp1 low
+  is a  point
+  at    0.939693 m along, 0 m to the left, 0.131206 m up
+
+ramp1
+  is a       ramp
+  high end   ramp1 high
+  low end    ramp1 low
+  width      0.30 m
+  thickness  0.04 m
+  friction   0.70
+  bounce     dead
+  colour     wood
+
+-- The deck centreline is 1.00 m long at 20 degrees.
+-- Its upper surface at the low end is 0.15 m above the floor.
+-- Ball centres are offset normally from the deck by 0.07 m.
+
+ball1
+  is a      sphere 0.10 m across, 0.20 kg
+  moves     freely
+  rolls
+  friction  0.70
+  bounce    dead
+  colour    orange
+  at        0.023941 m along, 0 m to the left, 0.539004 m up
+
+domino plinth
+  is a      box 0.40 by 0.30 by 0.07 m
+  stands    on floor, 1.236533 m along, 0 m to the left
+  friction  0.70
+  bounce    dead
+  colour    grey
+
+-- Domino1's near face is 0.10 m beyond ramp1's low surface edge.
+
+domino1
+  is a      box 0.08 by 0.04 by 0.24 m, 0.25 kg
+  moves     freely
+  stands    on domino plinth, 1.086533 m along, 0 m to the left
+  friction  0.70
+  bounce    dead
+  colour    white
+
+domino2
+  is a      box 0.08 by 0.04 by 0.24 m, 0.25 kg
+  moves     freely
+  stands    on domino plinth, 0.18 m beyond domino1, 0 m to the left
+  friction  0.70
+  bounce    dead
+  colour    white
+
+flap pivot
+  is a  point
+  at    1.449533 m along, 0 m to the left, 0.15 m up
+
+-- The panel is 0.40 m high, 0.20 m wide and 0.04 m thick.
+-- Its centre is 0.18 m beyond domino2.
+-- The pivot's small forward offset holds it against its lower stop
+-- until domino2 strikes its lower half.
+-- Positive rotation about y is clockwise when viewed from the right.
+
+flap1
+  is a           box 0.04 by 0.20 by 0.40 m, 0.30 kg
+  raised         0.15 m, 1.446533 m along, 0 m to the left
+  turns on       flap hinge, about y, at flap pivot
+  swings         from 0 deg to 65 deg
+  starts turned  0 deg
+  damping        0.04 N·m·s/rad
+  friction       0.70
+  bounce         dead
+  colour         wood
+
+cart guide pivot
+  is a  point
+  at    1.679533 m along, 0 m to the left, 1000.50 m up
+
+-- This virtual guide keeps the cart almost horizontal without
+-- introducing floor friction into the intended damped slide.
+
+cart1
+  is a           box 0.22 by 0.18 by 0.10 m, 0.50 kg
+  at             1.679533 m along, 0 m to the left, 0.50 m up
+  turns on       cart guide approximation, about y, at cart guide pivot
+  swings         from -0.05 deg to 0 deg
+  starts turned  0 deg
+  damping        200000 N·m·s/rad
+  friction       0.70
+  bounce         dead
+  colour         grey
+
+ramp2 high
+  is a  point
+  at    2.265592 m along, 0 m to the left, 0.473226 m up
+
+ramp2 low
+  is a  point
+  at    3.205285 m along, 0 m to the left, 0.131206 m up
+
+ramp2
+  is a       ramp
+  high end   ramp2 high
+  low end    ramp2 low
+  width      0.30 m
+  thickness  0.04 m
+  friction   0.70
+  bounce     dead
+  colour     wood
+
+-- A passive lip holds ball2 at the high end until cart1 strikes it.
+-- The ball need rise only about 0.01 m to pass over the lip.
+
+ball2 retaining lip
+  is a      box 0.012 by 0.16 by 0.024 m
+  raised    0.475004 m, 2.325533 m along, 0 m to the left
+  friction  0.70
+  bounce    dead
+  colour    dark grey
+
+-- The initial gap from cart1's far face to ball2 is 0.45 m.
+
+ball2
+  is a      sphere 0.10 m across, 0.20 kg
+  moves     freely
+  rolls
+  friction  0.70
+  bounce    dead
+  colour    orange
+  at        2.289533 m along, 0 m to the left, 0.539004 m up
+
+expect
+  ball1 touches ramp1
+  ball1 touches domino1
+  domino1 touches domino2
+  domino2 touches flap1
+  flap1 touches cart1
+  flap1 reaches its upper stop
+  cart1 touches ball2
+  ball2 touches ramp2
+```
+
+---
+thinking (summarized):
+
+**Calculating pendulum dynamics**
+
+I need to determine the potential to inertia ratio for a gravity-accelerated pendulum with radius r. If r is large, it results in a lower speed of the flap tip. Also, I've noticed that using counterweights doesn't entirely solve the issue if the position is higher. So, it seems like I'll have to factor in these elements carefully to understand the overall dynamics better. Let's dig into this more!

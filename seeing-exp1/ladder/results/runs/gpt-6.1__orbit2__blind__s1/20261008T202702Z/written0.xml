@@ -1,0 +1,51 @@
+<mujoco model="pendulum_ramp_cart">
+  <compiler angle="degree" autolimits="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100" tolerance="1e-10" cone="elliptic"/>
+  <size njmax="1000" nconmax="200"/>
+
+  <visual>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.7 0.7 0.7" specular="0.2 0.2 0.2"/>
+    <map znear="0.01" zfar="30"/>
+  </visual>
+
+  <!-- Sliding friction is 0.68. The other coefficients are torsional and rolling resistance. -->
+  <!-- Contact damping ratio 0.6901 targets restitution 0.05 for an isolated impact. -->
+
+  <worldbody>
+    <light name="main_light" pos="0.5 -2 4" dir="0 0 -1" directional="true"/>
+    <camera name="overview" pos="1 -3.5 1.8" xyaxes="1 0 0 0 0.35 0.93675"/>
+
+    <geom name="floor" type="plane" pos="0 0 0" size="5 3 0.1" friction="0.68 0.001 0.005" condim="6" solref="0.006 0.6901" solimp="0.99 0.99 0.001" rgba="0.28 0.31 0.34 1"/>
+
+    <!-- Ramp top: 0.95 m along its incline, 0.30 m wide, inclined 19 degrees. -->
+    <!-- Its downhill top edge is at x=0.898242647, z=0.15. -->
+    <body name="ramp1" pos="0.449121323 0 0.304644873" euler="0 19 0">
+      <geom name="ramp1_surface" type="box" pos="0 0 -0.025" size="0.475 0.15 0.025" friction="0.68 0.001 0.005" condim="6" solref="0.006 0.6901" solimp="0.99 0.99 0.001" rgba="0.48 0.56 0.65 1"/>
+    </body>
+
+    <!-- The pendulum extends 0.55 m below its pivot and has total mass 0.40 kg. -->
+    <!-- Positive initial angle places it left of vertical; gravity drives negative rotation about +y. -->
+    <body name="pendulum1" pos="0.403972075 0 0.906900485">
+      <joint name="pendulum1_hinge" type="hinge" pos="0 0 0" axis="0 1 0" damping="0.04"/>
+      <geom name="pendulum1_rod" type="capsule" fromto="0 0 -0.014 0 0 -0.525" size="0.014" mass="0.38" friction="0.68 0.001 0.005" condim="6" solref="0.006 0.6901" solimp="0.99 0.99 0.001" rgba="0.85 0.48 0.16 1"/>
+      <geom name="pendulum1_tip" type="sphere" pos="0 0 -0.525" size="0.025" mass="0.02" friction="0.68 0.001 0.005" condim="6" solref="0.006 0.6901" solimp="0.99 0.99 0.001" rgba="0.95 0.63 0.20 1"/>
+    </body>
+
+    <!-- Initially supported 0.06 m down the ramp from its high edge. -->
+    <body name="ball1" pos="0.073009522 0 0.487031586">
+      <freejoint name="ball1_free"/>
+      <geom name="ball1_sphere" type="sphere" size="0.05" mass="0.20" friction="0.68 0.001 0.005" condim="6" solref="0.006 0.6901" solimp="0.99 0.99 0.001" rgba="0.85 0.16 0.12 1"/>
+    </body>
+
+    <!-- Cart's near face is x=1.018242647: a 0.12 m horizontal gap beyond the ramp. -->
+    <body name="cart1" pos="1.128242647 0 0.05">
+      <joint name="cart1_slide" type="slide" axis="1 0 0" damping="0.20"/>
+      <geom name="cart1_chassis" type="box" size="0.11 0.09 0.05" mass="0.50" friction="0.68 0.001 0.005" condim="6" solref="0.006 0.6901" solimp="0.99 0.99 0.001" rgba="0.16 0.55 0.32 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <!-- Keyframe joint angles are radians. Every initial velocity is zero. -->
+    <key name="start" time="0" qpos="0.959931089 0.073009522 0 0.487031586 1 0 0 0 0" qvel="0 0 0 0 0 0 0 0"/>
+  </keyframe>
+</mujoco>

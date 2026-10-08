@@ -1,0 +1,163 @@
+No. This time the cascade reaches the flap: ball1 hits domino1, domino1 topples into domino2, and domino2 strikes flap1 at 1.19 s. Flap1 hits cart1 at 1.36 s and reaches its 65° stop.
+
+The cart advances, but at 2.54 s it hits **ramp2’s support leg**, stopping just short of ball2. No cart1–ball2 contact is recorded, and ball2 remains at rest.
+
+The correction removes that obstructing leg by making ramp2 a fixed plank directly. This revision is untested; the disclosed slider and restitution approximations remain.
+
+```world
+world  two ramps with unobstructed second ramp
+
+-- Gravity relies on the compiler's standard 9.81 m/s² default.
+-- Every moving body starts with zero velocity and zero spin.
+-- bounce dead is qualitative, not an explicit restitution of 0.05.
+-- The cart guide approximates a horizontal slide using a 1000 m radius.
+-- Its equivalent translational damping is 0.20 N·s/m.
+-- At 0.45 m travel, its vertical deviation is approximately 0.10 mm.
+
+floor
+  size      10 m
+  friction  0.70, spinning 0.005, rolling 0.002
+
+ramp1
+  is a       ramp
+  high end   0 m along, 0 m to the left, 0.473226 m up
+  low end    0.939693 m along, 0 m to the left, 0.131206 m up
+  width      0.30 m
+  thickness  0.04 m
+  friction   0.70
+  bounce     dead
+  colour     wood
+
+-- The deck centreline is 1.00 m long at 20 degrees.
+-- Its upper surface at the low end is 0.15 m above the floor.
+
+ball1
+  is a      sphere 0.10 m across, 0.20 kg
+  moves     freely
+  rolls
+  friction  0.70
+  bounce    dead
+  colour    orange
+  at        0.023941 m along, 0 m to the left, 0.539004 m up
+
+domino plinth
+  is a      box 0.40 by 0.30 by 0.07 m
+  stands    on floor, 1.216533 m along, 0 m to the left
+  friction  0.70
+  bounce    dead
+  colour    grey
+
+-- Each domino has its 0.04 m thickness along the chain,
+-- its 0.08 m width across it, and its 0.24 m height upright.
+-- Domino1's near face is 0.10 m beyond ramp1's low surface edge.
+
+domino1
+  is a      box 0.04 by 0.08 by 0.24 m, 0.25 kg
+  moves     freely
+  stands    on domino plinth, 1.066533 m along, 0 m to the left
+  friction  0.70
+  bounce    dead
+  colour    white
+
+domino2
+  is a      box 0.04 by 0.08 by 0.24 m, 0.25 kg
+  moves     freely
+  stands    on domino plinth, 0.18 m beyond domino1, 0 m to the left
+  friction  0.70
+  bounce    dead
+  colour    white
+
+flap pivot
+  is a  point
+  at    1.429533 m along, 0 m to the left, 0.15 m up
+
+-- The panel is 0.40 m high, 0.20 m wide and 0.04 m thick.
+-- Its centre is 0.18 m beyond domino2.
+-- The pivot's small forward offset holds it against its lower stop
+-- until domino2 strikes its lower half.
+-- Positive rotation about y is clockwise when viewed from the right.
+
+flap1
+  is a           box 0.04 by 0.20 by 0.40 m, 0.30 kg
+  raised         0.15 m, 1.426533 m along, 0 m to the left
+  turns on       flap hinge, about y, at flap pivot
+  swings         from 0 deg to 65 deg
+  starts turned  0 deg
+  damping        0.04 N·m·s/rad
+  friction       0.70
+  bounce         dead
+  colour         wood
+
+cart guide pivot
+  is a  point
+  at    1.659533 m along, 0 m to the left, 1000.50 m up
+
+-- This virtual guide is an approximation, not an actual slide joint.
+-- Angular damping divided by radius squared gives 0.20 N·s/m.
+
+cart1
+  is a           box 0.22 by 0.18 by 0.10 m, 0.50 kg
+  at             1.659533 m along, 0 m to the left, 0.50 m up
+  turns on       cart guide approximation, about y, at cart guide pivot
+  swings         from -0.05 deg to 0 deg
+  starts turned  0 deg
+  damping        200000 N·m·s/rad
+  friction       0.70
+  bounce         dead
+  colour         grey
+
+ramp2 high
+  is a  point
+  at    2.245592 m along, 0 m to the left, 0.473226 m up
+
+ramp2 low
+  is a  point
+  at    3.185285 m along, 0 m to the left, 0.131206 m up
+
+-- A fixed plank needs no support body in MuJoCo.
+-- Omitting the library ramp's high-end leg clears the cart's path.
+
+ramp2
+  is a      plank from ramp2 high to ramp2 low, 0.30 m wide, 0.04 m thick
+  friction  0.70
+  bounce    dead
+  colour    wood
+
+-- This passive lip prevents ball2 rolling before cart1 arrives.
+
+ball2 retaining lip
+  is a      box 0.012 by 0.16 by 0.024 m
+  raised    0.475004 m, 2.305533 m along, 0 m to the left
+  friction  0.70
+  bounce    dead
+  colour    dark grey
+
+-- The initial gap from cart1's far face to ball2 is 0.45 m.
+
+ball2
+  is a      sphere 0.10 m across, 0.20 kg
+  moves     freely
+  rolls
+  friction  0.70
+  bounce    dead
+  colour    orange
+  at        2.269533 m along, 0 m to the left, 0.539004 m up
+
+expect
+  ball1 touches ramp1
+  ball1 touches domino1
+  domino1 touches domino2
+  domino2 touches flap1
+  flap1 touches cart1
+  flap1 reaches its upper stop
+  cart1 touches ball2
+  ball2 touches ramp2
+```
+
+```json
+{
+  "what_happens": "Ball1 triggers both dominoes, domino2 strikes flap1, and flap1 strikes cart1 before settling at its 65-degree stop. Cart1 advances but hits ramp2's support leg just short of ball2. Ball2 remains at rest, and no cart1-ball2 contact occurs.",
+  "works": false,
+  "problem": "Ramp2's high-end support leg obstructs cart1 before it can touch ball2."
+}
+```

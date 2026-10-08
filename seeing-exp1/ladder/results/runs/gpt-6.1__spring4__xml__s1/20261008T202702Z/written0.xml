@@ -1,0 +1,78 @@
+<mujoco model="passive_cart_ball_pendulum_door">
+  <compiler angle="degree" autolimits="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100" tolerance="1e-10"/>
+  <size njmax="300" nconmax="100"/>
+
+  <!-- MuJoCo has no direct restitution attribute. This solref targets approximately 0.05 restitution; actual rebound depends on the contact dynamics. -->
+  <!-- The cart guide descends at 20 degrees. Gravity supplements the initially compressed spring, allowing 0.50 m of travel. -->
+  <!-- The pendulum has a 0.50 m pivot-to-bob length and a passive counterweight; its complete moving assembly weighs 0.35 kg. -->
+  <!-- Door1 is a bottom-hinged, initially upright flap. Gravity assists its motion after the pendulum tips it. -->
+  <!-- Negative hinge angles are clockwise when viewed from the positive side of the respective hinge axis. -->
+
+  <visual>
+    <global azimuth="125" elevation="-20"/>
+    <headlight ambient="0.45 0.45 0.45" diffuse="0.65 0.65 0.65" specular="0.15 0.15 0.15"/>
+    <rgba haze="0.85 0.9 0.95 1"/>
+  </visual>
+
+  <worldbody>
+    <light name="scene_light" pos="0 -3 5" dir="0 0.5 -1" directional="true"/>
+    <camera name="overview" pos="3.2 -4.2 2.5" xyaxes="0.86 0.51 0 -0.20 0.34 0.92"/>
+
+    <geom name="floor" type="plane" size="5 3 0.1" friction="0.68 0.005 0.002" condim="6" solref="0.006 0.690107" solimp="0.99 0.99 0.001" rgba="0.78 0.81 0.84 1"/>
+
+    <body name="ramp1" pos="0 0 0">
+      <geom name="ramp1_incline" type="box" pos="0.46300591 0 0.30221622" euler="0 20 0" size="0.50 0.15 0.02" friction="0.68 0.005 0.002" condim="6" solref="0.006 0.690107" solimp="0.99 0.99 0.001" rgba="0.34 0.48 0.62 1"/>
+      <!-- A short horizontal launch shelf keeps ball1 stationary until cart1 arrives. -->
+      <geom name="ramp1_launch_shelf" type="box" pos="-0.11 0 0.48202014" size="0.13 0.15 0.01" friction="0.68 0.005 0.002" condim="6" solref="0.006 0.690107" solimp="0.99 0.99 0.001" rgba="0.34 0.48 0.62 1"/>
+    </body>
+
+    <body name="cart1" pos="-0.62019713 0 0.76775344" euler="0 20 0">
+      <joint name="cart1_slide" type="slide" axis="1 0 0" damping="0.20" stiffness="18" springref="0.20" range="-0.01 0.57" solreflimit="0.004 1" solimplimit="0.999 0.999 0.0001"/>
+      <geom name="cart1_box" type="box" size="0.11 0.09 0.05" mass="0.50" friction="0.68 0.005 0.002" condim="6" solref="0.006 0.690107" solimp="0.99 0.99 0.001" rgba="0.80 0.28 0.16 1"/>
+    </body>
+
+    <body name="ball1" pos="0 0 0.54202014">
+      <freejoint name="ball1_free"/>
+      <geom name="ball1_sphere" type="sphere" size="0.05" mass="0.20" friction="0.68 0.005 0.002" condim="6" solref="0.006 0.690107" solimp="0.99 0.99 0.001" rgba="0.95 0.68 0.12 1"/>
+    </body>
+
+    <!-- Ramp surface low edge: x=0.93969262, z=0.15.
+         Initial bob near surface: x=1.03969262, giving a 0.10 m clear gap. -->
+    <body name="pendulum1" pos="1.08969262 0 0.684">
+      <joint name="pendulum1_hinge" type="hinge" axis="0 1 0" damping="0.04" range="-85 0" solreflimit="0.004 1" solimplimit="0.999 0.999 0.0001"/>
+      <inertial pos="0 0 -0.007142857" mass="0.35" diaginertia="0.031666 0.031666 0.00025032"/>
+      <geom name="pendulum1_rod" type="capsule" fromto="0 0 0 0 0 -0.50" size="0.008" mass="0" friction="0.68 0.005 0.002" condim="6" solref="0.006 0.690107" solimp="0.99 0.99 0.001" rgba="0.35 0.36 0.39 1"/>
+      <geom name="pendulum1_bob" type="sphere" pos="0 0 -0.50" size="0.05" mass="0" friction="0.68 0.005 0.002" condim="6" solref="0.006 0.690107" solimp="0.99 0.99 0.001" rgba="0.20 0.60 0.38 1"/>
+      <geom name="pendulum1_counterweight_stem" type="capsule" fromto="0 0 0 0 0 0.18" size="0.006" mass="0" friction="0.68 0.005 0.002" condim="6" solref="0.006 0.690107" solimp="0.99 0.99 0.001" rgba="0.35 0.36 0.39 1"/>
+      <geom name="pendulum1_counterweight" type="sphere" pos="0 0 0.18" size="0.04" mass="0" friction="0.68 0.005 0.002" condim="6" solref="0.006 0.690107" solimp="0.99 0.99 0.001" rgba="0.25 0.28 0.31 1"/>
+    </body>
+
+    <!-- The resting panel's near face meets the bob at a pendulum angle of -40 degrees. -->
+    <body name="door1" pos="1.48108643 0 0.08">
+      <joint name="door1_hinge" type="hinge" axis="0 -1 0" damping="0.04" range="-70 0" solreflimit="0.004 1" solimplimit="0.999 0.999 0.0001"/>
+      <geom name="door1_panel" type="box" pos="0 0 0.21" size="0.02 0.16 0.21" mass="0.45" friction="0.68 0.005 0.002" condim="6" solref="0.006 0.690107" solimp="0.99 0.99 0.001" rgba="0.52 0.32 0.68 1"/>
+    </body>
+
+    <!-- Block contact begins approximately one degree before the door's 70-degree hard stop. -->
+    <body name="block1" pos="1.94035743 0 0.22">
+      <freejoint name="block1_free"/>
+      <geom name="block1_cube" type="box" size="0.06 0.06 0.06" mass="0.35" friction="0.68 0.005 0.002" condim="6" solref="0.006 0.690107" solimp="0.99 0.99 0.001" rgba="0.18 0.48 0.78 1"/>
+    </body>
+
+    <body name="block1_pedestal" pos="1.90267872 0 0.08">
+      <geom name="block1_pedestal_box" type="box" size="0.04267872 0.10 0.08" friction="0.68 0.005 0.002" condim="6" solref="0.006 0.690107" solimp="0.99 0.99 0.001" rgba="0.46 0.49 0.52 1"/>
+    </body>
+
+    <!-- A low catcher stops the spent ball without obstructing the pendulum or allowing the ball to strike the door directly. -->
+    <body name="ball1_catcher" pos="0 0 0">
+      <geom name="ball1_catcher_end" type="box" pos="1.25 0 0.065" size="0.01 0.20 0.065" friction="0.68 0.005 0.002" condim="6" solref="0.006 0.690107" solimp="0.99 0.99 0.001" rgba="0.43 0.46 0.49 1"/>
+      <geom name="ball1_catcher_side_left" type="box" pos="1.10 0.19 0.05" size="0.16 0.01 0.05" friction="0.68 0.005 0.002" condim="6" solref="0.006 0.690107" solimp="0.99 0.99 0.001" rgba="0.43 0.46 0.49 1"/>
+      <geom name="ball1_catcher_side_right" type="box" pos="1.10 -0.19 0.05" size="0.16 0.01 0.05" friction="0.68 0.005 0.002" condim="6" solref="0.006 0.690107" solimp="0.99 0.99 0.001" rgba="0.43 0.46 0.49 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start" time="0" qpos="0 0 0 0.54202014 1 0 0 0 0 0 1.94035743 0 0.22 1 0 0 0" qvel="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+  </keyframe>
+</mujoco>
