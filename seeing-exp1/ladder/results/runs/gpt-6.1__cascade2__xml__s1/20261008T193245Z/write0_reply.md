@@ -1,0 +1,71 @@
+```xml
+<mujoco model="ramp_ball_domino_chain">
+  <compiler angle="degree" inertiafromgeom="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" cone="elliptic" iterations="100" tolerance="1e-10"/>
+
+  <!-- MuJoCo has no direct restitution coefficient. This contact damping
+       ratio approximates restitution 0.05 with nearly constant impedance.
+       Tangential friction is 0.70; modest rolling resistance lets the ball settle. -->
+
+  <custom>
+    <numeric name="nominal_restitution" data="0.05"/>
+    <!-- Documentary values: this scene has no hinge or slide joints. -->
+    <numeric name="hinge_damping_Nm_s_per_rad" data="0.04"/>
+    <numeric name="slide_damping_N_s_per_m" data="0.20"/>
+  </custom>
+
+  <visual>
+    <headlight ambient="0.4 0.4 0.4" diffuse="0.7 0.7 0.7" specular="0.2 0.2 0.2"/>
+  </visual>
+
+  <worldbody>
+    <light name="main_light" pos="0 -2 3" dir="0 0 -1"/>
+    <camera name="overview" pos="1.6 -2.4 1.5" xyaxes="0.923 0.385 0 -0.170 0.408 0.897"/>
+
+    <geom name="floor" type="plane" pos="0 0 0" size="4 3 0.1" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.690107" solimp="0.999 0.999 0.001 0.5 2" rgba="0.82 0.84 0.86 1"/>
+
+    <!-- The upper ramp face is 1.00 m long and 0.30 m wide.
+         It descends toward +x at 20 degrees.
+         Its low-end upper edge is (0.473266512, 0, 0.15). -->
+    <body name="ramp1" pos="0 0 0.311613144" euler="0 20 0">
+      <geom name="ramp1_surface" type="box" size="0.50 0.15 0.01" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.690107" solimp="0.999 0.999 0.001 0.5 2" rgba="0.38 0.48 0.60 1"/>
+    </body>
+
+    <!-- Initially tangent to the ramp at its high end, with zero velocity. -->
+    <body name="ball1" pos="-0.449325101 0 0.539004773">
+      <freejoint name="ball1_free"/>
+      <geom name="ball1_sphere" type="sphere" size="0.05" mass="0.20" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.690107" solimp="0.999 0.999 0.001 0.5 2" rgba="0.90 0.20 0.12 1"/>
+    </body>
+
+    <!-- Each domino measures 0.08 by 0.04 by 0.24 m.
+         Rotation puts its 0.04 m thickness along the +x travel direction.
+         Domino1's near face is 0.10 m beyond the ramp's low-end edge. -->
+    <body name="domino1" pos="0.593266512 0 0.12" quat="0.707106781 0 0 0.707106781">
+      <freejoint name="domino1_free"/>
+      <geom name="domino1_box" type="box" size="0.04 0.02 0.12" mass="0.25" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.690107" solimp="0.999 0.999 0.001 0.5 2" rgba="0.95 0.68 0.12 1"/>
+    </body>
+
+    <!-- Center-to-center spacing from domino1 is exactly 0.18 m. -->
+    <body name="domino2" pos="0.773266512 0 0.12" quat="0.707106781 0 0 0.707106781">
+      <freejoint name="domino2_free"/>
+      <geom name="domino2_box" type="box" size="0.04 0.02 0.12" mass="0.25" friction="0.70 0.005 0.005" condim="6" solref="0.008 0.690107" solimp="0.999 0.999 0.001 0.5 2" rgba="0.20 0.65 0.35 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <!-- Omitted qpos uses the initial body poses above. -->
+    <key name="start" time="0" qvel="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+  </keyframe>
+</mujoco>
+```
+
+---
+thinking (summarized):
+
+**Analyzing collision dynamics**
+
+I'm piecing together the physics of a collision scenario, considering angular movement and friction. After impact, I calculate final speeds and how quickly the system comes to a stop. I note that rolling friction affects domino tipping by resisting torque. I worry about whether the domino could be toppled post-collision. Also, I plan to clarify in my documentation about the low-restitution contact model and ensuring the user knows the expected numerical values.
+
+**Clarifying restitution and friction details**
+
+I need to clarify that we shouldn't imply an exact restitution in my documentation because that might create misunderstandings. I recognize rolling friction and its relation to tangential friction. I'm working with parameters for `solimp`, ensuring my values are set correctly. I also consider whether to name the `<freejoint/>` and make sure all body names are accurate, including orientation and sizes using quaternions. I want to avoid over-explaining while still providing necessary comments for clarity.
