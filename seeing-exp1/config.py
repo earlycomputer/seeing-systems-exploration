@@ -42,4 +42,5 @@ SEEDS = (0, 1, 2)
 # $30 and needs the cap "to about $250"; $213.26 spent before it (1j ceiling $35 in ladder/settings.py).
 # Raised to $285 on 2026-10-08: 16-step worlds cost about $1.30, so the full ladder is about $63; Jono chose "Full
 # ladder" on the card asking to raise the cap to about $285 ($222.57 spent).
-SPEND_CAP_USD = 285.0
+# Raised to $295 on 2026-10-08: seed 1 plus the judge comes to about $35 with $32.52 left; Jono chose "Raise to $295".
+SPEND_CAP_USD = 295.0
