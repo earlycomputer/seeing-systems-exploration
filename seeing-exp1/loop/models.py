@@ -211,6 +211,8 @@ class OpenAIChat(Chat):
         while r.status in ("queued", "in_progress"):
             time.sleep(5)
             r = self.client.responses.retrieve(r.id)
+        if r.status == "failed" or r.usage is None:
+            raise RuntimeError(f"OpenAI response {r.status}: {r.error.message if r.error else r.incomplete_details}")
         self.previous_id = r.id
         thinking = "\n\n".join(s.text for item in r.output if item.type == "reasoning" for s in (item.summary or []))
         return Reply(

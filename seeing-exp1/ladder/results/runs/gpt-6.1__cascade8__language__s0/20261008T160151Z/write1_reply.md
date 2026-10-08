@@ -1,0 +1,229 @@
+This uses the supplied syntax, with the unavoidable approximations marked in comments. It has not been simulation-tested.
+
+```parts
+part rigid impact pendulum
+  needs  pivot height
+  needs  length
+  needs  bob radius
+  needs  bob mass
+  needs  rod mass
+  needs  damping
+
+  pivot
+    is a  point
+    at    pivot height up
+
+  bob
+    is a           sphere bob radius radius, bob mass
+    length below pivot
+    turns on       pendulum hinge, about y, at pivot
+    swings         −90° to 90°
+    damping        damping
+    starts turned  0°
+
+  rod
+    is a         rod 4 mm thick, from pivot to bob's top
+    weighs       rod mass
+    attached to  bob
+```
+
+```world
+world  gravity chain draft
+
+-- All moving bodies start from rest: no launches or starting spins.
+-- The language does not expose gravity or numeric restitution settings.
+-- Gravity therefore depends on the compiler default.
+-- "bounce dead" is an approximation, not an exact restitution of 0.05.
+-- cart1 uses a physical guide track rather than an unavailable slide joint.
+-- The specified 0.20 N·s/m slide damping cannot be expressed.
+-- The tilted lever and its ball retainer approximate the launching stage;
+-- they do not implement a guaranteed vertical launch.
+-- The expectations below are test targets, not reported simulation results.
+
+floor
+  size      10 m
+  friction  0.70, spinning 0, rolling 0
+
+ramp1 high
+  is a  point
+  at    0 m along, 0 m to the left, 0.47322629 m up
+
+ramp1 low
+  is a  point
+  at    0.93969262 m along, 0 m to the left, 0.13120615 m up
+
+ramp1
+  is a      plank from ramp1 high to ramp1 low, 0.30 m wide, 0.04 m thick
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    wood
+
+ball1
+  is a      sphere 0.10 m across, 0.20 kg
+  rolls
+  moves     freely
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+  rests     on ramp1, 0 m from the top
+
+domino1
+  is a      box 0.08 by 0.04 by 0.24 m, 0.25 kg
+  moves     freely
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    white
+  stands    on floor, 0.14 m beyond ramp1 low, 0 m to the left
+
+domino2
+  is a      box 0.08 by 0.04 by 0.24 m, 0.25 kg
+  moves     freely
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    white
+  stands    on floor, 0.18 m beyond domino1, 0 m to the left
+
+flap1
+  is a           box 0.04 by 0.20 by 0.40 m, 0.30 kg
+  friction       0.70, spinning 0, rolling 0
+  bounce         dead
+  colour         wood
+  at             0.18 m beyond domino2, 0 m to the left, 0.35 m up
+  turns on       flap hinge, about y, at its top
+  swings         −65° to 0°
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+
+cart track
+  is a      box 0.67 by 0.30 by 0.04 m
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+  at        1.86469262 m along, 0 m to the left, 0.42 m up
+
+cart left guide
+  is a      box 0.67 by 0.02 by 0.14 m
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+  on        cart track, 0 m beyond cart track, 0.11 m left of cart track
+
+cart right guide
+  is a      box 0.67 by 0.02 by 0.14 m
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+  on        cart track, 0 m beyond cart track, 0.11 m right of cart track
+
+cart1
+  is a      box 0.22 by 0.18 by 0.10 m, 0.50 kg
+  moves     freely
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+  stands    on cart track, 0.225 m behind cart track, 0 m to the left
+
+ramp2 high
+  is a  point
+  at    2.22575121 m along, 0 m to the left, 0.47322629 m up
+
+ramp2 low
+  is a  point
+  at    3.16544383 m along, 0 m to the left, 0.13120615 m up
+
+ramp2
+  is a      plank from ramp2 high to ramp2 low, 0.30 m wide, 0.04 m thick
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    wood
+
+ball2
+  is a      sphere 0.10 m across, 0.20 kg
+  rolls
+  moves     freely
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+  rests     on ramp2, 0 m from the top
+
+lever pivot
+  is a  point
+  at    3.50441627 m along, 0 m to the left, 0.44 m up
+
+lever1
+  is a           box 0.60 by 0.10 by 0.04 m, 0.50 kg
+  friction       0.70, spinning 0, rolling 0
+  bounce         dead
+  colour         wood
+  at             lever pivot
+  turns on       lever hinge, about y, at lever pivot
+  swings         −90° to −45°
+  damping        0.04 N·m·s/rad
+  starts turned  −45°
+
+lever ball retainer
+  is a         box 0.02 by 0.10 by 0.10 m, 1 g
+  friction     0.70, spinning 0, rolling 0
+  bounce       dead
+  colour       wood
+  at           0.20 m beyond lever pivot, 0 m to the left, 0.51 m up
+  attached to  lever1
+
+ball3
+  is a      sphere 0.10 m across, 0.20 kg
+  rolls
+  moves     freely
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+  at        3.63876656 m along, 0 m to the left, 0.67334524 m up
+
+ring1
+  is a      ring 0.16 m across, 8 mm thick
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+  at        0 m beyond ball3, 0 m left of ball3, 0.35 m below ball3
+
+pendulum1
+  is a          rigid impact pendulum
+  pivot height  0.51167262 m
+  length        0.50 m
+  bob radius    0.01167262 m
+  bob mass      0.34 kg
+  rod mass      0.01 kg
+  damping       0.04 N·m·s/rad
+  friction      0.70, spinning 0, rolling 0
+  bounce        dead
+  colour        grey
+  at            0 m beyond ring1, 0 m left of ring1
+
+expect
+  ball1 touches ramp1
+  ball1 touches domino1
+  domino1 touches domino2
+  domino2 touches flap1
+  flap1 reaches its lower stop
+  flap1 touches cart1
+  cart1 touches ball2
+  ball2 touches ramp2
+  ball2 touches lever1
+  lever1 reaches its lower stop
+  ball3 drops through ring1
+  ball3 touches pendulum1
+```
+
+---
+thinking (summarized):
+
+**Figuring out pendulum setup**
+
+I'm working on a pendulum setup using a direct pendulum primitive rod with a hinge at a defined pivot point. The mass is 0.35, and I have a separate geometry for the pendulum bob. I need to clarify that the pendulum body rod and the attached bob should move together within the same world body. I’ll set specific parameters for the custom part like the length, bob radius, and damping. It’s a bit complex, but I feel I'm getting there!
+
+**Evaluating cart system design**
+
+I’m thinking about improving the support for the free cart guide by using auxiliary springs and coupling without vertical constraints. The current language doesn’t fully express the entire world accurately. I need to focus on picking the most transparent and effective options, avoiding any pretense of completeness. I want to ensure that the final product includes a valid world with explanations on the cart-free floor rail and any physical failure annotations.
+
+**Figuring dimensions and setup**
+
+I'm exploring the dimensions of the hinge, which ranges from -90 to 90. It starts at 0 and hangs vertically. I have a rod with a physical length of .004, and I need to measure the length between the pivot and the top of the bob, which is .488. I’m focusing on getting these measurements correct for the center bob. It's kind of tricky, but I'm working through it!

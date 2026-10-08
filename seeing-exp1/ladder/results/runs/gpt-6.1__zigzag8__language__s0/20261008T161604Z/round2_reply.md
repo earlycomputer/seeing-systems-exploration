@@ -1,0 +1,278 @@
+No. Ball1 drops through ring1 at about 0.25 s and touches lever1 at 0.34 s. At 0.36 s, the lever collides with both bearing rails, preventing its intended rotation. It settles around 39.7°, with ball1 resting against the lever and its ball stop. The lever never strikes cart1; the cart slowly drifts about 0.05 m, and domino1 and every downstream named body remain stationary.
+
+The revision below clears the rails from the lever’s sweep, extends the rollers across the narrower rails, and lowers the roller guides to prevent them supporting—and braking—the cart. It has not yet been simulation-verified.
+
+```world
+world  cleared rail gravity chain
+
+floor
+  size      8 m
+  friction  0.72, spinning 0, rolling 0
+
+-- Default MuJoCo gravity is 9.81 m/s².
+-- Every moving body starts from rest.
+-- Dead contacts approximate the requested restitution.
+-- A guided roller track substitutes for the unavailable slide joint.
+-- Exact restitution 0.04 and slide damping 0.20 N s/m
+-- cannot be specified in this language.
+
+ring1
+  is a      ring 16 cm across, 8 mm thick
+  at        1.026274 m up, 19.799 cm behind floor, 0 m to the left
+  friction  0.72, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+
+ball1
+  is a      sphere 10 cm across, 0.20 kg
+  moves     freely
+  rolls
+  at        30 cm above ring1, 19.799 cm behind floor, 0 m to the left
+  friction  0.72, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+
+lever pivot
+  is a  point
+  at    50 cm up, 0 m along, 0 m to the left
+
+-- The lever and its two 1 g attachments total 0.50 kg.
+lever1
+  is a           box 60 by 10 by 4 cm, 0.498 kg
+  at             50 cm up, 0 m along, 0 m to the left
+  turns on       lever hinge, about y, at lever pivot
+  swings         from 0° to 45°
+  starts turned  45°
+  damping        0.04 N·m·s/rad
+  friction       0.72, spinning 0, rolling 0
+  bounce         dead
+  colour         wood
+
+striker upper corner
+  is a  point
+  at    22 cm beyond lever pivot, 7 cm above lever pivot, 0 m to the left
+
+striker lower corner
+  is a  point
+  at    34 cm beyond lever pivot, 5 cm below lever pivot, 0 m to the left
+
+lever striking face
+  is a         plank from striker upper corner to striker lower corner, 8 cm wide, 2 cm thick
+  weighs       1 g
+  attached to  lever1
+  friction     0.72, spinning 0, rolling 0
+  bounce       dead
+  colour       wood
+
+lever ball stop
+  is a         box 1 by 10 by 12 cm, 1 g
+  at           14 cm behind lever pivot, 8 cm above lever pivot, 0 m to the left
+  attached to  lever1
+  friction     0.72, spinning 0, rolling 0
+  bounce       dead
+  colour       wood
+
+-- Rail inner edges are at y = ±6.5 cm.
+-- The lever occupies only y = ±5 cm, leaving 1.5 cm clearance.
+left bearing rail
+  is a      box 70 by 2 by 4 cm
+  at        55 cm along, 7.5 cm to the left, 38 cm up
+  friction  0.72, spinning 0, rolling 0
+  bounce    dead
+
+right bearing rail
+  is a      box 70 by 2 by 4 cm
+  at        55 cm along, 7.5 cm to the right, 38 cm up
+  friction  0.72, spinning 0, rolling 0
+  bounce    dead
+
+-- The straight portions of the rollers overlap both rail tops.
+roller left end
+  is a  point
+  at    25.5 cm along, 7.5 cm to the left, 42 cm up
+
+roller right end
+  is a  point
+  at    25.5 cm along, 7.5 cm to the right, 42 cm up
+
+track rollers
+  is a      rod 4 cm thick, from roller left end to roller right end
+  weighs    2 g
+  moves     freely
+  repeated  9 times, 7.4 cm apart along
+  friction  0.72, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+
+-- These guides retain the roller ends.
+-- Their tops are 1.5 cm below the cart's starting bottom.
+left roller guide
+  is a      box 70 by 1 by 2.5 cm
+  at        55 cm along, 10.1 cm to the left, 41.25 cm up
+  friction  0.72, spinning 0, rolling 0
+  bounce    dead
+
+right roller guide
+  is a      box 70 by 1 by 2.5 cm
+  at        55 cm along, 10.1 cm to the right, 41.25 cm up
+  friction  0.72, spinning 0, rolling 0
+  bounce    dead
+
+left cart guide
+  is a      box 70 by 1 by 12 cm
+  at        55 cm along, 10.1 cm to the left, 50 cm up
+  friction  0.72, spinning 0, rolling 0
+  bounce    dead
+
+right cart guide
+  is a      box 70 by 1 by 12 cm
+  at        55 cm along, 10.1 cm to the right, 50 cm up
+  friction  0.72, spinning 0, rolling 0
+  bounce    dead
+
+-- The underside is 2 mm above the cart's starting top.
+-- The roof ends before the upright domino.
+cart retaining roof
+  is a      box 54 by 22 by 1 cm
+  at        57 cm along, 0 m to the left, 54.7 cm up
+  friction  0.72, spinning 0, rolling 0
+  bounce    dead
+  colour    glass
+
+cart1
+  is a      box 22 by 18 by 10 cm, 0.50 kg
+  moves     freely
+  at        35 cm along, 0 m to the left, 49 cm up
+  friction  0.72, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+
+-- A 42 cm cart displacement brings its far face
+-- to the domino's near face.
+domino pedestal
+  is a      box 8 by 8 by 40 cm
+  stands    on floor, 92 cm along, 0 m to the left
+  friction  0.72, spinning 0, rolling 0
+  bounce    dead
+
+domino1
+  is a      box 8 by 4 by 24 cm, 0.25 kg
+  moves     freely
+  stands    on domino pedestal, 92 cm along, 0 m to the left
+  friction  0.72, spinning 0, rolling 0
+  bounce    dead
+  colour    wood
+
+-- Ball2 remains on a horizontal perch until struck.
+ball perch
+  is a      box 10 by 18 by 2 cm
+  at        1.10 m along, 0 m to the left, 50.08 cm up
+  friction  0.72, spinning 0, rolling 0
+  bounce    dead
+
+ball2
+  is a      sphere 10 cm across, 0.20 kg
+  moves     freely
+  rolls
+  on        ball perch, 18 cm beyond domino1, 0 m to the left
+  friction  0.72, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+
+ramp high end
+  is a  point
+  at    1.14 m along, 0 m to the left, 49.202014 cm up
+
+ramp low end
+  is a  point
+  at    2.07969262 m along, 0 m to the left, 15 cm up
+
+-- Endpoint separation is 1.00 m at 20 degrees.
+ramp1
+  is a      plank from ramp high end to ramp low end, 30 cm wide, 4 cm thick
+  friction  0.72, spinning 0, rolling 0
+  bounce    dead
+  colour    wood
+
+-- The panel's near face is 10 cm beyond the ramp's low end.
+-- Ball2 approaches near its unhinged edge.
+door1
+  is a           box 4 by 42 by 32 cm, 0.45 kg
+  at             2.19969262 m along, 19 cm to the right, 18 cm up
+  turns on       door hinge, about z, at its right side
+  swings         from -70° to 0°
+  starts turned  0°
+  damping        0.04 N·m·s/rad
+  friction       0.72, spinning 0, rolling 0
+  bounce         dead
+  colour         wood
+
+-- The rigid pendulum starts upright and motionless.
+-- The door disturbs it, allowing gravity to continue the swing.
+pendulum pivot
+  is a  point
+  at    41 cm beyond door1, 27.4 cm to the right, 20 cm up
+
+pendulum lower end
+  is a  point
+  at    41 cm beyond door1, 27.4 cm to the right, 21 cm up
+
+pendulum upper end
+  is a  point
+  at    41 cm beyond door1, 27.4 cm to the right, 69 cm up
+
+-- Including capsule end caps, the rigid length is 50 cm.
+pendulum1
+  is a           rod 2 cm thick, from pendulum lower end to pendulum upper end
+  weighs         0.35 kg
+  turns on       pendulum hinge, about y, at pendulum pivot
+  swings         from 0° to 38°
+  starts turned  0°
+  damping        0.04 N·m·s/rad
+  friction       0.72, spinning 0, rolling 0
+  bounce         dead
+  colour         grey
+
+block pedestal
+  is a      box 22 by 22 by 4 cm
+  at        36.8 cm beyond pendulum pivot, 27.4 cm to the right, 50 cm up
+  friction  0.72, spinning 0, rolling 0
+  bounce    dead
+
+block1
+  is a      cube 12 cm, 0.35 kg
+  moves     freely
+  on        block pedestal, 36.8 cm beyond pendulum pivot, 27.4 cm to the right
+  friction  0.72, spinning 0, rolling 0
+  bounce    dead
+  colour    wood
+
+expect
+  ball1 drops through ring1
+  ball1 touches lever1
+  lever1 touches cart1
+  lever1 reaches its lower stop
+  cart1 touches domino1
+  domino1 touches ball2
+  ball2 touches ramp1
+  ball2 touches door1
+  door1 touches pendulum1
+  door1 reaches its lower stop
+  pendulum1 touches block1
+  pendulum1 reaches its lower stop
+```
+
+```json
+{
+  "what_happens": "Ball1 falls through ring1 and strikes lever1. Lever1 then collides with both bearing rails and settles around 39.7°, with ball1 resting against the lever and its ball stop. The lever never strikes cart1 or reaches its 0° stop. Cart1 drifts about 0.05 m without reaching domino1, and all downstream named bodies remain stationary.",
+  "works": false,
+  "problem": "The bearing rails obstruct lever1's sweep, preventing the lever-to-cart strike and the entire downstream chain."
+}
+```
+
+---
+thinking (summarized):
+
+**Investigating cart mechanics**
+
+I’m trying to understand the isolated cart's strike and formulate a proper hypothesis about torque. My initial touch seems to be at 0.34, and the rail previously stopped at 0.39. There’s no strike due to the shoe being high at 0.39. It seems like new rails could strike at 0.38, but as it stands, there's no tipping with the cart's roof strike. I really want to ensure I get this right!

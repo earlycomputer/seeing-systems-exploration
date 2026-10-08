@@ -1,0 +1,139 @@
+No. Ball1 passes through ring1 and hits lever1, but the lever peaks at **40.7°**, then settles at **32.2°** instead of reaching its 45° stop. It nudges cart1, but the cart never touches domino1. Ball1 rolls off the lever and strikes the domino directly. The domino nudges ball2, which remains trapped against the retaining lip; door1, pendulum1, and block1 never move.
+
+The revision below adds a fixed catcher that keeps ball1 on the lever’s left side and lowers ball2’s retaining lip. These changes address the observed failures, but the revised scene has not yet been simulated.
+
+```xml
+<mujoco model="passive_chain_corrected">
+  <compiler angle="degree" autolimits="true" inertiafromgeom="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100" tolerance="1e-10" cone="elliptic"/>
+  <size njmax="2000" nconmax="400"/>
+
+  <!-- Sliding friction is 0.72; additional coefficients provide torsional and rolling friction. -->
+  <!-- MuJoCo has no direct restitution attribute: damping ratio 0.71563 approximates restitution 0.04. -->
+  <!-- All movable bodies start from rest, with no actuators or prescribed motion. -->
+
+  <visual>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.65 0.65 0.65" specular="0.15 0.15 0.15"/>
+    <global azimuth="135" elevation="-22"/>
+  </visual>
+
+  <worldbody>
+    <light name="key_light" pos="0 0 5" dir="0 0 -1" directional="true"/>
+    <camera name="overview" pos="4.3 -6.5 3.2" xyaxes="0.92 0.39 0 -0.14 0.33 0.93"/>
+
+    <geom name="floor" type="plane" pos="0 0 0" size="8 4 0.1" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.24 0.27 0.30 1"/>
+
+    <!-- Ball-center distances: 0.30 m to the ring plane, then 0.25 m to first lever contact. -->
+    <body name="ball1" pos="-0.16 0.10 1.358994949">
+      <freejoint name="ball1_free"/>
+      <geom name="ball1_sphere" type="sphere" size="0.05" mass="0.20" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.90 0.24 0.16 1"/>
+    </body>
+
+    <!-- The segmented ring has a minimum clear diameter of 0.16 m. -->
+    <body name="ring1" pos="-0.16 0.10 1.058994949">
+      <geom name="ring1_segment01" type="capsule" fromto="0.0917632 0 0 0.0847781 0.0351152 0" size="0.01" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.72 0.76 0.80 1"/>
+      <geom name="ring1_segment02" type="capsule" fromto="0.0847781 0.0351152 0 0.0648864 0.0648864 0" size="0.01" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.72 0.76 0.80 1"/>
+      <geom name="ring1_segment03" type="capsule" fromto="0.0648864 0.0648864 0 0.0351152 0.0847781 0" size="0.01" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.72 0.76 0.80 1"/>
+      <geom name="ring1_segment04" type="capsule" fromto="0.0351152 0.0847781 0 0 0.0917632 0" size="0.01" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.72 0.76 0.80 1"/>
+      <geom name="ring1_segment05" type="capsule" fromto="0 0.0917632 0 -0.0351152 0.0847781 0" size="0.01" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.72 0.76 0.80 1"/>
+      <geom name="ring1_segment06" type="capsule" fromto="-0.0351152 0.0847781 0 -0.0648864 0.0648864 0" size="0.01" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.72 0.76 0.80 1"/>
+      <geom name="ring1_segment07" type="capsule" fromto="-0.0648864 0.0648864 0 -0.0847781 0.0351152 0" size="0.01" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.72 0.76 0.80 1"/>
+      <geom name="ring1_segment08" type="capsule" fromto="-0.0847781 0.0351152 0 -0.0917632 0 0" size="0.01" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.72 0.76 0.80 1"/>
+      <geom name="ring1_segment09" type="capsule" fromto="-0.0917632 0 0 -0.0847781 -0.0351152 0" size="0.01" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.72 0.76 0.80 1"/>
+      <geom name="ring1_segment10" type="capsule" fromto="-0.0847781 -0.0351152 0 -0.0648864 -0.0648864 0" size="0.01" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.72 0.76 0.80 1"/>
+      <geom name="ring1_segment11" type="capsule" fromto="-0.0648864 -0.0648864 0 -0.0351152 -0.0847781 0" size="0.01" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.72 0.76 0.80 1"/>
+      <geom name="ring1_segment12" type="capsule" fromto="-0.0351152 -0.0847781 0 0 -0.0917632 0" size="0.01" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.72 0.76 0.80 1"/>
+      <geom name="ring1_segment13" type="capsule" fromto="0 -0.0917632 0 0.0351152 -0.0847781 0" size="0.01" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.72 0.76 0.80 1"/>
+      <geom name="ring1_segment14" type="capsule" fromto="0.0351152 -0.0847781 0 0.0648864 -0.0648864 0" size="0.01" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.72 0.76 0.80 1"/>
+      <geom name="ring1_segment15" type="capsule" fromto="0.0648864 -0.0648864 0 0.0847781 -0.0351152 0" size="0.01" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.72 0.76 0.80 1"/>
+      <geom name="ring1_segment16" type="capsule" fromto="0.0847781 -0.0351152 0 0.0917632 0 0" size="0.01" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.72 0.76 0.80 1"/>
+    </body>
+
+    <!-- The lever begins with its left end raised; positive travel lowers it through 45 degrees. -->
+    <body name="lever1" pos="0 0.10 0.55" euler="0 45 0">
+      <joint name="lever1_hinge" type="hinge" axis="0 -1 0" damping="0.04" limited="true" range="0 45" solreflimit="0.004 1" solimplimit="0.999 0.999 0.001"/>
+      <geom name="lever1_beam" type="box" size="0.30 0.05 0.02" mass="0.50" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.92 0.66 0.18 1"/>
+    </body>
+
+    <!-- The catcher clears the lever throughout its travel. -->
+    <!-- It arrests ball1 before the ball crosses the pivot, keeping its weight on the left side. -->
+    <body name="lever_ball_catcher" pos="0.01 0.10 0.75">
+      <geom name="lever_ball_catcher_wall" type="box" size="0.01 0.10 0.15" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.36 0.42 0.48 1"/>
+    </body>
+
+    <!-- Initial cart front x=0.48; initial domino rear face x=0.90: contact after 0.42 m travel. -->
+    <body name="cart1" pos="0.37 0.10 0.41">
+      <joint name="cart1_slide" type="slide" axis="1 0 0" damping="0.20" limited="true" range="0 0.60" solreflimit="0.004 1" solimplimit="0.999 0.999 0.001"/>
+      <geom name="cart1_box" type="box" size="0.11 0.09 0.05" mass="0.50" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.18 0.48 0.84 1"/>
+    </body>
+
+    <body name="domino_support" pos="0.96 0.10 0.155">
+      <geom name="domino_support_box" type="box" size="0.08 0.12 0.155" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.40 0.43 0.47 1"/>
+    </body>
+
+    <!-- The 0.04 m thickness is aligned with the toppling direction. -->
+    <body name="domino1" pos="0.92 0.10 0.43">
+      <freejoint name="domino1_free"/>
+      <geom name="domino1_box" type="box" size="0.02 0.04 0.12" mass="0.25" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.88 0.88 0.79 1"/>
+    </body>
+
+    <!-- Domino and ball2 centers have 0.18 m horizontal spacing. -->
+    <body name="ball2" pos="1.10 0.10 0.539004774">
+      <freejoint name="ball2_free"/>
+      <geom name="ball2_sphere" type="sphere" size="0.05" mass="0.20" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.22 0.78 0.34 1"/>
+    </body>
+
+    <!-- Ramp upper surface: 1.00 m long, 0.30 m wide, inclined at 20 degrees. -->
+    <!-- Downhill endpoint: (2.022591614, 0.10, 0.15). -->
+    <!-- The revised lip holds the initially stationary ball but requires only about 1.1 mm of center-height rise to cross. -->
+    <body name="ramp1" pos="1.545904900 0.10 0.302216219" euler="0 20 0">
+      <geom name="ramp1_surface" type="box" size="0.50 0.15 0.02" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.54 0.36 0.20 1"/>
+      <geom name="ramp1_retaining_lip" type="capsule" fromto="-0.471715729 -0.15 0.024 -0.471715729 0.15 0.024" size="0.004" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.64 0.46 0.27 1"/>
+    </body>
+
+    <!-- The initial upstream door face is 0.10 m beyond the ramp endpoint. -->
+    <!-- The upright, bottom-hinged door is gravity-driven after ball2 initiates its rotation. -->
+    <body name="door1" pos="2.142591614 0.10 0.08">
+      <joint name="door1_hinge" type="hinge" axis="0 1 0" damping="0.04" limited="true" range="0 70" solreflimit="0.004 1" solimplimit="0.999 0.999 0.001"/>
+      <geom name="door1_panel" type="box" pos="0 0 0.21" size="0.02 0.16 0.21" mass="0.45" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.50 0.30 0.73 1"/>
+    </body>
+
+    <!-- The rigid pendulum is inverted: initially balanced upright, then tipped by the door. -->
+    <!-- Capsule end-to-end length is 0.50 m and total mass is 0.35 kg. -->
+    <body name="pendulum1" pos="2.53 0.10 0.16">
+      <joint name="pendulum1_hinge" type="hinge" axis="0 1 0" damping="0.04" limited="true" range="0 38" solreflimit="0.004 1" solimplimit="0.999 0.999 0.001"/>
+      <geom name="pendulum1_rod" type="capsule" fromto="0 0 0.015 0 0 0.485" size="0.015" mass="0.35" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.80 0.58 0.18 1"/>
+    </body>
+
+    <body name="block_support" pos="3.022 0.10 0.25">
+      <geom name="block_support_box" type="box" size="0.18 0.15 0.25" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.40 0.43 0.47 1"/>
+    </body>
+
+    <!-- Block contact begins immediately before the pendulum's 38-degree stop. -->
+    <body name="block1" pos="2.902 0.10 0.56">
+      <freejoint name="block1_free"/>
+      <geom name="block1_cube" type="box" size="0.06 0.06 0.06" mass="0.35" friction="0.72 0.005 0.003" condim="6" solref="0.008 0.71563" solimp="0.999 0.999 0.001" rgba="0.86 0.32 0.43 1"/>
+    </body>
+  </worldbody>
+
+  <!-- Default keyframe positions are qpos0; default velocities are zero. -->
+  <keyframe>
+    <key name="start" time="0"/>
+  </keyframe>
+</mujoco>
+```
+
+```json
+{
+  "what_happens": "Ball1 passes through ring1 and hits lever1. The lever nudges cart1 but peaks at 40.7 degrees and settles at 32.2 degrees. Cart1 reverses without touching domino1. Ball1 rolls off the lever and strikes domino1 directly; the domino nudges ball2, which remains trapped at the ramp's retaining lip. Door1, pendulum1, and block1 never move, and both balls are at rest at the end.",
+  "works": false,
+  "problem": "The lever misses its 45-degree stop, cart1 never strikes domino1, and ball2 remains trapped, so the required causal chain does not complete."
+}
+```
+
+---
+thinking (summarized):
+
+**Evaluating geometry impact**
+
+I'm trying to understand how positioning a ball differently affects its movement. If the geometry shifts the ball to hit the end face rather than the top plane, would that result in a longer negative momentum? I think the original ball's position shifted left by .16 relates to a local position of around -.296. It's rolling to the right at 1.9 m/s, taking about .3 seconds to traverse the beam. It's a bit complex, but let's dig into this more!

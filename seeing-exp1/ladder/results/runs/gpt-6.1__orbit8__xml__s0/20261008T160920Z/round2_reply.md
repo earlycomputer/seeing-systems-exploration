@@ -1,0 +1,165 @@
+No. The chain now progresses much farther:
+
+- **0.40 s:** pendulum1 strikes ball1, which leaves its staging pad and descends ramp1.
+- **1.10 s:** ball1 hits cart1; ball1 subsequently settles on the floor.
+- **1.88 s:** cart1 hits domino1 after approximately 0.40 m of travel.
+- **2.30 s:** domino1 tips into flap1.
+- **2.67 s:** flap1 strikes ball2, then reaches its **65° stop**.
+- Ball2 moves only a few centimetres and stops on its staging pad. It never descends ramp2.
+- Seesaw1 remains latched, block1 is not launched, and neither the ring passage nor door contact occurs.
+
+The revision below shortens ball2’s staging pad, leaving just **5 mm** between its initial center and the downhill edge. This addresses the observed stall without changing the successful upstream stages. **The revised downstream sequence remains unverified.**
+
+```xml
+<mujoco model="short_pad_chain_reaction">
+  <compiler angle="degree" autolimits="true" inertiafromgeom="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100" cone="elliptic" impratio="5" o_solref="0.006 0.690107" o_solimp="0.95 0.99 0.001" o_friction="0.68 0.68 0.005 0.002 0.002">
+    <flag override="enable"/>
+  </option>
+  <size njmax="2000" nconmax="600"/>
+  <visual>
+    <headlight ambient="0.35 0.35 0.35" diffuse="0.7 0.7 0.7" specular="0.2 0.2 0.2"/>
+    <rgba haze="0.8 0.85 0.9 1"/>
+  </visual>
+
+  <!-- Every movable body starts with zero velocity.
+       Sliding friction is 0.68 throughout.
+       Contact damping approximates restitution 0.05.
+       Rolling resistance is separately specified to let balls settle. -->
+
+  <worldbody>
+    <light name="main_light" pos="1.8 -3 5" dir="0 0 -1" directional="true"/>
+    <camera name="overview" pos="4.8 -6.5 3.5" xyaxes="0.91 0.41 0 -0.16 0.35 0.923"/>
+    <geom name="floor" type="plane" pos="0 0 0" size="7 4 0.1" friction="0.68 0.005 0.002" condim="6" rgba="0.83 0.85 0.87 1"/>
+
+    <!-- Inclined surface: length 0.95 m, width 0.30 m, inclination 19 degrees.
+         Low-end upper surface: z=0.15 m. -->
+    <body name="ramp1" pos="0 0 0">
+      <geom name="ramp1_surface" type="box" pos="0.444237801 0 0.290462095" euler="0 19 0" size="0.475 0.15 0.015" density="0" friction="0.68 0.005 0.002" rgba="0.42 0.48 0.58 1"/>
+      <geom name="ramp1_staging_pad" type="box" pos="0.055 0 0.454289747" size="0.055 0.15 0.005" density="0" friction="0.68 0.005 0.002" rgba="0.48 0.54 0.64 1"/>
+      <geom name="ramp1_near_rail" type="capsule" fromto="0.017750318 -0.145 0.495482649 0.911265373 -0.145 0.187820743" size="0.006" density="0" friction="0.68 0.005 0.002" rgba="0.32 0.38 0.48 1"/>
+      <geom name="ramp1_far_rail" type="capsule" fromto="0.017750318 0.145 0.495482649 0.911265373 0.145 0.187820743" size="0.006" density="0" friction="0.68 0.005 0.002" rgba="0.32 0.38 0.48 1"/>
+    </body>
+
+    <!-- Pivot-to-bob-center length: 0.55 m. Total pendulum mass: 0.40 kg.
+         Initial body orientation puts the pendulum 55 degrees left of vertical. -->
+    <body name="pendulum1" pos="0.002 0 1.059289747" euler="0 55 0">
+      <joint name="pendulum1_hinge" type="hinge" axis="0 -1 0" range="-5 125" damping="0.04"/>
+      <geom name="pendulum1_rod" type="capsule" fromto="0 0 -0.02 0 0 -0.532" size="0.008" mass="0.08" friction="0.68 0.005 0.002" rgba="0.25 0.28 0.32 1"/>
+      <geom name="pendulum1_bob" type="sphere" pos="0 0 -0.55" size="0.018" mass="0.32" friction="0.68 0.005 0.002" rgba="0.85 0.3 0.2 1"/>
+    </body>
+
+    <body name="ball1" pos="0.070 0 0.509289747">
+      <freejoint name="ball1_free"/>
+      <geom name="ball1_sphere" type="sphere" size="0.05" mass="0.20" friction="0.68 0.005 0.002" condim="6" rgba="0.95 0.58 0.12 1"/>
+    </body>
+
+    <!-- Ramp1 low edge: x=0.898242647.
+         Initial cart left face: 0.12 m beyond that edge.
+         Domino contact occurs after 0.40 m of slide travel. -->
+    <body name="cart1" pos="1.128242647 0 0.13">
+      <joint name="cart1_slide" type="slide" axis="1 0 0" range="0 0.405" damping="0.20" solreflimit="0.004 1" solimplimit="0.99 0.999 0.0005"/>
+      <geom name="cart1_chassis" type="box" size="0.11 0.09 0.05" mass="0.50" friction="0.68 0.005 0.002" rgba="0.16 0.48 0.76 1"/>
+    </body>
+
+    <body name="cart1_track" pos="1.328242647 0 0.06">
+      <geom name="cart1_track_near" type="box" pos="0 -0.08 0" size="0.35 0.008 0.008" density="0" contype="0" conaffinity="0" friction="0.68 0.005 0.002" rgba="0.24 0.27 0.30 1"/>
+      <geom name="cart1_track_far" type="box" pos="0 0.08 0" size="0.35 0.008 0.008" density="0" contype="0" conaffinity="0" friction="0.68 0.005 0.002" rgba="0.24 0.27 0.30 1"/>
+    </body>
+
+    <body name="domino1" pos="1.658242647 0 0.12">
+      <freejoint name="domino1_free"/>
+      <geom name="domino1_block" type="box" size="0.02 0.04 0.12" mass="0.25" friction="0.68 0.005 0.002" rgba="0.9 0.83 0.65 1"/>
+    </body>
+
+    <!-- The backward lean holds the flap against its initial stop.
+         Panel dimensions: 0.40 by 0.20 by 0.04 m. -->
+    <body name="flap1" pos="1.858843 0 0.14" euler="0 -0.5 0">
+      <joint name="flap1_hinge" type="hinge" axis="0 1 0" range="0 65" damping="0.04" solreflimit="0.004 1" solimplimit="0.99 0.999 0.0005"/>
+      <geom name="flap1_panel" type="box" pos="0 0 0.20" size="0.02 0.10 0.20" mass="0.30" friction="0.68 0.005 0.002" rgba="0.48 0.70 0.36 1"/>
+    </body>
+
+    <!-- Ramp2 is laterally offset to clear the flap's swept panel.
+         The revised staging pad ends at x=2.085 m, only 0.005 m beyond
+         ball2's initial center, rather than at x=2.160 m. -->
+    <body name="ramp2" pos="0 0 0">
+      <geom name="ramp2_surface" type="box" pos="2.494237801 0.253 0.290462095" euler="0 19 0" size="0.475 0.15 0.015" density="0" friction="0.68 0.005 0.002" rgba="0.42 0.48 0.58 1"/>
+      <geom name="ramp2_staging_pad" type="box" pos="2.0675 0.253 0.454289747" size="0.0175 0.15 0.005" density="0" friction="0.68 0.005 0.002" rgba="0.48 0.54 0.64 1"/>
+      <geom name="ramp2_far_upper_rail" type="capsule" fromto="2.067750318 0.393 0.495482649 2.417592191 0.393 0.375022432" size="0.006" density="0" friction="0.68 0.005 0.002" rgba="0.32 0.38 0.48 1"/>
+      <geom name="ramp2_far_funnel" type="capsule" fromto="2.417592191 0.393 0.375022432 2.961265373 0.311 0.187820743" size="0.006" density="0" friction="0.68 0.005 0.002" rgba="0.32 0.38 0.48 1"/>
+      <geom name="ramp2_near_funnel" type="capsule" fromto="2.417592191 0.113 0.375022432 2.961265373 0.195 0.187820743" size="0.006" density="0" friction="0.68 0.005 0.002" rgba="0.32 0.38 0.48 1"/>
+    </body>
+
+    <body name="ball2" pos="2.080 0.130 0.509289747">
+      <freejoint name="ball2_free"/>
+      <geom name="ball2_sphere" type="sphere" size="0.05" mass="0.20" friction="0.68 0.005 0.002" condim="6" rgba="0.9 0.23 0.20 1"/>
+    </body>
+
+    <!-- The initial left endpoint lies 0.10 m beyond ramp2's low edge.
+         A preloaded torsion spring supplies launch energy.
+         The passive catch prevents the seesaw moving before ball2 arrives. -->
+    <body name="seesaw1" pos="3.314467061 0.253 0.410" euler="0 -35 0">
+      <joint name="seesaw1_hinge" type="hinge" axis="0 -1 0" range="0 40" damping="0.04" stiffness="0.20" springref="916.732472" solreflimit="0.004 1" solimplimit="0.99 0.999 0.0005"/>
+      <geom name="seesaw1_beam" type="box" size="0.325 0.05 0.02" mass="0.55" friction="0.68 0.005 0.002" rgba="0.34 0.62 0.72 1"/>
+    </body>
+
+    <!-- Initial seesaw/catch contact is intentional support, not a run event.
+         Ball2 is intended to tip this back-leaning catch forward. -->
+    <body name="seesaw1_catch" pos="3.064994257 0.253 0.05" euler="0 -2 0">
+      <joint name="seesaw1_catch_hinge" type="hinge" axis="0 1 0" range="0 100" damping="0.04" solreflimit="0.004 1" solimplimit="0.99 0.999 0.0005"/>
+      <geom name="seesaw1_catch_arm" type="capsule" fromto="0 0 0.008 0 0 0.151296789" size="0.006" mass="0.035" friction="0.68 0.005 0.002" rgba="0.65 0.34 0.18 1"/>
+    </body>
+
+    <!-- The split side walls leave a central slot for the seesaw beam.
+         The guide ends above ring1 and retains the cube's upright alignment. -->
+    <body name="block1_guide" pos="3.569219947 0.253 0.75">
+      <geom name="block1_guide_left_near" type="box" pos="-0.0645 -0.0574 0" size="0.004 0.0066 0.35" density="0" friction="0.68 0.005 0.002" rgba="0.55 0.58 0.62 0.45"/>
+      <geom name="block1_guide_left_far" type="box" pos="-0.0645 0.0574 0" size="0.004 0.0066 0.35" density="0" friction="0.68 0.005 0.002" rgba="0.55 0.58 0.62 0.45"/>
+      <geom name="block1_guide_right_near" type="box" pos="0.0645 -0.0574 0" size="0.004 0.0066 0.35" density="0" friction="0.68 0.005 0.002" rgba="0.55 0.58 0.62 0.45"/>
+      <geom name="block1_guide_right_far" type="box" pos="0.0645 0.0574 0" size="0.004 0.0066 0.35" density="0" friction="0.68 0.005 0.002" rgba="0.55 0.58 0.62 0.45"/>
+      <geom name="block1_guide_near" type="box" pos="0 -0.0645 0" size="0.0645 0.004 0.35" density="0" friction="0.68 0.005 0.002" rgba="0.55 0.58 0.62 0.45"/>
+      <geom name="block1_guide_far" type="box" pos="0 0.0645 0" size="0.0645 0.004 0.35" density="0" friction="0.68 0.005 0.002" rgba="0.55 0.58 0.62 0.45"/>
+    </body>
+
+    <body name="block1" pos="3.569219947 0.253 0.672795383">
+      <freejoint name="block1_free"/>
+      <geom name="block1_cube" type="box" size="0.06 0.06 0.06" mass="0.35" friction="0.68 0.005 0.002" rgba="0.65 0.36 0.78 1"/>
+    </body>
+
+    <!-- Horizontal octagonal ring centered 0.30 m below the initial block.
+         Centerline apothem 0.084 m minus tube radius 0.004 m gives
+         a 0.16 m inscribed clear diameter, not a 0.16 m outer diameter.
+         Its faceted opening admits the upright cube; a truly circular
+         0.16 m opening would not admit a rigid 0.12 m cube. -->
+    <body name="ring1" pos="3.569219947 0.253 0.372795383">
+      <geom name="ring1_segment_1" type="capsule" fromto="0.090920941 0 0 0.064290817 0.064290817 0" size="0.004" density="0" friction="0.68 0.005 0.002" rgba="0.95 0.72 0.16 1"/>
+      <geom name="ring1_segment_2" type="capsule" fromto="0.064290817 0.064290817 0 0 0.090920941 0" size="0.004" density="0" friction="0.68 0.005 0.002" rgba="0.95 0.72 0.16 1"/>
+      <geom name="ring1_segment_3" type="capsule" fromto="0 0.090920941 0 -0.064290817 0.064290817 0" size="0.004" density="0" friction="0.68 0.005 0.002" rgba="0.95 0.72 0.16 1"/>
+      <geom name="ring1_segment_4" type="capsule" fromto="-0.064290817 0.064290817 0 -0.090920941 0 0" size="0.004" density="0" friction="0.68 0.005 0.002" rgba="0.95 0.72 0.16 1"/>
+      <geom name="ring1_segment_5" type="capsule" fromto="-0.090920941 0 0 -0.064290817 -0.064290817 0" size="0.004" density="0" friction="0.68 0.005 0.002" rgba="0.95 0.72 0.16 1"/>
+      <geom name="ring1_segment_6" type="capsule" fromto="-0.064290817 -0.064290817 0 0 -0.090920941 0" size="0.004" density="0" friction="0.68 0.005 0.002" rgba="0.95 0.72 0.16 1"/>
+      <geom name="ring1_segment_7" type="capsule" fromto="0 -0.090920941 0 0.064290817 -0.064290817 0" size="0.004" density="0" friction="0.68 0.005 0.002" rgba="0.95 0.72 0.16 1"/>
+      <geom name="ring1_segment_8" type="capsule" fromto="0.064290817 -0.064290817 0 0.090920941 0 0" size="0.004" density="0" friction="0.68 0.005 0.002" rgba="0.95 0.72 0.16 1"/>
+    </body>
+
+    <!-- At contact with the horizontal door's upper surface, the upright
+         cube center is 0.25 m below ring1's center. -->
+    <body name="door1" pos="3.359219947 0.253 0.042795383">
+      <joint name="door1_hinge" type="hinge" axis="0 1 0" range="-75 0" damping="0.04" solreflimit="0.004 1" solimplimit="0.99 0.999 0.0005"/>
+      <geom name="door1_panel" type="box" pos="0.21 0 0" size="0.21 0.16 0.02" mass="0.45" friction="0.68 0.005 0.002" rgba="0.38 0.54 0.38 1"/>
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <key name="start"/>
+  </keyframe>
+</mujoco>
+```
+
+```json
+{
+  "what_happens": "Pendulum1 releases ball1, which descends ramp1 and hits cart1. Cart1 travels about 0.40 m and tips domino1 into flap1. Flap1 strikes ball2 and reaches its 65-degree stop, but ball2 moves only a few centimetres before stopping on its staging pad. Seesaw1 remains latched, block1 is not launched, and the ring passage and door contact never occur.",
+  "works": false,
+  "problem": "Flap1's strike does not carry ball2 off its staging pad, so the sequence stops before ramp2 and the block-launching stages."
+}
+```

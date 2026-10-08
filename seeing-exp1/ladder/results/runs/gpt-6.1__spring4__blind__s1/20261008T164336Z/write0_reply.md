@@ -1,0 +1,124 @@
+The axial spring is compression-only, allowing the cart to coast after release. A passive spring catch holds the pendulum until impact; `solref` approximates the requested restitution.
+
+```xml
+<mujoco model="spring_cart_ramp_pendulum_door">
+  <compiler angle="degree" autolimits="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" solver="Newton" iterations="100" tolerance="1e-10"/>
+  <size njmax="2000" nconmax="400"/>
+  <statistic center="0.8 0 0.35" extent="2.8"/>
+
+  <visual>
+    <headlight ambient="0.45 0.45 0.45" diffuse="0.7 0.7 0.7" specular="0.2 0.2 0.2"/>
+    <rgba haze="0.85 0.90 0.95 1"/>
+    <global azimuth="135" elevation="-25"/>
+  </visual>
+
+  <!-- Sliding friction is 0.68 throughout.
+       The second and third friction components are torsional and rolling friction.
+       solref damping ratio 0.6901 approximates restitution 0.05.
+       The floor has rolling resistance so the ball eventually comes to rest. -->
+
+  <worldbody>
+    <light name="scene_light" pos="0 -2 4" dir="0 0 -1" directional="true"/>
+    <camera name="overview" pos="3 -4 2.4" xyaxes="0.8 0.6 0 -0.24 0.32 0.9165"/>
+    <geom name="floor" type="plane" pos="0 0 0" size="5 4 0.1" friction="0.68 0.005 0.002" condim="6" solref="0.008 0.6901" solimp="0.95 0.99 0.001" rgba="0.82 0.84 0.86 1"/>
+
+    <!-- The cart's front face begins exactly 0.50 m from the ball's rear surface. -->
+    <body name="cart1" pos="-0.72 0 0.542020143">
+      <joint name="cart1_slide" type="slide" axis="1 0 0" damping="0.20" limited="true" range="0 0.67" solreflimit="0.004 1" solimplimit="0.95 0.99 0.001"/>
+      <geom name="cart1_box" type="box" size="0.11 0.09 0.05" mass="0.50" friction="0.68 0.005 0.0001" condim="6" solref="0.008 0.6901" solimp="0.95 0.99 0.001" rgba="0.18 0.42 0.78 1"/>
+    </body>
+
+    <!-- A level launch perch prevents premature gravity-driven departure. -->
+    <body name="ball1" pos="-0.06 0 0.542020143">
+      <freejoint name="ball1_free"/>
+      <geom name="ball1_sphere" type="sphere" size="0.05" mass="0.20" friction="0.68 0.005 0.0001" condim="6" solref="0.008 0.6901" solimp="0.95 0.99 0.001" rgba="0.92 0.23 0.12 1"/>
+    </body>
+
+    <!-- Main ramp: 1.00 m surface length, 0.30 m width, 20 degrees.
+         Surface endpoints: (0,0,0.492020143) and (0.939692621,0,0.15). -->
+    <body name="ramp1" pos="0.469846310 0 0.321010072" quat="0.984807753 0 0.173648178 0">
+      <geom name="ramp1_slope" type="box" pos="0 0 -0.025" size="0.50 0.15 0.025" friction="0.68 0.005 0.0001" condim="6" solref="0.008 0.6901" solimp="0.95 0.99 0.001" rgba="0.63 0.48 0.28 1"/>
+      <geom name="ramp1_launch_perch" type="box" pos="-0.574567111 0 -0.000829226" quat="0.984807753 0 -0.173648178 0" size="0.10 0.15 0.01" friction="0.68 0.005 0.0001" condim="6" solref="0.008 0.6901" solimp="0.95 0.99 0.001" rgba="0.69 0.54 0.32 1"/>
+    </body>
+
+    <!-- The initial bob's near surface is 0.10 m beyond the ramp's low edge.
+         Pivot-to-bob length is 0.50 m; total moving mass is 0.35 kg.
+         The pendulum begins 40 degrees left of vertical.
+         Positive hinge travel rotates clockwise when viewed from +y. -->
+    <body name="pendulum1" pos="1.411086426 0 0.553022222" quat="0.939692621 0 0.342020143 0">
+      <joint name="pendulum1_hinge" type="hinge" axis="0 -1 0" damping="0.04" limited="true" range="0 105" solreflimit="0.004 1" solimplimit="0.95 0.99 0.001"/>
+      <geom name="pendulum1_rod" type="capsule" fromto="0 0 0 0 0 -0.50" size="0.012" mass="0.03" friction="0.68 0.005 0.0001" condim="6" solref="0.008 0.6901" solimp="0.95 0.99 0.001" rgba="0.25 0.28 0.32 1"/>
+      <geom name="pendulum1_bob" type="sphere" pos="0 0 -0.50" size="0.05" mass="0.32" friction="0.68 0.005 0.0001" condim="6" solref="0.008 0.6901" solimp="0.95 0.99 0.001" rgba="0.93 0.70 0.12 1"/>
+    </body>
+
+    <!-- Passive catch: the arriving ball pushes the bob past this spring-supported
+         lower corner. The bob then descends clear of the catch.
+         This is a passive release, not an actuator or prescribed motion. -->
+    <body name="pendulum1_catch" pos="1.151182416 0 0.23">
+      <joint name="pendulum1_catch_slide" type="slide" axis="1 0 0" damping="0.20" stiffness="250" springref="-0.0133" limited="true" range="-0.02 0.08" solreflimit="0.004 1" solimplimit="0.95 0.99 0.001"/>
+      <geom name="pendulum1_catch_box" type="box" size="0.0125 0.09 0.05" mass="0.035" friction="0.68 0.005 0.0001" condim="6" solref="0.008 0.6901" solimp="0.95 0.99 0.001" rgba="0.38 0.42 0.47 1"/>
+    </body>
+
+    <!-- Vertical door panel: 0.42 m radial width, 0.32 m height, 0.04 m thickness.
+         At pendulum travel 40 degrees, the bob meets the door near its free edge.
+         Positive door travel is clockwise when viewed from above. -->
+    <body name="door1" pos="1.481086426 -0.41 0.20">
+      <joint name="door1_hinge" type="hinge" axis="0 0 -1" damping="0.04" limited="true" range="0 70" solreflimit="0.004 1" solimplimit="0.95 0.99 0.001"/>
+      <geom name="door1_panel" type="box" pos="0 0.21 0" size="0.02 0.21 0.16" mass="0.45" friction="0.68 0.005 0.0001" condim="6" solref="0.008 0.6901" solimp="0.95 0.99 0.001" rgba="0.22 0.65 0.40 1"/>
+    </body>
+
+    <!-- Contact begins just before the 70-degree hard stop. -->
+    <body name="block1" pos="1.908709366 -0.353903602 0.06">
+      <freejoint name="block1_free"/>
+      <geom name="block1_box" type="box" size="0.06 0.06 0.06" mass="0.35" friction="0.68 0.005 0.0001" condim="6" solref="0.008 0.6901" solimp="0.95 0.99 0.001" rgba="0.57 0.27 0.72 1"/>
+    </body>
+  </worldbody>
+
+  <contact>
+    <!-- The slide joint supplies the cart's guide; the launch perch does not
+         introduce an additional friction brake beneath the constrained cart. -->
+    <exclude name="cart1_ramp1_exclusion" body1="cart1" body2="ramp1"/>
+  </contact>
+
+  <tendon>
+    <!-- Fixed-tendon length equals cart slide position.
+         At start: length 0, neutral lower length 0.20 m, compression 0.20 m.
+         Beyond 0.20 m the compression spring disengages rather than pulling back. -->
+    <fixed name="cart1_axial_spring" stiffness="18" damping="0" springlength="0.20 10">
+      <joint joint="cart1_slide" coef="1"/>
+    </fixed>
+  </tendon>
+
+  <keyframe>
+    <key name="start" time="0" qpos="0 -0.06 0 0.542020143 1 0 0 0 0 0 0 1.908709366 -0.353903602 0.06 1 0 0 0" qvel="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"/>
+  </keyframe>
+</mujoco>
+```
+
+---
+thinking (summarized):
+
+**Evaluating geometry and dynamics**
+
+I'm analyzing the support geometry for the perch floor. It extends over specific dimensions, but I've realized that the cart's contact with the perch stops appropriately. However, when the cart moves along its path, it intersects with the support beneath. Perhaps I could exclude certain interactions to allow smoother movement over the ramp surface, but I'm uncertain about the spring's travel range. Maybe tilting the platform could help hold the ball better at the ramp's end.
+
+**Analyzing pendulum dynamics**
+
+I’m evaluating some parameters: reducing U from .05 to .04 seems effective, but it leads to a significant mismatch. A fraction of .026 yields a value less than .04. So, I’m considering the optimum COM ratio at .2. Then there's the pendulum's initial angle; if it swings clockwise from a tilted position, gravity plays a role. I’m thinking about incorporating a spring-loaded mechanism and how timing affects the pendulum's dynamics, which adds complexity to the setup.
+
+**Evaluating pendulum and ball dynamics**
+
+I’m trying to assess the energy distribution between a pendulum and a ball. If the ball reaches a kinetic energy of .85 and transfers .22, I need to explore mass distribution options, particularly concentrated at .12. That gives a higher potential energy but may not be enough if damping drains .04. I consider factors like inertia and energy losses in collisions, but it seems that even with optimal setups and adjustments, achieving sufficient ball kinetic energy remains elusive.
+
+**Considering ball and pendulum interactions**
+
+I'm thinking about how to make a ball roll effectively. The sphere’s inertia can reduce its speed, and during collisions, some of that kinetic energy is lost, impacting movement. The pendulum's energy can only reach around .14J, which isn't sufficient. I wonder if the pendulum could strike nearer to the pivot instead of the bob to enhance efficiency. However, using a massive sphere at the center presents challenges, especially concerning its length and position. I need to explore better arrangements.
+
+**Exploring mechanical latching**
+
+I’m thinking about how to hold something at -40 degrees with a latch impacted by a ball. I wonder if I can use a tiny static bump called "pendulum1_latch" to let the bob move along a tangent while still being secure. A fixed stop could allow the bob to hop over when contacted with a stronger ball. I need to consider the geometry of the bump and how it would interact during movement. I’ll ensure it can withstand gravitational loads and release when struck by the ball.
+
+**Examining latch mechanics**
+
+I’m looking at how a horizontal latch could work with a slide mechanism to hold a pendulum against gravity while being pinned by a compression spring. I want to make sure that the latch remains stable under impact forces. Once those forces exceed the spring's stiffness, the pendulum can push the latch to its maximum, allowing it to escape along an arc as the bob moves upward. It's like a springy catch that could return later and potentially interact with another component.

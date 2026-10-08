@@ -1,0 +1,458 @@
+This is a best-effort approximation using documented syntax: long-radius hinge guides substitute for slides, a torsional pusher substitutes for the axial spring, and `dead` substitutes for numeric restitution. I have not simulated it; the expectations are checks to run, not verified results.
+
+```world
+world  passive cascade approximation
+
+-- MuJoCo default gravity is 9.81 m/s².
+-- Every body starts from rest: no launches or starting spins.
+-- Numeric restitution is unavailable; dead contacts are used.
+-- Cart guides have 100 m radius, approximating axial slides.
+-- Their 2000 N·m·s/rad damping approximates 0.20 N·s/m.
+-- The 1 m radius spring pusher approximates an 18 N/m spring
+-- compressed 0.20 m, with a stop that releases the cart afterward.
+
+floor
+  size      16 m
+  friction  0.68, spinning 0, rolling 0
+
+cart1 guide pivot
+  is a  point
+  at    0 m along, 0 m to the left, 100.54875 m up
+
+cart1
+  is a           box 0.22 by 0.18 by 0.10 m, 0.50 kg
+  friction       0.68, spinning 0, rolling 0
+  bounce         dead
+  at             0 m along, 0 m to the left, 0.54875 m up
+  turns on       cart1 guide, about y, at cart1 guide pivot
+  swings         from -0.35° to 0°
+  damping        2000 N·m·s/rad
+  starts turned  0°
+
+cart1 spring pivot
+  is a  point
+  at    0.12 m behind cart1, 0 m to the left, 1 m above cart1
+
+cart1 spring pusher
+  is a           box 0.02 by 0.16 by 0.06 m, 0.005 kg
+  friction       0.68, spinning 0, rolling 0
+  bounce         dead
+  at             0.12 m behind cart1, 0 m to the left, level with cart1
+  turns on       cart1 spring hinge, about y, at cart1 spring pivot
+  swings         from -11.536959° to 0°
+  spring         18 N·m/rad toward -11.536959°
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+
+ramp1 high end
+  is a  point
+  at    0.617265 m along, 0 m to the left, 0.473226 m up
+
+ramp1 low end
+  is a  point
+  at    1.556958 m along, 0 m to the left, 0.131206 m up
+
+ramp1
+  is a      plank from ramp1 high end to ramp1 low end, 0.30 m wide, 0.04 m thick
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  colour    wood
+
+ramp1 support
+  is a      post 0.06 m square, from floor to ramp1 high end
+  friction  0.68
+  bounce    dead
+
+-- The horizontal patch keeps ball1 at rest until the cart arrives.
+ball1 holding patch
+  is a      box 0.10 by 0.12 by 0.005 m
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  at        0.66 m along, 0 m to the left, 0.479664 m up
+
+ball1
+  is a      sphere 0.10 m across, 0.20 kg
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  rolls
+  moves     freely
+  rests     on ball1 holding patch, 0.66 m along, 0 m to the left
+
+pendulum1 pivot
+  is a  point
+  at    1.723798 m along, 0 m to the left, 0.685 m up
+
+pendulum1
+  is a           sphere 0.12 m across, 0.30 kg
+  friction       0.68, spinning 0, rolling 0
+  bounce         dead
+  at             1.723798 m along, 0 m to the left, 0.185 m up
+  turns on       pendulum1 hinge, about y, at pendulum1 pivot
+  swings         from -40° to 0°
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+
+pendulum1 rod
+  is a         rod 0.016 m thick, from pendulum1 pivot to pendulum1's top
+  weighs       0.05 kg
+  friction     0.68, spinning 0, rolling 0
+  bounce       dead
+  attached to  pendulum1
+
+door1 pivot
+  is a  point
+  at    2.125192 m along, 0 m to the left, 0.005 m up
+
+door1
+  is a           box 0.04 by 0.32 by 0.42 m, 0.45 kg
+  friction       0.68, spinning 0, rolling 0
+  bounce         dead
+  colour         wood
+  at             2.125192 m along, 0 m to the left, 0.215 m up
+  turns on       door1 hinge, about y, at door1 pivot
+  swings         from 0° to 70°
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+
+block1
+  is a      cube 0.12 m, 0.34 kg
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  moves     freely
+  stands    on floor, 2.520192 m along, 0 m to the left
+
+-- Cube plus attached striker have total mass 0.35 kg.
+-- The striker permits the floor-sliding block to reach a raised domino.
+block1 striker
+  is a         box 0.01 by 0.04 by 0.23 m, 0.01 kg
+  friction     0.68, spinning 0, rolling 0
+  bounce       dead
+  at           0.055 m beyond block1, 0 m to the left, 0.235 m up
+  attached to  block1
+
+domino1 platform post
+  is a      box 0.04 by 0.04 by 0.24 m
+  friction  0.68
+  bounce    dead
+  stands    on floor, 2.940192 m along, 0.25 m to the left
+
+domino1 platform
+  is a      box 0.02 by 0.32 by 0.02 m
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  at        2.940192 m along, 0.12 m to the left, 0.25 m up
+
+domino1
+  is a      box 0.08 by 0.04 by 0.24 m, 0.25 kg
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  moves     freely
+  stands    on domino1 platform, 2.940192 m along, 0 m to the left
+
+lever1 left end
+  is a  point
+  at    3.210192 m along, 0 m to the left, 0.35 m up
+
+lever1 right end
+  is a  point
+  at    3.210192 m along, 0.519615 m to the right, 0.65 m up
+
+lever1 pivot
+  is a  point
+  at    3.210192 m along, 0.2598075 m to the right, 0.50 m up
+
+lever1
+  is a           plank from lever1 left end to lever1 right end, 0.10 m wide, 0.04 m thick
+  weighs         0.49 kg
+  friction       0.68, spinning 0, rolling 0
+  bounce         dead
+  colour         wood
+  turns on       lever1 hinge, about x, at lever1 pivot
+  swings         from -45° to 0°
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+
+-- Beam and cradle together weigh 0.50 kg.
+lever1 scoop base
+  is a         box 0.12 by 0.12 by 0.01 m, 0.005 kg
+  friction     0.68, spinning 0, rolling 0
+  bounce       dead
+  at           3.210192 m along, 0.519615 m to the right, 0.675 m up
+  attached to  lever1
+
+lever1 scoop back
+  is a         box 0.12 by 0.01 by 0.08 m, 0.005 kg
+  friction     0.68, spinning 0, rolling 0
+  bounce       dead
+  at           3.210192 m along, 0.584615 m to the right, 0.715 m up
+  attached to  lever1
+
+ball2
+  is a      sphere 0.10 m across, 0.20 kg
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  rolls
+  moves     freely
+  rests     on lever1 scoop base, 3.210192 m along, 0.519615 m to the right
+
+-- Nominal hoop diameter includes the tube's centreline allowance.
+ring1
+  is a      ring 0.168 m across, 0.008 m thick
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+  at        3.210192 m along, 0.03 m to the left, 0.41 m up
+
+cart2 guide pivot
+  is a  point
+  at    3.210192 m along, 0.03 m to the left, 100.06 m up
+
+cart2
+  is a           box 0.22 by 0.18 by 0.10 m, 0.49 kg
+  friction       0.68, spinning 0, rolling 0
+  bounce         dead
+  at             3.210192 m along, 0.03 m to the left, 0.06 m up
+  turns on       cart2 guide, about x, at cart2 guide pivot
+  swings         from 0° to 0.35°
+  damping        2000 N·m·s/rad
+  starts turned  0°
+
+-- Cart box and striker together weigh 0.50 kg.
+cart2 striker
+  is a         box 0.04 by 0.02 by 0.40 m, 0.01 kg
+  friction     0.68, spinning 0, rolling 0
+  bounce       dead
+  at           3.210192 m along, 0.11 m to the left, 0.31 m up
+  attached to  cart2
+
+domino2 platform post
+  is a      box 0.04 by 0.04 by 0.38 m
+  friction  0.68
+  bounce    dead
+  stands    on floor, 3.440192 m along, 0.54 m to the left
+
+domino2 platform
+  is a      box 0.30 by 0.02 by 0.02 m
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  at        3.310192 m along, 0.54 m to the left, 0.39 m up
+
+domino2
+  is a      box 0.08 by 0.04 by 0.24 m, 0.25 kg
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  moves     freely
+  stands    on domino2 platform, 3.210192 m along, 0.54 m to the left
+
+ramp2 high end
+  is a  point
+  at    3.167457 m along, 0.79 m to the left, 0.473226 m up
+
+ramp2 low end
+  is a  point
+  at    4.107150 m along, 0.79 m to the left, 0.131206 m up
+
+ramp2
+  is a      plank from ramp2 high end to ramp2 low end, 0.30 m wide, 0.04 m thick
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  colour    wood
+
+ramp2 support
+  is a      post 0.06 m square, from floor to ramp2 high end
+  friction  0.68
+  bounce    dead
+
+ball3 holding patch
+  is a      box 0.10 by 0.08 by 0.005 m
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  at        3.210192 m along, 0.79 m to the left, 0.479664 m up
+
+ramp2 left rail high
+  is a  point
+  at    3.167457 m along, 0.944 m to the left, 0.543226 m up
+
+ramp2 left rail low
+  is a  point
+  at    4.107150 m along, 0.944 m to the left, 0.201206 m up
+
+ramp2 left rail
+  is a      plank from ramp2 left rail high to ramp2 left rail low, 0.012 m wide, 0.12 m thick
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+
+ramp2 right rail high
+  is a  point
+  at    3.167457 m along, 0.636 m to the left, 0.543226 m up
+
+ramp2 right rail low
+  is a  point
+  at    4.107150 m along, 0.636 m to the left, 0.201206 m up
+
+ramp2 right rail
+  is a      plank from ramp2 right rail high to ramp2 right rail low, 0.012 m wide, 0.12 m thick
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+
+ball3
+  is a      sphere 0.10 m across, 0.20 kg
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  rolls
+  moves     freely
+  rests     on ball3 holding patch, 3.210192 m along, 0.79 m to the left
+
+flap1 pivot
+  is a  point
+  at    4.233990 m along, 0.79 m to the left, 0.15 m up
+
+flap1
+  is a           box 0.04 by 0.18 by 0.38 m, 0.26 kg
+  friction       0.68, spinning 0, rolling 0
+  bounce         dead
+  colour         wood
+  at             4.233990 m along, 0.79 m to the left, 0.34 m up
+  turns on       flap1 hinge, about y, at flap1 pivot
+  swings         from 0° to 60°
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+
+flap1 striker tip
+  is a  point
+  at    4.233990 m along, 0.79 m to the left, 0.90 m up
+
+-- Panel and attached striker together weigh 0.28 kg.
+flap1 striker
+  is a         rod 0.012 m thick, from flap1's top to flap1 striker tip
+  weighs       0.02 kg
+  friction     0.68, spinning 0, rolling 0
+  bounce       dead
+  attached to  flap1
+
+pendulum2 pivot
+  is a  point
+  at    4.683990 m along, 0.79 m to the left, 1.294005 m up
+
+pendulum2
+  is a           sphere 0.12 m across, 0.30 kg
+  friction       0.68, spinning 0, rolling 0
+  bounce         dead
+  at             4.683990 m along, 0.79 m to the left, 0.794005 m up
+  turns on       pendulum2 hinge, about y, at pendulum2 pivot
+  swings         from -38° to 0°
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+
+pendulum2 rod
+  is a         rod 0.016 m thick, from pendulum2 pivot to pendulum2's top
+  weighs       0.05 kg
+  friction     0.68, spinning 0, rolling 0
+  bounce       dead
+  attached to  pendulum2
+
+shelf1
+  is a      box 0.30 by 0.25 by 0.04 m
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  colour    wood
+  at        5.201821 m along, 0.79 m to the left, 0.83 m up
+
+ball4
+  is a      sphere 0.10 m across, 0.20 kg
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  rolls
+  moves     freely
+  rests     on shelf1, 5.101821 m along, 0.79 m to the left
+
+ring2
+  is a      ring 0.168 m across, 0.008 m thick
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+  at        5.491821 m along, 0.79 m to the left, 0.60 m up
+
+seesaw1 pivot
+  is a  point
+  at    5.816821 m along, 0.79 m to the left, 0.28 m up
+
+seesaw1
+  is a           box 0.65 by 0.10 by 0.04 m, 0.54 kg
+  friction       0.68, spinning 0, rolling 0
+  bounce         dead
+  colour         wood
+  at             5.816821 m along, 0.79 m to the left, 0.28 m up
+  turns on       seesaw1 hinge, about y, at seesaw1 pivot
+  swings         from -42° to 0°
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+
+-- Beam and launch pad together weigh 0.55 kg.
+seesaw1 launch pad
+  is a         box 0.12 by 0.12 by 0.01 m, 0.01 kg
+  friction     0.68, spinning 0, rolling 0
+  bounce       dead
+  at           6.086821 m along, 0.79 m to the left, 0.305 m up
+  attached to  seesaw1
+
+ball5
+  is a      sphere 0.10 m across, 0.20 kg
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  rolls
+  moves     freely
+  rests     on seesaw1 launch pad, 6.086821 m along, 0.79 m to the left
+
+-- These are requested checks, not claims of successful simulation.
+expect
+  cart1 touches ball1
+  ball1 touches ramp1
+  ball1 touches pendulum1
+  pendulum1 reaches its lower stop
+  pendulum1 touches door1
+  door1 reaches its upper stop
+  door1 touches block1
+  block1 touches domino1
+  domino1 touches lever1
+  lever1 reaches its lower stop
+  ball2 drops through ring1
+  ball2 touches cart2
+  cart2 touches domino2
+  domino2 touches ball3
+  ball3 touches ramp2
+  ball3 touches flap1
+  flap1 reaches its upper stop
+  flap1 touches pendulum2
+  pendulum2 reaches its lower stop
+  pendulum2 touches ball4
+  ball4 drops through ring2
+  ball4 touches seesaw1
+  seesaw1 reaches its lower stop
+  seesaw1 touches ball5
+```
+
+---
+thinking (summarized):
+
+**Analyzing door movement**
+
+I need to understand the door's mechanics better. If I start driving the door at 40, touching it could stop its momentum, making it impossible for the door to rotate. 
+
+Simultaneously, when it reaches that stopping point at 40, there's a residual impulse that transfers just before it stops. I’m calculating the initial position of the door and determining the earliest contact angle. I wonder if stopping at 40 gives the door any impulse — it's all a bit tricky!
+
+**Calculating Ball Trajectory**
+
+I’m working through a calculation involving ball velocity and flight. It seems I’ve multiplied the ball’s velocity at .7 by its flight factor of .3, which gives me .21. Then there's a ball launch starting at .17 degrees to the right at a 70-degree angle, which I think I’m trying to connect to the trajectory towards the ring. I need to think through how these elements fit together to get a clearer picture!
+
+**Evaluating domino mechanics**
+
+I’m considering a domino system where the first domino is fixed and how it interacts with a lever to release a spring mechanism. The goal is to analyze if the setup can create a chain reaction when one domino topples. I’m noting potential complexities, like needing a platform for the second domino. Also, it’s essential to maintain realistic expectations about the physical code and ensure clarity around the approximations made in the world setup. Let’s focus on creating an approximate scene with clear requirements.
+
+**Positioning the ball on seesaw**
+
+I’m thinking about the position of Ball5 on the seesaw, which is centered at a specific point. The coordinates I’m considering are x=left + 0.65 and z=0.35. I need to ensure that I accurately represent the ball's placement on the seesaw for the setup. These details are important for the mechanics I’m working through, and it’s essential that I maintain clarity in the dimensions to ensure everything functions correctly in the scene.
+
+**Evaluating physical properties**
+
+I'm thinking about rolling and spinning dynamics with friction set at .68. Each body will have a friction coefficient of .68. There are some missing details regarding primitive geometry, and I'll need to attach rods with specified properties. I’m considering hinge damping and how various bodies interact, like carts and blocks, taking into account their masses. I also want to address how leverage and angles affect movement, particularly in a seesaw setup. Each element and mass needs careful evaluation for accuracy.
