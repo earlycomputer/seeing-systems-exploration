@@ -42,7 +42,7 @@ def files_in_order(run_dir: Path, arm: str) -> list[tuple[str, Path]]:
     return [(label, p) for _, label, p in sorted(found)]
 
 
-def test_file(p: Path, arm: str, test: list[str]) -> dict | None:
+def test_file(p: Path, arm: str, test: list[str], seconds: float) -> dict | None:
     owner = None
     if arm == "language":
         library = LIBRARY.read_text()
@@ -59,7 +59,7 @@ def test_file(p: Path, arm: str, test: list[str]) -> dict | None:
     else:
         xml = p.read_text()
     try:
-        r = run_world(xml, seconds=SIM_SECONDS)
+        r = run_world(xml, seconds=seconds)
     except Exception:
         return None
     return hidden.judge(test, r, owner)
@@ -145,12 +145,13 @@ def main() -> int:
                 continue
             seq = []
             for label, p in files_in_order(f.parent, rec["arm"]):
-                v = test_file(p, rec["arm"], rec["test"])
+                v = test_file(p, rec["arm"], rec["test"], rec.get("sim_seconds", SIM_SECONDS))
                 if v is not None:
                     seq.append({"label": label, "held": held_list(rec["test"], v["checks"]),
                                 "evidence": v["evidence"]})
             rows.append({"exp": exp, "world": rec["world"], "arm": rec["arm"], "steps": rec["steps"],
-                         "family": rec["family"], "test": rec["test"], "files": seq, "dir": str(f.parent)})
+                         "family": rec["family"], "test": rec["test"], "passes_final": rec.get("passes_final"),
+                         "final_checks": (rec.get("final_test") or {}).get("checks"), "files": seq, "dir": str(f.parent)})
             print(exp, rec["world"], [sum(s["held"]) for s in seq], flush=True)
     (OUT / "breaks.json").write_text(json.dumps(rows, indent=1) + "\n")
     return 0
