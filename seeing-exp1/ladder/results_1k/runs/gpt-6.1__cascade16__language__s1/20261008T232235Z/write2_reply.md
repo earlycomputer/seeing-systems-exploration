@@ -1,0 +1,317 @@
+The hinge now refers to `lever1 pivot`, declared before `lever1`, fixing the reported reference error. The scene’s previously noted physical limitations remain.
+
+```parts
+part catch bin
+  base
+    is a  box 0.36 by 0.36 by 0.02 m
+    on    floor
+
+  near wall
+    is a  box 0.02 by 0.36 by 0.20 m
+    on    base, at base's near end
+
+  far wall
+    is a  box 0.02 by 0.36 by 0.20 m
+    on    base, at base's far end
+
+  left wall
+    is a  box 0.32 by 0.02 by 0.20 m
+    on    base, at base's left side
+
+  right wall
+    is a  box 0.32 by 0.02 by 0.20 m
+    on    base, at base's right side
+```
+
+```world
+world  requested chain initial-condition reconstruction
+
+-- This scene does not claim to satisfy the complete brief.
+-- All moving bodies start from rest.
+-- No launch, spin, or nonzero starting hinge angle is specified.
+--
+-- The language has no documented numeric gravity setting.
+-- Its MuJoCo compiler must independently use gravity 9.81 m/s2.
+--
+-- Numeric restitution 0.05 cannot be specified.
+-- Dead contacts below are an approximation.
+--
+-- Slide joints and slide damping 0.20 N s/m are unavailable.
+-- cart1 and cart2 below are free bodies instead.
+--
+-- Known unsolved transfers include ball2 to lever1,
+-- cart2 to ball4, and flap2 to the elevated ball5.
+-- Expectations are requirements to test, not claimed successes.
+
+floor
+  size      20 m
+  friction  0.70
+
+-- Ramp endpoints describe the deck centreline.
+-- The upper surface at the low end is approximately 0.15 m high.
+-- Endpoint separation is 1.00 m at 20 degrees.
+
+ramp1 high
+  is a  point
+  at    1 m along, 0.473226 m up
+
+ramp1 low
+  is a  point
+  at    0.939693 m beyond ramp1 high, 0.342020 m below ramp1 high
+
+ramp1
+  is a       ramp
+  high end   ramp1 high
+  low end    ramp1 low
+  width      0.30 m
+  thickness  0.04 m
+  friction   0.70
+  bounce     dead
+
+ball1
+  is a      sphere 0.10 m across, 0.20 kg
+  rolls
+  friction  0.70
+  bounce    dead
+  moves     freely
+  rests     on ramp1, 0.05 m from the top
+
+domino1
+  is a      box 0.08 by 0.04 by 0.24 m, 0.25 kg
+  friction  0.70
+  bounce    dead
+  moves     freely
+  stands    on floor, 0.14 m beyond ramp1 low
+
+domino2
+  is a      box 0.08 by 0.04 by 0.24 m, 0.25 kg
+  friction  0.70
+  bounce    dead
+  moves     freely
+  stands    on floor, 0.18 m beyond domino1
+
+flap1
+  is a      box 0.04 by 0.20 by 0.40 m, 0.30 kg
+  friction  0.70
+  bounce    dead
+  at        0.18 m beyond domino2, 0.22 m up
+  turns on  flap1 hinge, about y, at its top
+  swings    from -65° to 0°
+  damping   0.04 N·m·s/rad
+
+cart1
+  is a      box 0.22 by 0.18 by 0.10 m, 0.50 kg
+  friction  0.70
+  bounce    dead
+  moves     freely
+  rests     on floor, 0.34 m beyond flap1
+
+ramp2 high
+  is a  point
+  at    0.61 m beyond cart1, 0.473226 m up
+
+ramp2 low
+  is a  point
+  at    0.939693 m beyond ramp2 high, 0.342020 m below ramp2 high
+
+ramp2
+  is a       ramp
+  high end   ramp2 high
+  low end    ramp2 low
+  width      0.30 m
+  thickness  0.04 m
+  friction   0.70
+  bounce     dead
+
+ball2
+  is a      sphere 0.10 m across, 0.20 kg
+  rolls
+  friction  0.70
+  bounce    dead
+  moves     freely
+  rests     on ramp2, 0.05 m from the top
+
+-- This elevation keeps ring1 and the pendulum above the floor.
+-- It also makes lever1 unreachable from ramp2 as specified.
+
+lever1 pivot
+  is a  point
+  at    0.42 m beyond ramp2 low, 0.85 m up
+
+lever1
+  is a      box 0.60 by 0.10 by 0.04 m, 0.50 kg
+  friction  0.70
+  bounce    dead
+  at        0.42 m beyond ramp2 low, 0.85 m up
+  turns on  lever1 hinge, about y, at lever1 pivot
+  swings    from -45° to 0°
+  damping   0.04 N·m·s/rad
+
+ball3
+  is a      sphere 0.10 m across, 0.20 kg
+  rolls
+  friction  0.70
+  bounce    dead
+  moves     freely
+  rests     on lever1, 0.25 m beyond lever1
+
+ring1
+  is a      ring 0.16 m across, 8 mm thick
+  friction  0.70
+  bounce    dead
+  at        0.35 m below ball3, centred over ball3
+
+pendulum1 pivot
+  is a  point
+  at    0.15835 m above ring1, 0.04 m beyond ring1
+
+-- The rigid pendulum totals 0.35 kg including its attached rod.
+-- The impact path is offset from the vertical hinge line.
+
+pendulum1
+  is a      sphere 0.10 m across, 0.34 kg
+  friction  0.70
+  bounce    dead
+  at        0.50 m below pendulum1 pivot, centred over pendulum1 pivot
+  turns on  pendulum1 hinge, about y, at pendulum1 pivot
+  swings    from -40° to 0°
+  damping   0.04 N·m·s/rad
+
+pendulum1 rod
+  is a         rod 0.01 m thick, from pendulum1 pivot to pendulum1's top
+  weighs       0.01 kg
+  friction     0.70
+  bounce       dead
+  attached to  pendulum1
+
+domino3 support
+  is a      box 0.16 by 0.18 by 0.02 m
+  friction  0.70
+  bounce    dead
+  at        0.38860 m beyond pendulum1, raised 0.10 m
+
+domino3
+  is a      box 0.08 by 0.04 by 0.24 m, 0.25 kg
+  friction  0.70
+  bounce    dead
+  moves     freely
+  stands    on domino3 support
+
+door1
+  is a      box 0.04 by 0.32 by 0.42 m, 0.45 kg
+  friction  0.70
+  bounce    dead
+  at        0.24 m beyond domino3, raised 0.02 m
+  turns on  door1 hinge, about z, at its right side
+  swings    from -70° to 0°
+  damping   0.04 N·m·s/rad
+
+block1
+  is a      cube 0.12 m, 0.35 kg
+  friction  0.70
+  bounce    dead
+  moves     freely
+  rests     on floor, 0.34 m beyond door1, 0.05 m right of door1
+
+cart2
+  is a      box 0.22 by 0.18 by 0.10 m, 0.50 kg
+  friction  0.70
+  bounce    dead
+  moves     freely
+  rests     on floor, 0.52 m beyond block1, 0.05 m right of door1
+
+ramp3 high
+  is a  point
+  at    0.58 m beyond cart2, 0.473226 m up, 0.05 m right of door1
+
+ramp3 low
+  is a  point
+  at    0.939693 m beyond ramp3 high, 0.342020 m below ramp3 high, 0.05 m right of door1
+
+ramp3
+  is a       ramp
+  high end   ramp3 high
+  low end    ramp3 low
+  width      0.30 m
+  thickness  0.04 m
+  friction   0.70
+  bounce     dead
+
+ball4
+  is a      sphere 0.10 m across, 0.20 kg
+  rolls
+  friction  0.70
+  bounce    dead
+  moves     freely
+  rests     on ramp3, 0.05 m from the top
+
+flap2
+  is a      box 0.04 by 0.18 by 0.38 m, 0.28 kg
+  friction  0.70
+  bounce    dead
+  at        0.12 m beyond ramp3 low, 0.21 m up, 0.05 m right of door1
+  turns on  flap2 hinge, about y, at its top
+  swings    from -60° to 0°
+  damping   0.04 N·m·s/rad
+
+shelf1
+  is a      box 0.30 by 0.25 by 0.04 m
+  friction  0.70
+  bounce    dead
+  at        raised 0.76 m, 0.44 m beyond flap2, 0.05 m right of door1
+
+ball5
+  is a      sphere 0.10 m across, 0.20 kg
+  rolls
+  friction  0.70
+  bounce    dead
+  moves     freely
+  rests     on shelf1, centred on shelf1's far end
+
+ring2
+  is a      ring 0.16 m across, 8 mm thick
+  friction  0.70
+  bounce    dead
+  at        0.30 m below ball5, centred over ball5
+
+-- Inner footprint is 0.32 by 0.32 m.
+-- Walls extend 0.20 m above the inner floor.
+-- The inner floor is 0.35 m below ring2.
+
+bin1
+  is a      catch bin
+  friction  0.70
+  bounce    dead
+  at        centred over ring2, its base 0.36 m below ring2
+
+expect
+  ball1 touches domino1
+  domino1 touches domino2
+  domino2 touches flap1
+  flap1 reaches its lower stop
+  flap1 touches cart1
+  cart1 touches ball2
+  ball2 touches lever1
+  lever1 reaches its lower stop
+  ball3 drops through ring1
+  ball3 touches pendulum1
+  pendulum1 reaches its lower stop
+  pendulum1 touches domino3
+  domino3 touches door1
+  door1 reaches its lower stop
+  door1 touches block1
+  block1 touches cart2
+  cart2 touches ball4
+  ball4 touches flap2
+  flap2 reaches its lower stop
+  flap2 touches ball5
+  ball5 drops through ring2
+  ball5 comes to rest in bin1
+```
+
+---
+thinking (summarized):
+
+**Clarifying code adjustments**
+
+I need to repeat the entire code 300 times but won’t run into issues with comments for the new parts. In answering, I want to be honest and not simulated. The user isn't requesting validation or any actual tools. I recognize that "the hinge" now references `lever1 pivot`, which was declared before `lever1`, fixing the forward-reference error I had noted. I'm also aware that I can’t claim that everything will succeed due to existing world limitations.

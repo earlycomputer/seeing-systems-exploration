@@ -1,0 +1,284 @@
+Raised the fixed pendulum support by 10 mm, leaving 2 mm clearance from the pendulum rod at startup.
+
+```world
+world  two ramps and a guided ball launch
+
+-- No body has an initial launch or spin.
+-- All hinges start at zero angle.
+-- Gravity is assumed to be the compiler default of 9.81 m/s².
+-- The language does not expose numerical restitution.
+-- Dead contacts are used throughout.
+
+floor
+  size      10 m
+  friction  0.70, spinning 0, rolling 0
+
+-- Ramp endpoint heights account for the 4 cm deck thickness.
+-- The low deck surface is 15 cm above the floor.
+-- Endpoint separation is 1 m at 20 degrees.
+
+ramp1 high end
+  is a  point
+  at    0 m along, 0.473226291 m up
+
+ramp1 low end
+  is a  point
+  at    0.939692621 m beyond ramp1 high end, 0.131206148 m up
+
+ramp1
+  is a      plank from ramp1 high end to ramp1 low end, 0.30 m wide, 0.04 m thick
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+
+ball1
+  is a      sphere 0.10 m across, 0.20 kg
+  rolls
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+  moves     freely
+  rests     on ramp1, 0 cm from the top
+
+-- The first domino's near face is 10 cm beyond the ramp exit.
+
+domino1
+  is a      box 0.08 by 0.04 by 0.24 m, 0.25 kg
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    wood
+  moves     freely
+  stands    on floor, 1.086533024 m along
+
+domino2
+  is a      box 0.08 by 0.04 by 0.24 m, 0.25 kg
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    wood
+  moves     freely
+  stands    on floor, 0.18 m beyond domino1
+
+-- The flap is an upright 40 by 20 cm panel, 4 cm thick.
+-- Its top hinge lets its lower half swing forward into the cart.
+
+flap1
+  is a           box 0.04 by 0.20 by 0.40 m, 0.30 kg
+  friction       0.70, spinning 0, rolling 0
+  bounce         dead
+  colour         wood
+  at             0.18 m beyond domino2, raised 0.14 m
+  turns on       flap1 hinge, about y, at its top
+  swings         from -65° to 0°
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+
+-- Slide approximation: a hinge 1000 m above the cart.
+-- Over 45 cm, its vertical deviation is about 0.10 mm.
+-- 200000 N·m·s/rad divided by the radius squared gives
+-- an effective translational damping of 0.20 N·s/m.
+-- This is not a true prismatic joint.
+
+cart1 guide pivot
+  is a  point
+  at    0.325 m beyond flap1, 1000.47 m up
+
+cart1
+  is a           box 0.22 by 0.18 by 0.10 m, 0.50 kg
+  friction       0.70, spinning 0, rolling 0
+  bounce         dead
+  colour         grey
+  at             0.325 m beyond flap1, 0.47 m up
+  turns on       cart1 guide hinge, about y, at cart1 guide pivot
+  swings         from -0.035° to 0°
+  damping        200000 N·m·s/rad
+  starts turned  0°
+
+ramp2 high end
+  is a  point
+  at    0.582345 m beyond cart1, 0.473226291 m up
+
+ramp2 low end
+  is a  point
+  at    0.939692621 m beyond ramp2 high end, 0.131206148 m up
+
+ramp2
+  is a      plank from ramp2 high end to ramp2 low end, 0.30 m wide, 0.04 m thick
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+
+ball2
+  is a      sphere 0.10 m across, 0.20 kg
+  rolls
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+  moves     freely
+  rests     on ramp2, 0 cm from the top
+
+-- A small fixed lip holds ball2 against gravity until the cart
+-- supplies the impulse needed to cross its approximately 1 mm rise.
+
+ball2 release lip
+  is a      box 0.018 by 0.30 by 0.014 m
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+  at        0.018949874 m beyond ball2, 0.056 m below ball2
+
+-- The lever begins inclined at 45 degrees.
+-- Its clockwise stroke makes its left end descend and right end rise.
+-- Face offsets leave approximately 12 cm clear after ramp2.
+
+lever left end
+  is a  point
+  at    0.140982539 m beyond ramp2 low end, 0.14 m up
+
+lever right end
+  is a  point
+  at    0.424264069 m beyond lever left end, 0.424264069 m above lever left end
+
+lever pivot
+  is a  point
+  at    0.212132034 m beyond lever left end, 0.212132034 m above lever left end
+
+-- Lever deck plus its 1 g carrier weigh 0.50 kg.
+-- The preloaded spring counterbalances ball3 at the starting angle.
+-- It supplies stored energy after the lever is disturbed.
+
+lever1
+  is a           plank from lever left end to lever right end, 0.10 m wide, 0.04 m thick
+  weighs         0.499 kg
+  friction       0.70, spinning 0, rolling 0
+  bounce         dead
+  colour         wood
+  turns on       lever1 hinge, about y, at lever pivot
+  swings         from -45° to 0°
+  spring         0.532575811 N·m/rad toward -45°
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+
+lever1 carrier
+  is a         box 0.12 by 0.10 by 0.09 m, 1 g
+  friction     0.70, spinning 0, rolling 0
+  bounce       dead
+  colour       wood
+  centred over lever right end, 0.045 m above lever right end
+  attached to  lever1
+
+ball3
+  is a      sphere 0.10 m across, 0.20 kg
+  rolls
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+  moves     freely
+  rests     on lever1 carrier, centred over lever1 carrier
+
+-- Four fixed guide walls suppress lateral launch velocity.
+-- Their bottoms clear the departing lever carrier.
+
+ball3 near guide
+  is a      box 0.01 by 0.126 by 0.60 m
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+  at        0.058 m behind ball3, 0.326 m above ball3
+
+ball3 far guide
+  is a      box 0.01 by 0.126 by 0.60 m
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+  at        0.058 m beyond ball3, 0.326 m above ball3
+
+ball3 left guide
+  is a      box 0.106 by 0.01 by 0.60 m
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+  at        0 m beyond ball3, 0.058 m left of ball3, 0.326 m above ball3
+
+ball3 right guide
+  is a      box 0.106 by 0.01 by 0.60 m
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+  at        0 m beyond ball3, 0.058 m right of ball3, 0.326 m above ball3
+
+-- A 16.8 cm nominal rim diameter and 8 mm tube give
+-- 16 cm clearance when "across" denotes the tube centreline diameter.
+
+ring1
+  is a      ring 16.8 cm across, 8 mm thick
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+  centred over ball3, 0.35 m below ball3
+
+-- Offset the pendulum rod sideways so ball3 can pass through
+-- the ring without first striking the rod.
+-- Nominal ball-centre contact is 25 cm below the ring plane.
+
+pendulum1 pivot
+  is a  point
+  at    0 m beyond ring1, 0.07 m left of ring1, 0.193431458 m above ring1
+
+pendulum1
+  is a           sphere 0.08 m across, 0.33 kg
+  friction       0.70, spinning 0, rolling 0
+  bounce         dead
+  colour         grey
+  centred over   pendulum1 pivot, 0.50 m below pendulum1 pivot
+  turns on       pendulum1 hinge, about x, at pendulum1 pivot
+  swings         from -60° to 60°
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+
+-- Bob plus rigid rod have total mass 0.35 kg.
+
+pendulum1 rod
+  is a         rod 8 mm thick, from pendulum1 pivot to pendulum1
+  weighs       0.02 kg
+  friction     0.70, spinning 0, rolling 0
+  bounce       dead
+  colour       grey
+  attached to  pendulum1
+
+-- Both rods have 4 mm radius.
+-- Raising the support centreline 10 mm leaves a 2 mm gap.
+
+pendulum1 support end
+  is a  point
+  centred over pendulum1 pivot, 1 cm above pendulum1 pivot
+
+pendulum1 stand top
+  is a  point
+  at    0 m beyond pendulum1 pivot, 0.28 m left of pendulum1 pivot, 1 cm above pendulum1 pivot
+
+pendulum1 stand
+  is a      post 4 cm square, from floor to pendulum1 stand top
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+
+pendulum1 support
+  is a      rod 8 mm thick, from pendulum1 support end to pendulum1 stand top
+  friction  0.70, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+
+-- These expectations remain requirements to check in simulation.
+
+expect
+  ball1 touches domino1
+  domino1 touches domino2
+  domino2 touches flap1
+  flap1 touches cart1
+  flap1 reaches its lower stop
+  cart1 touches ball2
+  ball2 touches lever1
+  lever1 reaches its lower stop
+  ball3 drops through ring1
+  ball3 touches pendulum1
+```

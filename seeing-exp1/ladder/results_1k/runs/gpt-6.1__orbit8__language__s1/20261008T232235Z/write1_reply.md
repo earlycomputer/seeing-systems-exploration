@@ -1,0 +1,221 @@
+The guides now have explicit along positions. I’ve also explicitly aligned `block1`, `ring1`, and `door1` at x = 3.43 m, removing their unintended placement near the guides.
+
+```world
+world  gravity chain with feasibility checks
+
+-- All moving bodies start with zero velocity.
+-- Gravity relies on the compiler's default.
+-- Dead contacts approximate restitution.
+-- The guided free cart is not an exact damped slide joint.
+-- The requested ring clearance is too small for the rigid cube.
+-- Expectations describe requested outcomes, not verified results.
+
+floor
+  size      12 m
+  friction  0.68, spinning 0, rolling 0
+
+ramp1 high
+  is a  point
+  at    0 m along, 0.44038 m up
+
+ramp1 low
+  is a  point
+  at    0.89824 m along, 0.13109 m up
+
+ramp1
+  is a      plank from ramp1 high to ramp1 low, 0.30 m wide, 0.04 m thick
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  colour    wood
+
+ball1
+  is a      sphere 0.10 m across, 0.20 kg
+  moves     freely
+  rolls
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  on        ramp1, 2 cm from the top
+  colour    orange
+
+pendulum pivot
+  is a  point
+  at    9 cm behind ball1, 55 cm above ball1
+
+pendulum1
+  is a           sphere 8 cm across, 0.35 kg
+  at             55 cm below pendulum pivot, centred over pendulum pivot
+  turns on       pendulum1 hinge, about y, at pendulum pivot
+  swings         from -10° to 60°
+  starts turned  55°
+  damping        0.04 N·m·s/rad
+  friction       0.68, spinning 0, rolling 0
+  bounce         dead
+  colour         grey
+
+pendulum rod
+  is a         rod 2 cm thick, from pendulum pivot to pendulum1's top
+  weighs       0.05 kg
+  attached to  pendulum1
+  friction     0.68, spinning 0, rolling 0
+  bounce       dead
+  colour       grey
+
+-- Cart1's initial near face is 0.12 m beyond the ramp exit.
+
+cart track
+  is a      box 0.90 by 0.24 by 0.04 m
+  at        1.47475 m along, 0.08 m up
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  colour    dark grey
+
+cart left guide
+  is a      box 0.90 by 0.02 by 0.08 m
+  at        1.47475 m along, 0.11 m to the left, 0.14 m up
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+
+cart right guide
+  is a      box 0.90 by 0.02 by 0.08 m
+  at        1.47475 m along, 0.11 m to the right, 0.14 m up
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  colour    grey
+
+cart1
+  is a      box 0.22 by 0.18 by 0.10 m, 0.50 kg
+  moves     freely
+  at        1.13475 m along, 0.15 m up
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+
+-- Cart1 would contact domino1 after 0.40 m of translation.
+
+domino1
+  is a      box 0.08 by 0.04 by 0.24 m, 0.25 kg
+  moves     freely
+  at        1.68475 m along, 0.22 m up
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  colour    wood
+
+-- Flap1's near face is 0.18 m beyond domino1's far face.
+
+flap1
+  is a           box 0.04 by 0.20 by 0.40 m, 0.30 kg
+  at             1.92475 m along, 0.30 m up
+  turns on       flap1 hinge, about y, at its top
+  swings         from -65° to 0°
+  starts turned  0°
+  damping        0.04 N·m·s/rad
+  friction       0.68, spinning 0, rolling 0
+  bounce         dead
+  colour         wood
+
+ramp2 high
+  is a  point
+  at    2.01304 m along, 0.44038 m up
+
+ramp2 low
+  is a  point
+  at    2.91128 m along, 0.13109 m up
+
+ramp2
+  is a      plank from ramp2 high to ramp2 low, 0.30 m wide, 0.04 m thick
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  colour    wood
+
+ball2
+  is a      sphere 0.10 m across, 0.20 kg
+  moves     freely
+  rolls
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  on        ramp2, 2 cm from the top
+  colour    orange
+
+-- Seesaw1 begins inclined to keep the ring and door above the floor.
+-- Its upper left endpoint is 0.10 m beyond ramp2's upper exit edge.
+
+seesaw left
+  is a  point
+  at    3.03193 m along, 0.13586 m up
+
+seesaw right
+  is a  point
+  at    3.49155 m along, 0.59548 m up
+
+seesaw pivot
+  is a  point
+  at    3.26174 m along, 0.36567 m up
+
+seesaw1
+  is a           plank from seesaw left to seesaw right, 0.10 m wide, 0.04 m thick
+  weighs         0.55 kg
+  turns on       seesaw1 hinge, about y, at seesaw pivot
+  swings         from -40° to 0°
+  starts turned  0°
+  damping        0.04 N·m·s/rad
+  friction       0.68, spinning 0, rolling 0
+  bounce         dead
+  colour         wood
+
+-- This auxiliary seat adds 1 g to the hinged assembly.
+
+block seat
+  is a         box 0.12 by 0.14 by 0.01 m, 1 g
+  at           3.43 m along, 0.62721 m up
+  attached to  seesaw1
+  friction     0.68, spinning 0, rolling 0
+  bounce       dead
+  colour       grey
+
+block1
+  is a      cube 0.12 m, 0.35 kg
+  moves     freely
+  at        3.43 m along, 0.69221 m up
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  colour    wood
+
+-- Nominal 0.16 m clearance with a 0.17 m centreline diameter
+-- and a 0.01 m tube. The rigid cube cannot pass this clearance.
+
+ring1
+  is a      ring 0.17 m across, 0.01 m thick
+  at        3.43 m along, 0.39221 m up
+  friction  0.68, spinning 0, rolling 0
+  bounce    dead
+  colour    orange
+
+-- Door1 is horizontal, initially held by its upper hinge stop.
+-- Its centre is 0.25 m below the ring centre.
+
+door1
+  is a           box 0.42 by 0.32 by 0.04 m, 0.45 kg
+  at             3.43 m along, 0.14221 m up
+  turns on       door1 hinge, about y, at its near end
+  swings         from -65° to 0°
+  starts turned  0°
+  damping        0.04 N·m·s/rad
+  friction       0.68, spinning 0, rolling 0
+  bounce         dead
+  colour         wood
+
+expect
+  pendulum1 touches ball1
+  ball1 touches ramp1
+  ball1 touches cart1
+  cart1 touches domino1
+  domino1 touches flap1
+  flap1 reaches its lower stop
+  flap1 touches ball2
+  ball2 touches ramp2
+  ball2 touches seesaw1
+  seesaw1 reaches its lower stop
+  block1 drops through ring1
+  block1 touches door1
+```

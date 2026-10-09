@@ -1,0 +1,185 @@
+The language cannot specify numeric restitution or a true damped slide joint. This untested approximation uses `dead` contacts and a nearly straight, 100 m-radius hinge guide for the cart. The final pendulum is inverted, so the door’s strike triggers its gravity-driven swing.
+
+```world
+world  gravity driven chain
+
+-- Gravity relies on MuJoCo's default of 9.81 m/s2.
+-- All moving bodies start with zero velocity.
+-- Dead contacts approximate the requested low restitution.
+
+floor
+  size      6 m
+  friction  0.72, spinning 0.001, rolling 0.0001
+
+lever pivot
+  is a  point
+  at    35 cm up
+
+lever1
+  is a           box 60 by 10 by 4 cm, 500 g
+  at             level with lever pivot
+  turns on       lever hinge, about y, at lever pivot
+  swings         from -45° to 0°
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+  friction       0.72
+  bounce         dead
+  colour         wood
+
+-- The ring's outer diameter is 18 cm and its tube is 1 cm thick.
+ring1
+  is a      ring 18 cm across, 1 cm thick
+  at        27 cm behind lever1, 67 cm up
+  friction  0.72
+  bounce    dead
+  colour    orange
+
+ball1
+  is a      sphere 10 cm across, 200 g
+  moves     freely
+  rolls
+  centred over ring1, 30 cm above ring1
+  friction  0.72, spinning 0.001, rolling 0.0001
+  bounce    dead
+  colour    orange
+
+-- This remote vertical bearing approximates a horizontal slide.
+-- Over 42 cm, its sideways departure is less than 1 mm.
+-- Hinge damping / radius squared = 0.20 N s/m.
+cart guide pivot
+  is a  point
+  at    10 cm along, 100 m to the left, 60.3 cm up
+
+cart1
+  is a           box 22 by 18 by 10 cm, 500 g
+  at             10 cm along, 60.3 cm up
+  turns on       cart guide, about z, at cart guide pivot
+  swings         from -0.2464° to 0°
+  damping        2000 N·m·s/rad
+  starts turned  0°
+  friction       0.72
+  bounce         dead
+  colour         grey
+
+domino pedestal
+  is a      box 18 by 22 by 32 cm
+  stands    on floor, 47 cm behind lever1
+  friction  0.72
+  bounce    dead
+  colour    dark grey
+
+domino1
+  is a      box 8 by 4 by 24 cm, 250 g
+  moves     freely
+  stands    on domino pedestal
+  friction  0.72
+  bounce    dead
+  colour    white
+
+-- The endpoint separation is 1 m at 20 degrees.
+-- Deck thickness is allowed for so the low running surface is 15 cm high.
+ramp high
+  is a  point
+  at    59.7869 cm behind lever1, 47.3226 cm up
+
+ramp low
+  is a  point
+  at    153.7562 cm behind lever1, 13.1206 cm up
+
+ramp1
+  is a      plank from ramp high to ramp low, 30 cm wide, 4 cm thick
+  friction  0.72
+  bounce    dead
+  colour    wood
+
+-- A small fixed keeper prevents ball2 departing before domino1 arrives.
+-- Domino1 strikes the ball from behind and drives it over this lip.
+ball keeper
+  is a      box 1.2 by 18 by 1.8 cm
+  at        68.05 cm behind lever1, 47.61 cm up
+  friction  0.72
+  bounce    dead
+  colour    dark grey
+
+ball2
+  is a      sphere 10 cm across, 200 g
+  moves     freely
+  rolls
+  at        65 cm behind lever1, 52.8743 cm up
+  friction  0.72, spinning 0.001, rolling 0.0001
+  bounce    dead
+  colour    orange
+
+-- The door's incoming face is 10 cm beyond the ramp's low surface edge.
+-- Its thin direction is along; its width is across; its height is up.
+door1
+  is a           box 4 by 42 by 32 cm, 450 g
+  at             166.4402 cm behind lever1, 19 cm to the left, 30 cm up
+  turns on       door hinge, about z, at its left side
+  swings         from -70° to 0°
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+  friction       0.72
+  bounce         dead
+  colour         wood
+
+-- An inverted rigid pendulum remains upright until the door strikes it.
+pendulum pivot
+  is a  point
+  at    205.907 cm behind lever1, 26 cm to the left, 3 cm up
+
+pendulum1
+  is a           box 2 by 2 by 50 cm, 350 g
+  at             205.907 cm behind lever1, 26 cm to the left, 28 cm up
+  turns on       pendulum hinge, about x, at pendulum pivot
+  swings         from -38° to 0°
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+  friction       0.72
+  bounce         dead
+  colour         grey
+
+block pedestal
+  is a      box 16 by 22 by 35 cm
+  stands    on floor, 205.907 cm behind lever1, 63.4 cm to the left
+  friction  0.72
+  bounce    dead
+  colour    dark grey
+
+block1
+  is a      cube 12 cm, 350 g
+  moves     freely
+  stands    on block pedestal
+  friction  0.72
+  bounce    dead
+  colour    white
+
+expect
+  ball1 drops through ring1
+  ball1 touches lever1
+  lever1 reaches its lower stop
+  lever1 touches cart1
+  cart1 touches domino1
+  domino1 touches ball2
+  ball2 touches ramp1
+  ball2 touches door1
+  door1 reaches its lower stop
+  door1 touches pendulum1
+  pendulum1 reaches its lower stop
+  pendulum1 touches block1
+```
+
+---
+thinking (summarized):
+
+**Evaluating motion mechanics**
+
+I'm considering how to create a "slide pivot" point at the initial center of cart1, keeping y at R and the same z. So, when cart1 turns about z at this slide pivot, it swings in an arc depending on the radius. Gravity is fixed at 9.81 in MuJoCo, but exact values might not be possible. I'm also pondering if a world can exist purely with unsupported slide syntax. It must be valid.
+
+**Considering damping and friction**
+
+I'm thinking about the damping values related to the hinges. If numeric damping is too high at 0.04, it might conflict with the physical limits of the hinge. Perhaps using a free cart on nearly frictionless bearings could be a solution? The idea of having four wheels attached that roll might work better, where the translation isn't affected by static friction. However, I have to keep in mind that the overall energy dynamics are influenced by hinge damping as well.
+
+**Evaluating movement and distances**
+
+I’m trying to decide on the consistency of the lever's movement with a negative direction for the ball falling to the left, while the right lever rises and swings negatively. The cart moves negatively after the strike. If I start the cart at x.15, I wonder how far the domino travels at x=-.6 after the cart moves .42? If the cart starts at .15 and the domino’s center is at - .42, I could calculate the distances between their centers.

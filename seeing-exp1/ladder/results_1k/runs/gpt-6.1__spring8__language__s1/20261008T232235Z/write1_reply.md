@@ -1,0 +1,235 @@
+This is a complete, **unverified approximation**, not an exact implementation: large-radius hinges substitute for slide joints, `dead` substitutes for numerical restitution, and the door has an auxiliary spring. The expectations are test targets, not claimed results.
+
+```world
+world  spring ramp pendulum domino prototype
+
+-- MuJoCo's default gravity is 9.81 m/s².
+-- All bodies start with zero velocity.
+-- Numerical restitution 0.05 is not expressible; dead contacts are used.
+-- The cart guide hinges approximate linear motion over short distances.
+-- Their damping is scaled to approximate 0.20 N s/m.
+-- The door's auxiliary spring supplies energy, but does not enforce
+-- the requested causal triggering by pendulum1.
+
+floor
+  size      6 m
+  friction  0.68, spinning 0.005, rolling 0.002
+
+ramp high
+  is a  point
+  at    0 m along, 0 m to the left, 0.492020 m up
+
+ramp low
+  is a  point
+  at    0.939693 m along, 0 m to the left, 0.15 m up
+
+ramp1
+  is a      plank from ramp high to ramp low, 0.30 m wide, 0.04 m thick
+  friction  0.68, spinning 0.005, rolling 0.002
+  bounce    dead
+  colour    wood
+
+cart1 guide pivot
+  is a  point
+  at    34.8381 m behind ramp high, 93.7215 m below ramp high, 0 m to the left
+
+-- Radius approximately 100 m:
+-- 180000 N m/rad corresponds to approximately 18 N/m.
+-- The spring's initial angular displacement corresponds to 0.20 m.
+-- The guide's initial tangent slopes downward approximately 20 degrees.
+
+cart1
+  is a           box 0.22 by 0.18 by 0.10 m, 0.50 kg
+  at             0.6361 m behind ramp high, 0 m to the left, 0.7398 m up
+  turns on       cart1 axial guide, about y, at cart1 guide pivot
+  swings         from 0° to 1°
+  spring         180000 N·m/rad toward 0.114592°
+  damping        2000 N·m·s/rad
+  starts turned  0°
+  friction       0.68, spinning 0.005, rolling 0.002
+  bounce         dead
+  colour         grey
+
+ball1
+  is a      sphere 0.10 m across, 0.20 kg
+  moves     freely
+  rolls
+  on        ramp1, 0 cm from the top
+  friction  0.68, spinning 0.005, rolling 0.002
+  bounce    dead
+  colour    orange
+
+ball1 retaining lip
+  is a      box 0.02 by 0.30 by 0.008 m
+  at        0.074 m along, 0 m to the left, 0.521 m up
+  friction  0.68
+  bounce    dead
+  colour    wood
+
+pendulum pivot
+  is a  point
+  at    1.11 m along, 0 m to the left, 0.67 m up
+
+-- The bob and attached rod together weigh 0.35 kg.
+-- Pivot-to-bob-centre distance is 0.50 m.
+
+pendulum1
+  is a           sphere 0.10 m across, 0.05 kg
+  at             0.50 m below pendulum pivot, 1.11 m along, 0 m to the left
+  turns on       pendulum1 hinge, about y, at pendulum pivot
+  swings         from -40° to 0°
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+  friction       0.68
+  bounce         dead
+  colour         grey
+
+pendulum rod
+  is a         rod 0.01 m thick, from pendulum pivot to pendulum1's top
+  weighs       0.30 kg
+  attached to  pendulum1
+  friction     0.68
+  bounce       dead
+  colour       grey
+
+door1
+  is a           box 0.42 by 0.04 by 0.32 m, 0.45 kg
+  at             1.59 m along, 0.181865 m to the right, 0.18 m up
+  turns on       door1 hinge, about z, at its near end
+  swings         from -10° to 60°
+  spring         8 N·m/rad toward -10°
+  damping        0.04 N·m·s/rad
+  starts turned  60°
+  friction       0.68
+  bounce         dead
+  colour         wood
+
+block1
+  is a      cube 0.12 m, 0.35 kg
+  moves     freely
+  on        floor, 1.79362 m along, 0.33449 m to the right
+  friction  0.68, spinning 0.005, rolling 0.002
+  bounce    dead
+  colour    grey
+
+block guide near
+  is a      box 0.02 by 0.90 by 0.08 m
+  on        floor, 1.71862 m along, 0.65 m to the right
+  friction  0.68
+  bounce    dead
+  colour    wood
+
+block guide far
+  is a      box 0.02 by 0.90 by 0.08 m
+  on        floor, 1.86862 m along, 0.65 m to the right
+  friction  0.68
+  bounce    dead
+  colour    wood
+
+domino1
+  is a      box 0.04 by 0.08 by 0.24 m, 0.25 kg
+  moves     freely
+  on        floor, 1.79362 m along, 0.75449 m to the right
+  friction  0.68, spinning 0.005, rolling 0.002
+  bounce    dead
+  colour    white
+
+lever pivot
+  is a  point
+  at    1.79362 m along, 1.08449 m to the right, 0.422692 m up
+
+-- Lever1 and its two attached tray pieces total 0.50 kg.
+-- It starts inclined, with its right end elevated.
+-- Its permitted clockwise travel is 45 degrees.
+
+lever1
+  is a           box 0.10 by 0.60 by 0.04 m, 0.49 kg
+  at             1.79362 m along, 1.08449 m to the right, 0.422692 m up
+  turns on       lever1 hinge, about x, at lever pivot
+  swings         from -105° to -60°
+  damping        0.04 N·m·s/rad
+  starts turned  -60°
+  friction       0.68
+  bounce         dead
+  colour         wood
+
+lever tray base
+  is a         box 0.10 by 0.12 by 0.01 m, 0.005 kg
+  at           1.79362 m along, 1.38449 m to the right, 0.447692 m up
+  attached to  lever1
+  friction     0.68
+  bounce       dead
+  colour       wood
+
+lever tray inner wall
+  is a         box 0.10 by 0.01 by 0.10 m, 0.005 kg
+  at           1.79362 m along, 1.32449 m to the right, 0.502692 m up
+  attached to  lever1
+  friction     0.68
+  bounce       dead
+  colour       wood
+
+ball2
+  is a      sphere 0.10 m across, 0.20 kg
+  moves     freely
+  rolls
+  at        1.79362 m along, 1.169439 m to the right, 0.72 m up
+  friction  0.68, spinning 0.005, rolling 0.002
+  bounce    dead
+  colour    orange
+
+ring1
+  is a      ring 0.16 m across, 0.008 m thick
+  at        1.79362 m along, 0.78449 m to the right, 0.40 m up
+  friction  0.68
+  bounce    dead
+  colour    orange
+
+cart2 guide pivot
+  is a  point
+  at    1.79362 m along, 99.21551 m to the left, 0.05 m up
+
+cart2
+  is a           box 0.22 by 0.18 by 0.10 m, 0.50 kg
+  on             floor, 1.79362 m along, 0.78449 m to the right
+  turns on       cart2 axial guide, about z, at cart2 guide pivot
+  swings         from -0.6° to 0.6°
+  damping        2000 N·m·s/rad
+  starts turned  0°
+  friction       0.68, spinning 0.005, rolling 0.002
+  bounce         dead
+  colour         grey
+
+expect
+  cart1 touches ball1
+  ball1 touches ramp1
+  ball1 touches pendulum1
+  pendulum1 reaches its lower stop
+  pendulum1 touches door1
+  door1 reaches its lower stop
+  door1 touches block1
+  block1 touches domino1
+  domino1 touches lever1
+  lever1 reaches its lower stop
+  ball2 drops through ring1
+  ball2 touches cart2
+```
+
+---
+thinking (summarized):
+
+**Considering cart design**
+
+I’m working on building a cart that will launch a spring driver down inclined tracks. The incline may be about 1 meter long with a height of 0.3 meters and a drop of 0.2 meters. The ball ramp should start at a height of 0.492 meters and end at around 0.55 meters. The track will have a slope of 39° and a gap of 0.5 meters. I need to ensure the design allows for gravity to stage the angles properly. The code I generate can be checked for syntax, but I won't include any simulation.
+
+**Clarifying simulation expectations**
+
+I’m thinking that maybe there shouldn’t be any exact simulation expectations or guarantees as disclosed. I want to create something that can express current needs well enough. I'll focus on being honest about targets and not making claims. I'm considering adding block names with pairs for ring drops and ball-touch cart. In unsupported physics scenarios, I expect some failures, but I believe printed tests can illustrate those points effectively. It’s about including everything as intended for thorough checks.
+
+**Adjusting ball position**
+
+I'm working on transforming the ball's position with specific coordinates. I need to add an offset of `.025 + .05` which gives me `.075`, not `.07`. For the y-coordinate, it's `-.15 + .064951`, resulting in `-.085049`. Then for the z-coordinate, I’ll add `.259808 + .0375` which sums up to `.297308`, along with a pivot adjustment of `.422692` leading to `.72`. It’s a bit of math, but I think I’m getting it right!
+
+**Calculating initial velocity**
+
+I need to determine the initial velocity of a driver for a pendulum circle along a slope. It looks like it'll involve using some trigonometric functions, specifically cosine and sine. So I’m considering the angle of 55 degrees with the components being: (+cos55, -sin55). I wonder if I’m framing that correctly or if there are additional factors to take into account. Let’s make sure I get this right!
