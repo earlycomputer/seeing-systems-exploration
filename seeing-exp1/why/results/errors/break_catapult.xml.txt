@@ -1,0 +1,53 @@
+0 of 1 expectations hold in a 6 s run.
+
+
+-- NOT TRUE: BALL COMES TO REST IN BUCKET --------------------------- expectation
+
+You expected:
+
+      ball comes to rest in bucket
+
+but in the run, ball comes to rest at (1.47, 0.00, 0.06) m, outside bucket.
+
+It was lost at 1.14 s, when ball came down on floor 0.45 m short of bucket, which spans 1.59 to 2.41 m along (1.14 m along, 0.06 m up, 4.23 m/s heading -56°). It came to rest 0.76 s later; the run after 1.14 s only carried it there.
+
+How it got there. Only what touched ball can have changed it, so this walks back through touch from 1.14 s (ball up to 1.14 s, catapult_arm up to 0.54 s); anything outside that is left out:
+
+   0.00 s  catapult_arm.catapult_cup_floor starts against ball   (at 0°, still)
+   0.25 s  catapult_arm.catapult_cup_back first touches ball   (at 14°, turning +103°/s)
+   0.53 s  catapult_arm reaches its upper stop (55°)   (at 55°, turning +189°/s)
+   0.53 s  catapult_arm.catapult_cup_floor leaves ball   (at 56°, turning +151°/s)
+   0.54 s  catapult_arm.catapult_cup_back leaves ball   (at 56°, turning +91°/s)
+   0.64 s  ball is at its highest, 1.28 m up   (-0.17 m along, 1.28 m up, 2.63 m/s heading -0°)
+   1.14 s  ball first touches floor   (1.14 m along, 0.06 m up, 4.23 m/s heading -56°)
+
+These lines set up everything above:
+
+    6|     <body name="catapult_arm" pos="0 0 0.4">
+    7|       <joint name="catapult_hinge" type="hinge" axis="0 1 0" range="0 55" stiffness="2.0" springref="150" damping="0.05" armature="0.01"/>
+    8|       <geom name="catapult_beam" type="box" pos="-0.500 0 0" size="0.500 0.03 0.02" mass="0.3"/>
+    9|       <geom name="catapult_cup_floor" type="box" pos="-0.920 0 0.025" size="0.08 0.08 0.005" mass="0.02"/>
+   10|       <geom name="catapult_cup_back" type="box" pos="-1.005 0 0.07" size="0.005 0.08 0.05" mass="0.01"/>
+   11|     </body>
+   12|     <body name="ball" pos="-0.920 0 0.4895">
+   13|       <freejoint/>
+   14|       <geom name="ball" type="sphere" size="0.06" mass="0.15" condim="6" friction="0.8 0.01 0.004" solref="0.01 1"/>
+   15|     </body>
+   16|     <body name="bucket" pos="2.0 0 0">
+   17|       <geom name="bucket_base" type="box" pos="0 0 0.01" size="0.4 0.4 0.01"/>
+   18|       <geom name="bucket_near" type="box" pos="-0.4 0 0.2" size="0.01 0.4 0.2"/>
+   19|       <geom name="bucket_far" type="box" pos="0.4 0 0.2" size="0.01 0.4 0.2"/>
+   20|       <geom name="bucket_left" type="box" pos="0 0.4 0.2" size="0.4 0.01 0.2"/>
+   21|       <geom name="bucket_right" type="box" pos="0 -0.4 0.2" size="0.4 0.01 0.2"/>
+   22|     </body>
+
+Which numbers move it. Now ball comes down 0.45 m short of bucket. I ran the world again with each of the 57 numbers on those lines changed alone to 1.1, 0.9, 1.5, 0.5 times itself (228 runs, 25 s). These moved it most, the ones that make it hold first:
+
+    7| <joint name="catapult_hinge" type="hinge" axis="0 1 0" range="0 55" stiffness="2.0" springref="150" damping="0.05" armature="0.01"/>
+       2.0 -> 2.2: comes down 0.09 m short of bucket; 1.8: comes down 0.56 m short of bucket; 3: HOLDS; 1: gets within 2.51 m of bucket
+    7| <joint name="catapult_hinge" type="hinge" axis="0 1 0" range="0 55" stiffness="2.0" springref="150" damping="0.05" armature="0.01"/>
+       150 -> 165: comes down 0.20 m short of bucket; 135: comes down 0.63 m short of bucket; 225: HOLDS; 75: gets within 2.51 m of bucket
+   16| <body name="bucket" pos="2.0 0 0">
+       2.0 -> 2.2: comes down 0.65 m short of bucket; 1.8: comes down 0.25 m short of bucket; 3: comes down 1.45 m short of bucket; 1: HOLDS
+
+Each fork changes one number and leaves the rest; two changes together can behave differently.
