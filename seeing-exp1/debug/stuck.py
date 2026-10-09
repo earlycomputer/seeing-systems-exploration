@@ -107,7 +107,12 @@ def main() -> int:
                                   script=["```ask\nstatus\nwhy %d\n```" % (before["first"] + 1), "```report\ndry\n```"] * 5
                                   if dry else None, ledger=None if dry else LEDGER)
                 s = Session(xml, "xml", chain, seconds)
-                report_text, replies = debugger.debug(s, B["brief"], dchat, case_dir, "debugger")
+                try:
+                    report_text, replies = debugger.debug(s, B["brief"], dchat, case_dir, "debugger")
+                except RuntimeError as e:  # OpenAI sometimes flags a prompt; the case is recorded as lost, not retried
+                    row["debugger_error"] = str(e)[:300]
+                    print(c["world"], c["label"], "debugger failed:", str(e)[:120], flush=True)
+                    break
                 cost += sum(r.cost_usd for r in replies)
                 row["debugger_turns"] = len(replies)
                 row["debugger_tokens"] = sum(r.input_tokens + r.output_tokens for r in replies)
@@ -126,6 +131,9 @@ def main() -> int:
             row[arm] = res
         row["seconds"] = round(time.monotonic() - t0, 1)
         done.append(row)
+        if "debugger_error" in row:
+            out_file.write_text(json.dumps(done, indent=1) + "\n")
+            continue
         out_file.write_text(json.dumps(done, indent=1) + "\n")
         print(c["world"], c["label"], "control", row["control"]["clean"], "debugger", row["debugger"]["clean"],
               f"${row['control']['cost_usd'] + row['debugger']['cost_usd']:.2f}", flush=True)
@@ -136,6 +144,8 @@ def main() -> int:
 
 def report() -> int:
     rows = json.loads((OUT / "stuck.json").read_text())
+    lost = [r for r in rows if "debugger_error" in r]
+    rows = [r for r in rows if "debugger_error" not in r]
     n = len(rows)
     pct = lambda k, d: f"{k} of {d}" if d else "none"
     lines = ["# The debugger agent on stuck cases (1m, GPT-6.1)", "",
@@ -153,6 +163,8 @@ def report() -> int:
     both = sum(r["control"]["clean"] and r["debugger"]["clean"] for r in rows)
     only_d = sum(r["debugger"]["clean"] and not r["control"]["clean"] for r in rows)
     only_c = sum(r["control"]["clean"] and not r["debugger"]["clean"] for r in rows)
+    lines += ["", f"{len(lost)} cases left out because the model provider refused the debugger's prompt: "
+              + ", ".join(f"{r['world'].split('__')[1]} s{r['world'][-1]} {r['label']}" for r in lost) + "."] if lost else []
     lines += ["", f"Paired: both clean {both}, only with the debugger {only_d}, only without {only_c}, neither "
               f"{n - both - only_d - only_c}.", ""]
     lines += ["| Case | First break | Control | Debugger |", "|---|---|---|---|"]
