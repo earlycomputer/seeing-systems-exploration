@@ -46,8 +46,10 @@ MAX_LOAD_RETRIES = 2
 STAGE = {8: 2, 16: 4}
 SYSTEM = "You build MuJoCo scenes that do what their briefs say, and you check them honestly."
 
-# 1m's own ceiling. $0 until Jono approves a paid run (paid runs paused, 2026-10-09 04:30).
-CEILING_1M_USD = 0.0
+# 1m's own ceiling. $0 while paid runs were paused (Jono, 2026-10-09 04:30). Raised to $15 when Jono chose "Debugger
+# test only" (2026-10-09 18:20) on a card offering the debugger on the stuck cases with a $15 ceiling (debug/stuck.py).
+# The staged and debugger worlds of run.py are not approved yet.
+CEILING_1M_USD = 15.0
 
 
 def own(name: str, **kw) -> str:
