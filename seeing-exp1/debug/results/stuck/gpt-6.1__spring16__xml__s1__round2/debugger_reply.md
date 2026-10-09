@@ -1,6 +1,6 @@
-No. Cart1 touches ball1 after about 0.50 m of travel. Ball1 rolls down ramp1 and strikes pendulum1, which reaches 40° and touches door1. Door1 reaches its 70° stop and knocks block1, but block1 travels only about 0.16 m before stopping—short of domino1. Everything downstream remains untriggered: neither ring receives its intended ball, and neither launch occurs. Ball5’s initial contact with seesaw1 is appropriate supporting contact, not a launch.
+No. Cart1 strikes ball1 after about 0.50 m of travel. Ball1 rolls down ramp1 and strikes pendulum1; pendulum1 reaches 40° and strikes door1. Door1 reaches its 70° stop and hits block1, but block1 moves only about 0.16 m before stopping, short of domino1. The chain ends there: neither domino topples, neither ring is traversed, and neither launching beam fires. All five balls are at rest at the end, but that does not establish success.
 
-The revision below adds a powered axial guide for block1, driven by its displacement after the door impact. It retains vertical compliance so block1 still contacts the floor. This revision has not been simulation-verified.
+Ball5’s initial contact with seesaw1 is supporting contact, not a launch. The revision below brings the door–block contact earlier into the door’s swing while preserving the downstream relative spacing, masses, friction, and actuator gains. It also gives ball5 a 1 mm initial clearance so its supporting contact begins during the run. **This revision has not been simulated; the complete chain remains unverified.**
 
 ```xml
 <mujoco model="spring_started_chain_revised">
@@ -14,12 +14,14 @@ The revision below adds a powered axial guide for block1, driven by its displace
     <map znear="0.01" zfar="30"/>
   </visual>
 
-  <!-- All generalized velocities default to zero in the start keyframe. -->
+  <!-- All generalized velocities are zero at the start keyframe. -->
   <!-- MuJoCo has no direct restitution attribute; damping ratio 0.6901 approximates restitution 0.05. -->
-  <!-- Scene-internal displacement assistance supplies additional energy after incoming impacts. -->
-  <!-- Revision: block1 has a powered axial guide with limited vertical compliance. -->
-  <!-- The block guide has zero axial drive at its starting position. -->
-  <!-- This revision has not been simulation-verified. -->
+  <!-- This revision is untested. -->
+  <!-- Block1 and every downstream assembly are translated together by (-0.056398, 0.038002, 0) m. -->
+  <!-- Relative to door1 at 70 degrees, this moves block1 0.040 m inward radially and 0.055 m upstream tangentially. -->
+  <!-- The nominal first door-block contact is therefore before the hard stop rather than almost coincident with it. -->
+  <!-- The block-to-domino clearance remains 0.32 m; downstream relative geometry is unchanged. -->
+  <!-- Displacement-dependent powered assistance is unchanged from the previous scene. -->
 
   <worldbody>
     <light name="key_light" pos="-2 -3 5" dir="0.3 0.4 -1" diffuse="0.8 0.8 0.8"/>
@@ -27,8 +29,7 @@ The revision below adds a powered axial guide for block1, driven by its displace
     <camera name="overview" pos="5 -6 4.5" xyaxes="0.768 0.640 0 -0.288 0.346 0.893"/>
     <geom name="floor" type="plane" pos="0 0 0" size="5 5 0.1" condim="6" friction="0.68 0.005 0.002" rgba="0.25 0.28 0.30 1"/>
 
-    <!-- Spring compression is springref minus starting displacement: 0.20 m. -->
-    <!-- Cart1's front reaches ball1 after 0.50 m of axial travel. -->
+    <!-- Initial spring compression is 0.20 m. Gravity also acts along the inclined slide. -->
     <body name="cart1" pos="-1.090043 0 0.775754" quat="0.984807753 0 0.173648178 0">
       <joint name="cart1_slide" type="slide" axis="1 0 0" range="0 0.515" damping="0.20" stiffness="18" springref="0.20" solreflimit="0.006 1" solimplimit="0.99 0.999 0.001"/>
       <geom name="cart1_box" type="box" size="0.11 0.09 0.05" mass="0.50" condim="3" friction="0.68 0.005 0.002" rgba="0.80 0.20 0.15 1"/>
@@ -39,7 +40,7 @@ The revision below adds a powered axial guide for block1, driven by its displace
       <geom name="ball1_sphere" type="sphere" size="0.05" mass="0.20" condim="3" friction="0.68 0.005 0.002" rgba="0.95 0.65 0.10 1"/>
     </body>
 
-    <!-- Ramp surface is 1.00 by 0.30 m at 20 degrees; its low end is at z=0.15. -->
+    <!-- Ramp1 surface is 1.00 by 0.30 m at 20 degrees, with its low end at z=0.15 m. -->
     <body name="ramp1" pos="0 0 0.321010" quat="0.984807753 0 0.173648178 0">
       <geom name="ramp1_surface" type="box" pos="0 0 -0.0125" size="0.50 0.15 0.0125" condim="3" friction="0.68 0.005 0.002" rgba="0.45 0.55 0.65 1"/>
       <geom name="ramp1_start_pad" type="box" pos="-0.503845 0 0.001793" quat="0.984807753 0 -0.173648178 0" size="0.006 0.075 0.005" condim="3" friction="0.68 0.005 0.002" rgba="0.55 0.65 0.75 1"/>
@@ -58,35 +59,25 @@ The revision below adds a powered axial guide for block1, driven by its displace
       <geom name="door1_panel" type="box" pos="0 0.21 0" size="0.02 0.21 0.16" mass="0.45" condim="3" friction="0.68 0.005 0.002" rgba="0.20 0.60 0.35 1"/>
     </body>
 
-    <body name="block1" pos="1.381563 -0.126829 0.06" quat="0.819152044 0 0 -0.573576436">
+    <body name="block1" pos="1.325165 -0.088827 0.06" quat="0.819152044 0 0 -0.573576436">
       <freejoint name="block1_free"/>
       <geom name="block1_cube" type="box" size="0.06 0.06 0.06" mass="0.35" condim="3" friction="0.68 0.005 0.002" rgba="0.65 0.30 0.75 1"/>
     </body>
 
-    <!-- An auxiliary carriage constrains sideways motion and rotation, not floor support. -->
-    <!-- Its vertical slide allows floor loading and up to 3 mm of impact lift. -->
-    <!-- Block1 retains its required freejoint and is coupled to this carriage by a weld. -->
-    <body name="block1_carriage" pos="1.381563 -0.126829 0.06" quat="0.819152044 0 0 -0.573576436">
-      <inertial pos="0 0 0" mass="0.001" diaginertia="0.000001 0.000001 0.000001"/>
-      <joint name="block1_carriage_slide" type="slide" axis="1 0 0" range="0 0.345" damping="0.20" solreflimit="0.006 1" solimplimit="0.99 0.999 0.001"/>
-      <joint name="block1_carriage_vertical" type="slide" axis="0 0 1" range="-0.003 0.003" damping="0.20" solreflimit="0.006 1" solimplimit="0.99 0.999 0.001"/>
-    </body>
-
-    <!-- Physical rails remain outside the door's swept volume. -->
-    <body name="block1_guide" pos="1.381563 -0.126829 0" quat="0.819152044 0 0 -0.573576436">
+    <!-- Guides begin 0.02 m forward of the initial block center. -->
+    <body name="block1_guide" pos="1.325165 -0.088827 0" quat="0.819152044 0 0 -0.573576436">
       <geom name="block1_guide_left" type="box" pos="0.27 0.086 0.035" size="0.25 0.008 0.035" condim="3" friction="0.68 0.005 0.002" rgba="0.35 0.35 0.40 1"/>
       <geom name="block1_guide_right" type="box" pos="0.27 -0.086 0.035" size="0.25 0.008 0.035" condim="3" friction="0.68 0.005 0.002" rgba="0.35 0.35 0.40 1"/>
     </body>
 
     <!-- Initial block-to-domino face clearance is 0.32 m. -->
-    <body name="domino1" pos="1.518371 -0.502706 0.12" quat="0.819152044 0 0 -0.573576436">
+    <body name="domino1" pos="1.461973 -0.464704 0.12" quat="0.819152044 0 0 -0.573576436">
       <freejoint name="domino1_free"/>
       <geom name="domino1_box" type="box" size="0.02 0.04 0.12" mass="0.25" condim="3" friction="0.68 0.005 0.002" rgba="0.90 0.85 0.65 1"/>
     </body>
 
-    <!-- Lever1's left end is 0.18 m beyond domino1. -->
-    <!-- Beam and carrying cup together weigh 0.50 kg. -->
-    <body name="lever1" pos="1.615028 -0.768268 0.431908" quat="0.671010072 -0.328989928 -0.469846310 -0.469846310">
+    <!-- Lever1 beam and carrying cup together have mass 0.50 kg. -->
+    <body name="lever1" pos="1.558630 -0.730266 0.431908" quat="0.671010072 -0.328989928 -0.469846310 -0.469846310">
       <joint name="lever1_hinge" type="hinge" axis="0 -1 0" range="0 45" damping="0.04" solreflimit="0.006 1" solimplimit="0.99 0.999 0.001"/>
       <geom name="lever1_beam" type="box" size="0.30 0.05 0.02" mass="0.479" condim="3" friction="0.68 0.005 0.002" rgba="0.20 0.45 0.80 1"/>
       <geom name="lever1_cup_floor" type="box" pos="0.314095 0 0.005130" quat="0.819152044 0 0.573576436 0" size="0.055 0.05 0.005" mass="0.020" condim="3" friction="0.68 0.005 0.002" rgba="0.30 0.55 0.90 1"/>
@@ -94,14 +85,13 @@ The revision below adds a powered axial guide for block1, driven by its displace
       <geom name="lever1_cup_rail_right" type="capsule" fromto="0.320487 -0.055 0.060666 0.354689 -0.055 -0.033304" size="0.005" mass="0.0005" condim="3" friction="0.68 0.005 0.002" rgba="0.30 0.55 0.90 1"/>
     </body>
 
-    <body name="ball2" pos="1.650121 -0.864686 0.783816">
+    <body name="ball2" pos="1.593723 -0.826684 0.783816">
       <freejoint name="ball2_free"/>
       <geom name="ball2_sphere" type="sphere" size="0.05" mass="0.20" condim="3" friction="0.68 0.005 0.002" rgba="0.95 0.45 0.10 1"/>
     </body>
 
-    <!-- Horizontal ring with 0.16 m inscribed clear diameter. -->
-    <!-- Its plane is 0.32 m below ball2's initial center. -->
-    <body name="ring1" pos="1.496212 -0.441825 0.463816" quat="0.573576436 0 0 0.819152044">
+    <!-- Horizontal ring1 has 0.16 m inscribed clear diameter and lies 0.32 m below ball2's initial center. -->
+    <body name="ring1" pos="1.439814 -0.403823 0.463816" quat="0.573576436 0 0 0.819152044">
       <geom name="ring1_segment_00" type="capsule" fromto="0.093802 0 0 0.086664 0.035897 0" size="0.012" condim="3" friction="0.68 0.005 0.002" rgba="0.90 0.75 0.15 1"/>
       <geom name="ring1_segment_01" type="capsule" fromto="0.086664 0.035897 0 0.066330 0.066330 0" size="0.012" condim="3" friction="0.68 0.005 0.002" rgba="0.90 0.75 0.15 1"/>
       <geom name="ring1_segment_02" type="capsule" fromto="0.066330 0.066330 0 0.035897 0.086664 0" size="0.012" condim="3" friction="0.68 0.005 0.002" rgba="0.90 0.75 0.15 1"/>
@@ -120,7 +110,7 @@ The revision below adds a powered axial guide for block1, driven by its displace
       <geom name="ring1_segment_15" type="capsule" fromto="0.086664 -0.035897 0 0.093802 0 0" size="0.012" condim="3" friction="0.68 0.005 0.002" rgba="0.90 0.75 0.15 1"/>
     </body>
 
-    <body name="ring1_guide" pos="1.496212 -0.441825 0.463816" quat="0.573576436 0 0 0.819152044">
+    <body name="ring1_guide" pos="1.439814 -0.403823 0.463816" quat="0.573576436 0 0 0.819152044">
       <geom name="ring1_guide_front" type="box" pos="0.2475 0 0.138" euler="0 52.25 0" size="0.008 0.15 0.19282" condim="3" friction="0.68 0.005 0.002" rgba="0.65 0.60 0.25 0.45"/>
       <geom name="ring1_guide_back_lower" type="box" pos="-0.1725 0 0.08" euler="0 -52.25 0" size="0.008 0.15 0.09802" condim="3" friction="0.68 0.005 0.002" rgba="0.65 0.60 0.25 0.45"/>
       <geom name="ring1_guide_back_upper_left" type="box" pos="-0.325 0.10 0.198" euler="0 -52.25 0" size="0.008 0.04 0.09482" condim="3" friction="0.68 0.005 0.002" rgba="0.65 0.60 0.25 0.45"/>
@@ -129,66 +119,65 @@ The revision below adds a powered axial guide for block1, driven by its displace
       <geom name="ring1_guide_right" type="box" pos="0 -0.1175 0.138" euler="10.8 0 0" size="0.42 0.007 0.12012" condim="3" friction="0.68 0.005 0.002" rgba="0.65 0.60 0.25 0.45"/>
     </body>
 
-    <!-- Main cart, coupling arm, and paddle together weigh 0.50 kg. -->
+    <!-- Cart2 box, coupling arm, and paddle together have mass 0.50 kg. -->
     <!-- Nominal ball-center height at paddle contact is ring1 height minus 0.25 m. -->
-    <body name="cart2" pos="1.729895 -0.206722 0.425" quat="0.573576436 0 0 0.819152044">
+    <body name="cart2" pos="1.673497 -0.168720 0.425" quat="0.573576436 0 0 0.819152044">
       <joint name="cart2_slide" type="slide" axis="1 0 0" range="0 0.405" damping="0.20" solreflimit="0.006 1" solimplimit="0.99 0.999 0.001"/>
       <geom name="cart2_box" type="box" size="0.11 0.09 0.05" mass="0.470" condim="3" friction="0.68 0.005 0.002" rgba="0.80 0.20 0.15 1"/>
       <geom name="cart2_coupling_arm" type="capsule" fromto="0 0 0 -0.10 0.30 -0.252197" size="0.008" mass="0.015" condim="3" friction="0.68 0.005 0.002" rgba="0.65 0.20 0.15 1"/>
       <geom name="cart2_catch_paddle" type="box" pos="-0.10 0.30 -0.252197" quat="0.923879533 0 -0.382683432 0" size="0.08 0.09 0.008" mass="0.015" condim="3" friction="0.68 0.005 0.002" rgba="0.90 0.30 0.20 1"/>
     </body>
 
-    <body name="domino2_support" pos="1.548624 0.291315 0.175" quat="0.573576436 0 0 0.819152044">
+    <body name="domino2_support" pos="1.492226 0.329317 0.175" quat="0.573576436 0 0 0.819152044">
       <geom name="domino2_support_plinth" type="box" size="0.13 0.12 0.175" condim="3" friction="0.68 0.005 0.002" rgba="0.35 0.40 0.45 1"/>
     </body>
 
-    <!-- Cart2 reaches domino2 after 0.40 m of travel. -->
-    <body name="domino2" pos="1.548624 0.291315 0.47" quat="0.573576436 0 0 0.819152044">
+    <!-- Cart2's nominal travel before touching domino2 is 0.40 m. -->
+    <body name="domino2" pos="1.492226 0.329317 0.47" quat="0.573576436 0 0 0.819152044">
       <freejoint name="domino2_free"/>
       <geom name="domino2_box" type="box" size="0.02 0.04 0.12" mass="0.25" condim="3" friction="0.68 0.005 0.002" rgba="0.90 0.85 0.65 1"/>
     </body>
 
-    <body name="ball3" pos="1.487060 0.460460 0.550020">
+    <body name="ball3" pos="1.430662 0.498462 0.550020">
       <freejoint name="ball3_free"/>
       <geom name="ball3_sphere" type="sphere" size="0.05" mass="0.20" condim="3" friction="0.68 0.005 0.002" rgba="0.90 0.25 0.25 1"/>
     </body>
 
-    <!-- Ramp2 also has a 1.00 by 0.30 m surface at 20 degrees and low-end height 0.15 m. -->
-    <body name="ramp2" pos="1.326364 0.901971 0.321010" quat="0.564862521 -0.142244260 0.099600503 0.806707284">
+    <!-- Ramp2 surface is 1.00 by 0.30 m at 20 degrees, with its low end at z=0.15 m. -->
+    <body name="ramp2" pos="1.269966 0.939973 0.321010" quat="0.564862521 -0.142244260 0.099600503 0.806707284">
       <geom name="ramp2_surface" type="box" pos="0 0 -0.0125" size="0.50 0.15 0.0125" condim="3" friction="0.68 0.005 0.002" rgba="0.45 0.55 0.65 1"/>
       <geom name="ramp2_start_pad" type="box" pos="-0.503845 0 0.001793" quat="0.984807753 0 -0.173648178 0" size="0.006 0.075 0.005" condim="3" friction="0.68 0.005 0.002" rgba="0.55 0.65 0.75 1"/>
       <geom name="ramp2_rail_left" type="box" pos="0 0.145 0.02" size="0.50 0.005 0.025" condim="3" friction="0.68 0.005 0.002" rgba="0.35 0.45 0.55 1"/>
       <geom name="ramp2_rail_right" type="box" pos="0 -0.145 0.02" size="0.50 0.005 0.025" condim="3" friction="0.68 0.005 0.002" rgba="0.35 0.45 0.55 1"/>
     </body>
 
-    <body name="flap1" pos="1.124624 1.456245 0.55" quat="0.573576436 0 0 0.819152044">
+    <body name="flap1" pos="1.068226 1.494247 0.55" quat="0.573576436 0 0 0.819152044">
       <joint name="flap1_hinge" type="hinge" axis="0 -1 0" range="0 60" damping="0.04" solreflimit="0.006 1" solimplimit="0.99 0.999 0.001"/>
       <geom name="flap1_panel" type="box" pos="0 0 -0.19" size="0.02 0.09 0.19" mass="0.28" condim="3" friction="0.68 0.005 0.002" rgba="0.25 0.65 0.50 1"/>
     </body>
 
-    <!-- Balancing torque is slightly below gravity, retaining pendulum2 at its lower stop until struck. -->
-    <body name="pendulum2" pos="1.138305 1.418658 0.577321" quat="0.573576436 0 0 0.819152044">
+    <!-- Pendulum2 balancing torque is slightly below its initial gravity torque. -->
+    <body name="pendulum2" pos="1.081907 1.456660 0.577321" quat="0.573576436 0 0 0.819152044">
       <joint name="pendulum2_hinge" type="hinge" axis="0 -1 0" range="0 38" damping="0.04" solreflimit="0.006 1" solimplimit="0.99 0.999 0.001"/>
       <geom name="pendulum2_rod" type="capsule" fromto="0 0 0 0.50 0 0" size="0.0105" mass="0.32" condim="3" friction="0.68 0.005 0.002" rgba="0.65 0.35 0.15 1"/>
       <geom name="pendulum2_bob" type="sphere" pos="0.50 0 0" size="0.012" mass="0.03" condim="3" friction="0.68 0.005 0.002" rgba="0.75 0.40 0.15 1"/>
     </body>
 
-    <!-- Shelf envelope is 0.30 by 0.25 by 0.04 m, with its top at z=0.85. -->
-    <!-- A 0.03 m central slot admits pendulum2; ball4 bridges the strips. -->
-    <body name="shelf1" pos="1.033476 1.706673 0.83" quat="0.573576436 0 0 0.819152044">
+    <!-- Shelf1 overall dimensions are 0.30 by 0.25 by 0.04 m, with its top at z=0.85 m. -->
+    <!-- A central slot clears pendulum2; ball4 bridges the support strips. -->
+    <body name="shelf1" pos="0.977078 1.744675 0.83" quat="0.573576436 0 0 0.819152044">
       <geom name="shelf1_left_strip" type="box" pos="0 0.07 0" size="0.15 0.055 0.02" condim="3" friction="0.68 0.005 0.002" rgba="0.45 0.50 0.65 1"/>
       <geom name="shelf1_right_strip" type="box" pos="0 -0.07 0" size="0.15 0.055 0.02" condim="3" friction="0.68 0.005 0.002" rgba="0.45 0.50 0.65 1"/>
       <geom name="shelf1_back_bridge" type="box" pos="-0.145 0 0" size="0.005 0.125 0.02" condim="3" friction="0.68 0.005 0.002" rgba="0.45 0.50 0.65 1"/>
     </body>
 
-    <body name="ball4" pos="0.983028 1.845278 0.897697">
+    <body name="ball4" pos="0.926630 1.883280 0.897697">
       <freejoint name="ball4_free"/>
       <geom name="ball4_sphere" type="sphere" size="0.05" mass="0.20" condim="3" friction="0.68 0.005 0.002" rgba="0.60 0.25 0.85 1"/>
     </body>
 
-    <!-- Horizontal ring with 0.16 m inscribed clear diameter. -->
-    <!-- Its plane is 0.30 m below ball4's initial center. -->
-    <body name="ring2" pos="0.921464 2.014423 0.597697" quat="0.573576436 0 0 0.819152044">
+    <!-- Horizontal ring2 has 0.16 m inscribed clear diameter and lies 0.30 m below ball4's initial center. -->
+    <body name="ring2" pos="0.865066 2.052425 0.597697" quat="0.573576436 0 0 0.819152044">
       <geom name="ring2_segment_00" type="capsule" fromto="0.093802 0 0 0.086664 0.035897 0" size="0.012" condim="3" friction="0.68 0.005 0.002" rgba="0.90 0.75 0.15 1"/>
       <geom name="ring2_segment_01" type="capsule" fromto="0.086664 0.035897 0 0.066330 0.066330 0" size="0.012" condim="3" friction="0.68 0.005 0.002" rgba="0.90 0.75 0.15 1"/>
       <geom name="ring2_segment_02" type="capsule" fromto="0.066330 0.066330 0 0.035897 0.086664 0" size="0.012" condim="3" friction="0.68 0.005 0.002" rgba="0.90 0.75 0.15 1"/>
@@ -207,8 +196,7 @@ The revision below adds a powered axial guide for block1, driven by its displace
       <geom name="ring2_segment_15" type="capsule" fromto="0.086664 -0.035897 0 0.093802 0 0" size="0.012" condim="3" friction="0.68 0.005 0.002" rgba="0.90 0.75 0.15 1"/>
     </body>
 
-    <!-- Rear guide slot clears pendulum2's swing. -->
-    <body name="ring2_guide" pos="0.921464 2.014423 0.597697" quat="0.573576436 0 0 0.819152044">
+    <body name="ring2_guide" pos="0.865066 2.052425 0.597697" quat="0.573576436 0 0 0.819152044">
       <geom name="ring2_guide_front" type="box" pos="0.1475 0 0.0875" euler="0 37.875 0" size="0.008 0.22 0.08552" condim="3" friction="0.68 0.005 0.002" rgba="0.65 0.60 0.25 0.45"/>
       <geom name="ring2_guide_back_left" type="box" pos="-0.1475 0.1175 0.0875" euler="0 -37.875 0" size="0.008 0.1025 0.08552" condim="3" friction="0.68 0.005 0.002" rgba="0.65 0.60 0.25 0.45"/>
       <geom name="ring2_guide_back_right" type="box" pos="-0.1475 -0.1175 0.0875" euler="0 -37.875 0" size="0.008 0.1025 0.08552" condim="3" friction="0.68 0.005 0.002" rgba="0.65 0.60 0.25 0.45"/>
@@ -217,30 +205,24 @@ The revision below adds a powered axial guide for block1, driven by its displace
       <geom name="ring2_guide_right" type="box" pos="0 -0.1475 0.0875" euler="37.875 0 0" size="0.22 0.008 0.08552" condim="3" friction="0.68 0.005 0.002" rgba="0.65 0.60 0.25 0.45"/>
     </body>
 
-    <!-- Ball4's nominal center at beam contact is 0.25 m below ring2. -->
-    <body name="seesaw1" pos="0.817148 2.301029 0.277697" quat="0.573576436 0 0 0.819152044">
+    <!-- Nominal ball4 center height at seesaw contact is ring2 height minus 0.25 m. -->
+    <body name="seesaw1" pos="0.760750 2.339031 0.277697" quat="0.573576436 0 0 0.819152044">
       <joint name="seesaw1_hinge" type="hinge" axis="0 -1 0" range="0 42" damping="0.04" solreflimit="0.006 1" solimplimit="0.99 0.999 0.001"/>
       <geom name="seesaw1_beam" type="box" size="0.325 0.05 0.02" mass="0.55" condim="3" friction="0.68 0.005 0.002" rgba="0.15 0.55 0.85 1"/>
     </body>
 
-    <!-- Supporting contact is intentional: seesaw1 initially carries ball5. -->
-    <body name="ball5" pos="0.714542 2.582937 0.347697">
+    <!-- Ball5 starts 1 mm above its supporting contact and settles under gravity. -->
+    <body name="ball5" pos="0.658144 2.620939 0.348697">
       <freejoint name="ball5_free"/>
       <geom name="ball5_sphere" type="sphere" size="0.05" mass="0.20" condim="3" friction="0.68 0.005 0.002" rgba="0.15 0.85 0.40 1"/>
     </body>
   </worldbody>
 
-  <!-- Initial relative pose is inferred from the two coincident body frames. -->
-  <equality>
-    <weld name="block1_carriage_coupling" body1="block1" body2="block1_carriage" solref="0.006 1" solimp="0.99 0.999 0.001"/>
-  </equality>
-
-  <!-- These affine biases are powered displacement assistance, not passive springs. -->
-  <!-- Controls remain zero; bias forces depend on each joint's actual displacement. -->
+  <!-- Affine biases supply displacement-dependent forces; controls remain zero. -->
+  <!-- Gains and biases are unchanged from the reported run. -->
   <actuator>
     <general name="pendulum1_assist" joint="pendulum1_hinge" gainprm="0" biastype="affine" biasprm="0 1.5 0"/>
     <general name="door1_assist" joint="door1_hinge" gainprm="0" biastype="affine" biasprm="0 6 0"/>
-    <general name="block1_assist" joint="block1_carriage_slide" gainprm="0" biastype="affine" biasprm="0 40 0"/>
     <general name="lever1_assist" joint="lever1_hinge" gainprm="0" biastype="affine" biasprm="0 3 0"/>
     <general name="cart2_assist" joint="cart2_slide" gainprm="0" biastype="affine" biasprm="0 5 0"/>
     <general name="flap1_assist" joint="flap1_hinge" gainprm="0" biastype="affine" biasprm="0 2 0"/>
@@ -249,15 +231,15 @@ The revision below adds a powered axial guide for block1, driven by its displace
   </actuator>
 
   <keyframe>
-    <key name="start" time="0" ctrl="0 0 0 0 0 0 0 0"/>
+    <key name="start" time="0" ctrl="0 0 0 0 0 0 0"/>
   </keyframe>
 </mujoco>
 ```
 
 ```json
 {
-  "what_happens": "Cart1 touches ball1 after about 0.50 m; ball1 rolls down ramp1 and strikes pendulum1. Pendulum1 reaches 40 degrees and touches door1, which reaches 70 degrees and knocks block1. Block1 stops after about 0.16 m without reaching domino1. Ball1 eventually settles, while the downstream chain remains untriggered and neither intended ring passage nor launch occurs.",
+  "what_happens": "Cart1 strikes ball1, which rolls down ramp1 and strikes pendulum1. Pendulum1 reaches 40 degrees and strikes door1. Door1 reaches its 70-degree stop and knocks block1, but block1 travels only about 0.16 m and stops before domino1. The remaining chain never activates, neither ball passes through its ring, and neither launching beam fires. All balls are at rest after 20 s.",
   "works": false,
-  "problem": "Block1 stops short of its required 0.32 m travel and never touches domino1, preventing every downstream stage."
+  "problem": "Block1 receives insufficient motion from door1 to cross the specified 0.32 m clearance and touch domino1, breaking the chain."
 }
 ```
