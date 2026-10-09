@@ -1,0 +1,224 @@
+No. Cart1 oscillates but never reaches ball1; its closest approach is about 0.12 m. Ball1 therefore remains on its starting seat. Pendulum1 moves prematurely and hits the floor, while door1 and block1 never move. Lever1 also moves prematurely, tipping ball2 off: ball2 briefly strikes domino1, misses ring1 by about 0.33 m, and stops on the floor without touching cart2.
+
+Ball2 touching lever1 initially is consistent with the brief’s requirement that the lever carry it. The problem is its unintended release.
+
+The geometry-corrected world below uses body-local hinge faces to address the premature hinge motion. **It is not a successful solution to the entire brief:** the horizontal spring-only cart still cannot cover 0.50 m from a 0.20 m compression. That step requires another energy source or a changed constraint.
+
+```world
+world  spring cart chain with corrected hinge anchors
+
+floor
+  size      8 m
+  friction  0.68, spinning 0, rolling 0
+
+ramp high end
+  is a  point
+  at    0 m along, 0.473226 m up
+
+ramp low end
+  is a  point
+  at    0.939693 m beyond ramp high end, 0.131206 m up
+
+ramp1
+  is a      plank from ramp high end to ramp low end, 0.30 m wide, 0.04 m thick
+  friction  0.68, spinning 0, rolling 0
+  bounce    0.05
+  colour    wood
+
+ball1 seat
+  is a      box 0.10 by 0.30 by 0.02 m
+  at        0.05 m behind ramp high end, 0.482020 m up
+  friction  0.68, spinning 0, rolling 0
+  bounce    0.05
+  colour    wood
+
+ball1
+  is a      sphere 0.10 m across, 0.20 kg
+  moves     freely
+  rolls
+  friction  0.68, spinning 0, rolling 0
+  bounce    0.05
+  colour    orange
+  sits      on ball1 seat, centred over ball1 seat
+
+-- Initial front-to-ball clearance: 0.50 m.
+-- This requirement remains physically unreachable using only
+-- the specified horizontal spring and initial compression.
+cart1
+  is a        box 0.22 by 0.18 by 0.10 m, 0.50 kg
+  slides on   cart1 track, along x
+  travels     from −0.20 m to 0.30 m
+  spring      18 N/m toward 0 m
+  damping     0.20 N·s/m
+  starts slid −0.20 m
+  friction    0.68, spinning 0, rolling 0
+  bounce      0.05
+  colour      grey
+  at          0.46 m behind ball1, level with ball1
+
+pendulum pivot
+  is a  point
+  at    0.15 m beyond ramp low end, 0.65 m up
+
+pendulum rod centre
+  is a  point
+  at    0 m beyond pendulum pivot, 0 m left of pendulum pivot, 0.25 m below pendulum pivot
+
+pendulum bob centre
+  is a  point
+  at    0 m beyond pendulum pivot, 0 m left of pendulum pivot, 0.50 m below pendulum pivot
+
+-- The rod's top is the hinge location.
+-- Pivot-to-bob-centre length is 0.50 m.
+-- Rod and bob together weigh 0.35 kg.
+pendulum1
+  is a           box 0.012 by 0.012 by 0.50 m, 0.05 kg
+  turns on       pendulum1 hinge, about y, at its top
+  swings         from −40 deg to 0 deg
+  starts turned  0 deg
+  damping        0.04 N·m·s/rad
+  friction       0.68, spinning 0, rolling 0
+  bounce         0.05
+  colour         grey
+  at             pendulum rod centre
+
+pendulum1 bob
+  is a         sphere 0.10 m across, 0.30 kg
+  attached to  pendulum1
+  friction     0.68, spinning 0, rolling 0
+  bounce       0.05
+  colour       grey
+  at           pendulum bob centre
+
+-- The door's near face meets the bob at the 40-degree endpoint.
+door1
+  is a           box 0.04 by 0.32 by 0.42 m, 0.45 kg
+  turns on       door1 hinge, about z, at its right side
+  swings         from −70 deg to 0 deg
+  starts turned  0 deg
+  damping        0.04 N·m·s/rad
+  friction       0.68, spinning 0, rolling 0
+  bounce         0.05
+  colour         wood
+  stands         raised 0.02 m, 0.391394 m beyond pendulum1
+
+block1
+  is a      cube 0.12 m, 0.35 kg
+  moves     freely
+  friction  0.68, spinning 0, rolling 0
+  bounce    0.05
+  colour    grey
+  sits      on floor, 0.367542 m beyond door1
+
+domino1
+  is a      box 0.08 by 0.04 by 0.24 m, 0.25 kg
+  moves     freely
+  friction  0.68, spinning 0, rolling 0
+  bounce    0.05
+  colour    white
+  stands    on floor, 0.42 m beyond block1
+
+lever centre
+  is a  point
+  at    0.48 m beyond domino1, 0.65 m up
+
+-- About-y rotation is unaffected by the hinge's y coordinate.
+-- Its right side therefore supplies a body-local hinge point
+-- on the same central hinge axis as the lever's centre.
+-- The complete rigid lever assembly weighs 0.50 kg.
+lever1
+  is a           box 0.60 by 0.10 by 0.04 m, 0.498 kg
+  turns on       lever1 hinge, about y, at its right side
+  swings         from −45 deg to 0 deg
+  starts turned  0 deg
+  damping        0.04 N·m·s/rad
+  friction       0.68, spinning 0, rolling 0
+  bounce         0.05
+  colour         wood
+  at             lever centre
+
+lever strike point
+  is a  point
+  at    0.30 m behind lever1, 0.18 m up
+
+lever drop link
+  is a         rod 0.008 m thick, from lever1's near end to lever strike point
+  weighs       0.001 kg
+  attached to  lever1
+  friction     0.68, spinning 0, rolling 0
+  bounce       0.05
+  colour       grey
+
+lever strike pad
+  is a         cube 0.04 m, 0.001 kg
+  attached to  lever1
+  friction     0.68, spinning 0, rolling 0
+  bounce       0.05
+  colour       grey
+  at           lever strike point
+
+-- Initial supporting contact with lever1 is intentional.
+ball2
+  is a      sphere 0.10 m across, 0.20 kg
+  moves     freely
+  rolls
+  friction  0.68, spinning 0, rolling 0
+  bounce    0.05
+  colour    orange
+  sits      on lever1, 0.30 m beyond lever1
+
+ring1
+  is a      ring 0.168 m across, 0.008 m thick
+  friction  0.68, spinning 0, rolling 0
+  bounce    0.05
+  colour    orange
+  at        0.25 m behind ball2, 0.32 m below ball2
+
+cart2
+  is a       box 0.22 by 0.18 by 0.10 m, 0.50 kg
+  slides on  cart2 track, along x
+  travels    from 0 m to 0.50 m
+  damping    0.20 N·s/m
+  friction   0.68, spinning 0, rolling 0
+  bounce     0.05
+  colour     grey
+  sits       on floor, centred over ring1
+
+-- These remain requirements, not claimed successful results.
+expect
+  cart1 touches ball1
+  ball1 touches ramp1
+  ball1 touches pendulum1 bob
+  pendulum1 reaches its lower stop
+  pendulum1 bob touches door1
+  door1 reaches its lower stop
+  door1 touches block1
+  block1 touches domino1
+  domino1 touches lever strike pad
+  lever1 reaches its lower stop
+  ball2 drops through ring1
+  ball2 touches cart2
+```
+
+```json
+{
+  "what_happens": "Cart1 oscillates without reaching ball1, which stays on its seat. Pendulum1 and lever1 move prematurely into the floor. Door1, block1 and cart2 remain stationary. Ball2 rolls off lever1, briefly strikes domino1, misses ring1 and stops on the floor.",
+  "works": false,
+  "problem": "The first transfer never occurs, the hinges move prematurely, and ball2 misses the ring and cart2, so the required causal chain fails."
+}
+```
+
+---
+thinking (summarized):
+
+**Calculating pendulum components**
+
+I’m working on creating a pendulum with specific dimensions. The rod needs to be 0.5 meters long, anchored at its top with a hinge. I’ll set the local relative capsule bounding box's top at z=0.65 and place the body's origin at midpoint 0.425. The pivot will be at 0.656, adjusting for the bob’s distance. I should attach the rod mass to the bob point, which is 0.3. I’ll finalize the effective pivot length and position accordingly.
+
+**Calculating torque and energy**
+
+I'm exploring the torque generated by pushing at a certain angle on a panel. It seems like this positive torque is rotating the panel from its original vertical position. The range starts from 0 to 70 degrees, with the gravitational drop affecting energy calculations. I find that energy calculations result in around 0.61, derived from some trigonometric components. The orientation from the viewpoint affects how the rotation appears on the screen, too!
+
+**Considering latch design**
+
+I need to figure out whether to give the latch a separate name when it's attached to the door. It seems like a flexible latch is not the same as a rigid body, so that complicates things. I think I might need a custom part with pieces that relate to both the door and the latch name. There’s also the expectation of labeling in the context of door bodies and joint panel colliders. Let’s clarify this further!

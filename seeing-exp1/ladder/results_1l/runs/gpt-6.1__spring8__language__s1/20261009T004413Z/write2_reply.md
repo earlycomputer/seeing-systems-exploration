@@ -1,0 +1,195 @@
+The pendulum’s endpoint markers now explicitly share the pivot’s horizontal coordinates, rather than defaulting to the origin. This corrects the placement that caused both reported overlaps.
+
+```world
+world  spring cart chain
+
+floor
+  size      8 m
+  friction  0.68, spinning 0, rolling 0
+
+ramp high end
+  is a  point
+  at    0 m along, 0.473226 m up
+
+ramp low end
+  is a  point
+  at    0.939693 m beyond ramp high end, 0.131206 m up
+
+ramp1
+  is a      plank from ramp high end to ramp low end, 0.30 m wide, 0.04 m thick
+  friction  0.68, spinning 0, rolling 0
+  bounce    0.05
+  colour    wood
+
+ball1 seat
+  is a      box 0.10 by 0.30 by 0.02 m
+  at        0.05 m behind ramp high end, 0.482020 m up
+  friction  0.68, spinning 0, rolling 0
+  bounce    0.05
+  colour    wood
+
+ball1
+  is a      sphere 0.10 m across, 0.20 kg
+  moves     freely
+  rolls
+  friction  0.68, spinning 0, rolling 0
+  bounce    0.05
+  colour    orange
+  sits      on ball1 seat, centred over ball1 seat
+
+-- The initial front-to-ball clearance is 0.50 m.
+-- The stated spring alone cannot cover that clearance:
+-- its ideal undamped maximum travel is 0.40 m.
+cart1
+  is a        box 0.22 by 0.18 by 0.10 m, 0.50 kg
+  slides on   cart1 track, along x
+  travels     from −0.20 m to 0.30 m
+  spring      18 N/m toward 0 m
+  damping     0.20 N·s/m
+  starts slid −0.20 m
+  friction    0.68, spinning 0, rolling 0
+  bounce      0.05
+  colour      grey
+  at          0.46 m behind ball1, level with ball1
+
+pendulum pivot
+  is a  point
+  at    0.15 m beyond ramp low end, 0.65 m up
+
+pendulum bob centre
+  is a  point
+  at    0 m beyond pendulum pivot, 0 m left of pendulum pivot, 0.50 m below pendulum pivot
+
+pendulum rod end
+  is a  point
+  at    0 m beyond pendulum pivot, 0 m left of pendulum pivot, 0.45 m below pendulum pivot
+
+pendulum1
+  is a           sphere 0.10 m across, 0.30 kg
+  turns on       pendulum1 hinge, about y, at pendulum pivot
+  swings         from −40 deg to 0 deg
+  starts turned  0 deg
+  damping        0.04 N·m·s/rad
+  friction       0.68, spinning 0, rolling 0
+  bounce         0.05
+  colour         grey
+  at             pendulum bob centre
+
+-- Bob and rigid rod have a combined mass of 0.35 kg.
+pendulum rigid rod
+  is a         rod 0.012 m thick, from pendulum pivot to pendulum rod end
+  weighs       0.05 kg
+  attached to  pendulum1
+  friction     0.68, spinning 0, rolling 0
+  bounce       0.05
+  colour       grey
+
+door1
+  is a           box 0.04 by 0.32 by 0.42 m, 0.45 kg
+  turns on       door1 hinge, about z, at its right side
+  swings         from −70 deg to 0 deg
+  starts turned  0 deg
+  damping        0.04 N·m·s/rad
+  friction       0.68, spinning 0, rolling 0
+  bounce         0.05
+  colour         wood
+  stands         raised 0.02 m, 0.371394 m beyond pendulum1
+
+block1
+  is a      cube 0.12 m, 0.35 kg
+  moves     freely
+  friction  0.68, spinning 0, rolling 0
+  bounce    0.05
+  colour    grey
+  sits      on floor, 0.367542 m beyond door1
+
+-- The block must translate 0.32 m before reaching the domino.
+domino1
+  is a      box 0.08 by 0.04 by 0.24 m, 0.25 kg
+  moves     freely
+  friction  0.68, spinning 0, rolling 0
+  bounce    0.05
+  colour    white
+  stands    on floor, 0.42 m beyond block1
+
+lever pivot
+  is a  point
+  at    0.48 m beyond domino1, 0.65 m up
+
+-- A rigid drop-link transfers the floor-level strike to the
+-- elevated lever's left end. Assembly mass is 0.50 kg.
+lever1
+  is a           box 0.60 by 0.10 by 0.04 m, 0.498 kg
+  turns on       lever1 hinge, about y, at lever pivot
+  swings         from −45 deg to 0 deg
+  starts turned  0 deg
+  damping        0.04 N·m·s/rad
+  friction       0.68, spinning 0, rolling 0
+  bounce         0.05
+  colour         wood
+  at             lever pivot
+
+lever strike point
+  is a  point
+  at    0.30 m behind lever1, 0.18 m up
+
+lever drop link
+  is a         rod 0.008 m thick, from lever1's near end to lever strike point
+  weighs       0.001 kg
+  attached to  lever1
+  friction     0.68, spinning 0, rolling 0
+  bounce       0.05
+  colour       grey
+
+lever strike pad
+  is a         cube 0.04 m, 0.001 kg
+  attached to  lever1
+  friction     0.68, spinning 0, rolling 0
+  bounce       0.05
+  colour       grey
+  at           lever strike point
+
+ball2
+  is a      sphere 0.10 m across, 0.20 kg
+  moves     freely
+  rolls
+  friction  0.68, spinning 0, rolling 0
+  bounce    0.05
+  colour    orange
+  sits      on lever1, 0.30 m beyond lever1
+
+-- Nominal clear diameter: 0.168 m minus the 0.008 m tube.
+ring1
+  is a      ring 0.168 m across, 0.008 m thick
+  friction  0.68, spinning 0, rolling 0
+  bounce    0.05
+  colour    orange
+  at        0.25 m behind ball2, 0.32 m below ball2
+
+-- Ring centre is at 0.40 m.
+-- Ball-to-cart contact occurs with the ball centre at 0.15 m.
+cart2
+  is a       box 0.22 by 0.18 by 0.10 m, 0.50 kg
+  slides on  cart2 track, along x
+  travels    from 0 m to 0.50 m
+  damping    0.20 N·s/m
+  friction   0.68, spinning 0, rolling 0
+  bounce     0.05
+  colour     grey
+  sits       on floor, centred over ring1
+
+-- Requirements to check, not claimed simulation results.
+expect
+  cart1 touches ball1
+  ball1 touches ramp1
+  ball1 touches pendulum1
+  pendulum1 reaches its lower stop
+  pendulum1 touches door1
+  door1 reaches its lower stop
+  door1 touches block1
+  block1 touches domino1
+  domino1 touches lever strike pad
+  lever1 reaches its lower stop
+  ball2 drops through ring1
+  ball2 touches cart2
+```

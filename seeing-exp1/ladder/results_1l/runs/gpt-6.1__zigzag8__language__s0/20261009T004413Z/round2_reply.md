@@ -1,0 +1,246 @@
+No. The sequence now works through the cart impact, but still fails afterward:
+
+- **Ball1** passes through ring1, strikes lever1, and comes to rest in the lever’s retaining lip.
+- **Lever1 reaches its −45° stop.** Its striker launches cart1, which travels about **0.42 m and touches domino1 at 1.00 s**.
+- **Domino1 moves slightly but settles upright.** It never touches ball2, so ball2 remains retained at the ramp’s high end.
+- The **door latch releases independently around 2 s**, without ball2 arriving. Door1 strikes pendulum1, but their maximum excursions are only **−62.2° and 26.0°**.
+- They eventually settle near −59.2° and 20.0°. **Block1 is never touched.**
+
+The revision below raises the cart’s effective impact height on the domino by lowering its support. It also replaces the creeping loose door catch with a constrained vertical release and increases the door’s stored spring energy. This revision has not yet been simulation-tested.
+
+```world
+world  revised chain with constrained door release
+
+floor
+  size      6 m
+  friction  0.72, spinning 0, rolling 0
+
+-- Gravity is the default 9.81 m/s².
+-- No moving body has an initial launch or spin.
+
+lever pivot
+  is a  point
+  at    0 m along, 0.15 m to the right, 0.24 m up
+
+lever striker bottom
+  is a  point
+  at    0.30 m along, 0.15 m to the right, 0.26 m up
+
+lever striker top
+  is a  point
+  at    0.30 m along, 0.15 m to the right, 0.53 m up
+
+-- The main lever, striker and retaining lip total 0.50 kg.
+
+lever1
+  is a           box 0.60 by 0.10 by 0.04 m, 0.485 kg
+  friction       0.72, spinning 0, rolling 0
+  bounce         0.04
+  at             lever pivot
+  turns on       lever hinge, about y, at lever pivot
+  swings         from −45° to 0°
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+  colour         wood
+
+lever striker
+  is a         rod 0.01 m thick, from lever striker bottom to lever striker top
+  weighs       0.010 kg
+  friction     0.72, spinning 0, rolling 0
+  bounce       0.04
+  attached to  lever1
+  colour       grey
+
+lever retaining lip
+  is a         box 0.01 by 0.10 by 0.12 m, 0.005 kg
+  friction     0.72, spinning 0, rolling 0
+  bounce       0.04
+  at           −0.335 m along, 0.15 m to the right, 0.32 m up
+  attached to  lever1
+  colour       wood
+
+ring1
+  is a      ring 0.16 m across, 8 mm thick
+  friction  0.72, spinning 0, rolling 0
+  bounce    0.04
+  at        −0.27 m along, 0.15 m to the right, 0.56 m up
+  colour    orange
+
+ball1
+  is a      sphere 0.10 m across, 0.20 kg
+  moves     freely
+  rolls
+  friction  0.72, spinning 0, rolling 0
+  bounce    0.04
+  at        −0.27 m along, 0.15 m to the right, 0.86 m up
+  colour    orange
+
+cart1
+  is a         box 0.22 by 0.18 by 0.10 m, 0.50 kg
+  friction     0.72, spinning 0, rolling 0
+  bounce       0.04
+  at           0.115 m along, 0.15 m to the right, 0.46 m up
+  slides on    cart track, along x
+  travels      from −0.50 m to 0 m
+  damping      0.20 N·s/m
+  starts slid  0 m
+  colour       grey
+
+-- Lowering the support puts the cart impact higher on the domino.
+-- The cart still first meets it after 0.42 m of slide travel.
+
+domino plinth
+  is a      box 0.16 by 0.14 by 0.30 m
+  friction  0.72, spinning 0, rolling 0
+  bounce    0.04
+  at        −0.455 m along, 0.15 m to the right, 0.15 m up
+  colour    dark grey
+
+domino1
+  is a      box 0.08 by 0.04 by 0.24 m, 0.25 kg
+  moves     freely
+  friction  0.72, spinning 0, rolling 0
+  bounce    0.04
+  at        −0.455 m along, 0.15 m to the right, 0.42 m up
+  colour    wood
+
+-- Deck centreline length is 1.00 m and inclination is 20°.
+-- Its low upper edge is 0.15 m above the floor.
+
+ramp high end
+  is a  point
+  at    −0.6110586 m along, 0.15 m to the right, 0.4732263 m up
+
+ramp low end
+  is a  point
+  at    −1.5507512 m along, 0.15 m to the right, 0.1312061 m up
+
+ramp1
+  is a      plank from ramp high end to ramp low end, 0.30 m wide, 0.04 m thick
+  friction  0.72, spinning 0, rolling 0
+  bounce    0.04
+  colour    wood
+
+ramp ball retainer
+  is a      box 0.012 by 0.30 by 0.014 m
+  friction  0.72, spinning 0, rolling 0
+  bounce    0.04
+  at        −0.6555 m along, 0.15 m to the right, 0.4841535 m up
+  colour    dark grey
+
+-- Initial along-coordinate spacing from domino1 is 0.18 m.
+
+ball2
+  is a      sphere 0.10 m across, 0.20 kg
+  moves     freely
+  rolls
+  friction  0.72, spinning 0, rolling 0
+  bounce    0.04
+  at        −0.635 m along, 0.15 m to the right, 0.5390048 m up
+  colour    orange
+
+-- This catch cannot slide horizontally or tip off a ledge.
+-- Its spring supports its weight against its upper slide stop.
+-- Its head overlaps the bottom of the door by 0.4 mm.
+-- Ball2 reaches the panel and then falls onto the release paddle,
+-- pushing the catch down until the panel is free.
+
+door latch
+  is a         box 0.03 by 0.06 by 0.03 m, 0.055 kg
+  friction     0.72, spinning 0, rolling 0
+  bounce       0.04
+  at           −1.7125916 m along, 0.18 m to the right, 0.1304 m up
+  slides on    door release slide, along z
+  travels      from −0.025 m to 0 m
+  spring       20 N/m toward 0.05 m
+  damping      0.20 N·s/m
+  starts slid  0 m
+  colour       grey
+
+door release bridge
+  is a         box 0.065 by 0.03 by 0.004 m, 0.005 kg
+  friction     0.72, spinning 0, rolling 0
+  bounce       0.04
+  at           −1.6700916 m along, 0.18 m to the right, 0.12 m up
+  attached to  door latch
+  colour       grey
+
+door release paddle
+  is a         box 0.03 by 0.10 by 0.005 m, 0.020 kg
+  friction     0.72, spinning 0, rolling 0
+  bounce       0.04
+  at           −1.6475916 m along, 0.15 m to the right, 0.1225 m up
+  attached to  door latch
+  colour       grey
+
+-- Panel dimensions are 0.42 m wide, 0.32 m high and 0.04 m thick.
+-- Its incoming face is 0.10 m beyond the ramp's low upper edge.
+-- The constrained catch holds the spring-loaded panel initially.
+
+door1
+  is a           box 0.04 by 0.42 by 0.32 m, 0.45 kg
+  friction       0.72, spinning 0, rolling 0
+  bounce         0.04
+  at             −1.6775916 m along, 0 m to the left, 0.305 m up
+  turns on       door hinge, about z, at its left side
+  swings         from −70° to 0°
+  spring         8.00 N·m/rad toward −70°
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+  colour         wood
+
+-- The pendulum swings across in the door tip's outgoing direction.
+-- Its revised across-position gives clearance at the 38° stop.
+-- Positive rotation about x is clockwise when viewed from −x.
+
+pendulum pivot
+  is a  point
+  at    −2.0175916 m along, 0 m to the left, 0.65 m up
+
+pendulum1
+  is a           box 0.02 by 0.02 by 0.50 m, 0.35 kg
+  friction       0.72, spinning 0, rolling 0
+  bounce         0.04
+  at             −2.0175916 m along, 0 m to the left, 0.40 m up
+  turns on       pendulum hinge, about x, at pendulum pivot
+  swings         from 0° to 38°
+  damping        0.04 N·m·s/rad
+  starts turned  0°
+  colour         grey
+
+block plinth
+  is a      box 0.22 by 0.24 by 0.1959946 m
+  friction  0.72, spinning 0, rolling 0
+  bounce    0.04
+  at        −2.0175916 m along, 0.3755 m to the left, 0.0979973 m up
+  colour    dark grey
+
+block1
+  is a      cube 0.12 m, 0.35 kg
+  moves     freely
+  friction  0.72, spinning 0, rolling 0
+  bounce    0.04
+  at        −2.0175916 m along, 0.3755 m to the left, 0.2559946 m up
+  colour    wood
+
+expect
+  ball1 drops through ring1
+  ball1 touches lever1
+  lever1 touches cart1
+  lever1 reaches its lower stop
+  cart1 touches domino1
+  domino1 touches ball2
+  ball2 touches ramp1
+  ball2 touches door1
+  door1 touches pendulum1
+  door1 reaches its lower stop
+  pendulum1 touches block1
+```
+
+```json
+{
+  "what_happens": "Ball1 falls through ring1, strikes lever1 and comes to rest in its retaining lip. Lever1 reaches its -45-degree stop and launches cart1, which travels about 0.42 m and touches domino1. Domino1 moves slightly but settles upright without touching ball2. The door latch releases independently around 2 s, and door1 strikes pendulum1. Their maximum excursions are -62.2 and 26.0 degrees; they settle near -59.2 and 20.0 degrees, and block1 is never touched.",
+  "works": false,
+  "problem": "Domino1 does not topple into ball2, while the door releases independently and neither downstream hinge completes its required stroke or produces the final block contact."
+}
+```

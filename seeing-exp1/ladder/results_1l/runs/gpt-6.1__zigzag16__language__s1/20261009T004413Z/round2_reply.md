@@ -1,0 +1,416 @@
+```parts
+part catch cup
+  base
+    is a  box 34 by 34 by 2 cm
+    on    floor
+
+  near wall
+    is a  box 2 by 34 by 20 cm
+    on    base, 16 cm behind base
+
+  far wall
+    is a  box 2 by 34 by 20 cm
+    on    base, 16 cm beyond base
+
+  left wall
+    is a  box 30 by 2 by 20 cm
+    on    base, 16 cm left of base
+
+  right wall
+    is a  box 30 by 2 by 20 cm
+    on    base, 16 cm right of base
+
+
+part notched shelf
+  needs  centre
+
+  anchor
+    is a  point
+    at    centre
+
+  main board
+    is a  box 10.4 by 25 by 4 cm
+    at    9.8 cm behind anchor, 0 cm left of anchor, level with anchor
+
+  left finger
+    is a  box 19.6 by 3 by 4 cm
+    at    5.2 cm beyond anchor, 11 cm left of anchor, level with anchor
+
+  right finger
+    is a  box 19.6 by 3 by 4 cm
+    at    5.2 cm beyond anchor, 11 cm right of anchor, level with anchor
+```
+
+```world
+world  retained ball cascade
+
+-- Gravity is the language's fixed 9.81 m/s².
+-- All free bodies and joints start with zero velocity.
+-- The expect block contains intended checks, not verified results.
+
+floor
+  size      8 m
+  friction  0.72, spinning 0.005, rolling 0.0002
+
+lever1 pivot
+  is a  point
+  at    0 m along, 10 cm to the right, 58 cm up
+
+-- Beam, cradle and balancing piece have total mass 0.50 kg.
+lever1
+  is a      box 60 by 10 by 4 cm, 0.494 kg
+  at        lever1 pivot
+  turns on  lever1 hinge, about y, at lever1 pivot
+  swings    from -45 deg to 0 deg
+  damping   0.04 N·m·s/rad
+  friction  0.72
+  bounce    0.04
+  colour    wood
+
+lever1 cradle back
+  is a         box 1 by 12 by 12 cm, 1 g
+  at           -0.337 m along, 10 cm to the right, 66 cm up
+  attached to  lever1
+  friction     0.72
+  bounce       0.04
+  colour       wood
+
+lever1 cradle left side
+  is a         box 12 by 1 by 12 cm, 1 g
+  at           -0.28 m along, 4 cm to the right, 66 cm up
+  attached to  lever1
+  friction     0.72
+  bounce       0.04
+  colour       wood
+
+lever1 cradle right side
+  is a         box 12 by 1 by 12 cm, 1 g
+  at           -0.28 m along, 16 cm to the right, 66 cm up
+  attached to  lever1
+  friction     0.72
+  bounce       0.04
+  colour       wood
+
+lever1 cradle balance
+  is a         box 2 by 4 by 12 cm, 3 g
+  at           0.299 m along, 17 cm to the right, 66 cm up
+  attached to  lever1
+  friction     0.72
+  bounce       0.04
+  colour       wood
+
+ring1
+  is a      ring 16 cm across, 4 mm thick
+  at        -0.28 m along, 10 cm to the right, 90 cm up
+  friction  0.72
+  bounce    0.04
+  colour    orange
+
+ball1
+  is a      sphere 10 cm across, 0.20 kg
+  at        centred over ring1, 30 cm above ring1
+  moves     freely
+  rolls
+  friction  0.72
+  bounce    0.04
+  colour    orange
+
+-- The rising beam end approaches the underside of the cart.
+cart1
+  is a      box 22 by 18 by 10 cm, 0.50 kg
+  at        22 cm along, 0 m to the left, 82.3 cm up
+  slides on cart1 slide, along x
+  travels   from -65 cm to 0 cm
+  damping   0.20 N·s/m
+  friction  0.72
+  bounce    0.04
+  colour    grey
+
+domino1 pedestal
+  is a      box 10 by 8 by 58.3 cm
+  stands    on floor, -0.35 m along, 7 cm to the left
+  friction  0.72
+  bounce    0.04
+  colour    dark grey
+
+-- Cart1's approaching face reaches this domino after 0.42 m.
+domino1
+  is a      box 8 by 4 by 24 cm, 0.25 kg
+  stands    on domino1 pedestal, centred over domino1 pedestal
+  moves     freely
+  friction  0.72
+  bounce    0.04
+  colour    white
+
+-- A 1.00 m deck centreline at 20 degrees.
+-- The low-end top surface is 0.15 m above the floor.
+ramp1 high end
+  is a  point
+  at    -0.50605859 m along, 7 cm to the left, 0.47322629 m up
+
+ramp1 low end
+  is a  point
+  at    -1.44575121 m along, 7 cm to the left, 0.13120615 m up
+
+ramp1
+  is a      plank from ramp1 high end to ramp1 low end, 30 cm wide, 4 cm thick
+  friction  0.72
+  bounce    0.04
+  colour    wood
+
+ball2 chock
+  is a      box 16 by 100 by 15 mm
+  at        -0.556 m along, 7 cm to the left, 0.4852 m up
+  friction  0.72
+  bounce    0.04
+  colour    dark grey
+
+ball2
+  is a      sphere 10 cm across, 0.20 kg
+  at        18 cm behind domino1, 7 cm to the left, 0.53900477 m up
+  moves     freely
+  rolls
+  friction  0.72
+  bounce    0.04
+  colour    orange
+
+-- Panel and attached striker have total mass 0.45 kg.
+-- The approaching panel face is 0.10 m beyond the ramp edge.
+door1
+  is a      box 4 by 32 by 42 cm, 0.445 kg
+  at        -1.57259161 m along, 7 cm to the left, 31 cm up
+  turns on  door1 hinge, about y, at its bottom
+  swings    from -70 deg to 0 deg
+  damping   0.04 N·m·s/rad
+  friction  0.72
+  bounce    0.04
+  colour    wood
+
+door1 striker
+  is a         box 2 by 34 by 2 cm, 5 g
+  at           -1.57259161 m along, 21.5 cm to the left, 33 cm up
+  attached to  door1
+  friction     0.72
+  bounce       0.04
+  colour       wood
+
+pendulum release pivot
+  is a  point
+  at    -1.71259161 m along, 36 cm to the left, 25 cm up
+
+-- The plate's upstream edge is shortened to clear the pendulum rod.
+-- Its downstream striking edge remains in the same place.
+-- Its top supports only the bob, without intersecting the rod.
+pendulum release plate
+  is a      box 9 by 10 by 1 cm, 20 g
+  at        -1.69759161 m along, 36 cm to the left, 31 cm up
+  turns on  pendulum release hinge, about y, at pendulum release pivot
+  swings    from -80 deg to 0 deg
+  damping   0.04 N·m·s/rad
+  friction  0.72
+  bounce    0.04
+  colour    dark grey
+
+pendulum pivot
+  is a  point
+  at    -2.06614500 m along, 36 cm to the left, 0.01144661 m up
+
+pendulum initial tip
+  is a  point
+  at    -1.71259161 m along, 36 cm to the left, 0.365 m up
+
+-- The rigid rod and bob together weigh 0.35 kg.
+pendulum1
+  is a      rod 12 mm thick, from pendulum pivot to pendulum initial tip
+  weighs    0.10 kg
+  turns on  pendulum1 hinge, about y, at pendulum pivot
+  swings    from 0 deg to 38 deg
+  spring    70 N·m/rad toward 38 deg
+  damping   0.04 N·m·s/rad
+  friction  0.72
+  bounce    0.04
+  colour    dark grey
+
+pendulum1 bob
+  is a         sphere 10 cm across, 0.25 kg
+  at           pendulum initial tip
+  attached to  pendulum1
+  friction     0.72
+  bounce       0.04
+  colour       grey
+
+block1
+  is a      cube 12 cm, 0.35 kg
+  stands    on floor, -1.46037195 m along, 36 cm to the left
+  moves     freely
+  friction  0.72
+  bounce    0.04
+  colour    wood
+
+-- Block1 closes the initial face-to-face gap after sliding 0.35 m.
+-- The slide carries the cart 5 mm clear of the floor.
+cart2
+  is a      box 22 by 18 by 10 cm, 0.50 kg
+  at        -0.94037195 m along, 36 cm to the left, 5.5 cm up
+  slides on cart2 slide, along x
+  travels   from 0 cm to 140 cm
+  damping   0.20 N·s/m
+  friction  0.72
+  bounce    0.04
+  colour    grey
+
+seesaw1 pivot
+  is a  point
+  at    -0.20037195 m along, 36 cm to the left, 1.30 m up
+
+-- Beam and attached striker together weigh 0.55 kg.
+seesaw1
+  is a      box 65 by 10 by 4 cm, 0.535 kg
+  at        seesaw1 pivot
+  turns on  seesaw1 hinge, about y, at seesaw1 pivot
+  swings    from -42 deg to 0 deg
+  spring    0.80 N·m/rad toward -42 deg
+  damping   0.04 N·m·s/rad
+  friction  0.72
+  bounce    0.04
+  colour    wood
+
+seesaw left striker top
+  is a  point
+  at    -0.52537195 m along, 36 cm to the left, 1.30 m up
+
+seesaw left striker tip
+  is a  point
+  at    -0.40037195 m along, 36 cm to the left, 4.5 cm up
+
+-- Cart2 first reaches this left-end extension after sliding 0.42 m.
+seesaw1 left striker
+  is a         rod 20 mm thick, from seesaw left striker top to seesaw left striker tip
+  weighs       15 g
+  attached to  seesaw1
+  friction     0.72
+  bounce       0.04
+  colour       dark grey
+
+ball3
+  is a      sphere 10 cm across, 0.20 kg
+  at        0.13462805 m along, 36 cm to the left, 1.36898979 m up
+  moves     freely
+  rolls
+  friction  0.72
+  bounce    0.04
+  colour    orange
+
+ball3 right guide
+  is a      box 2 by 14 by 100 cm
+  at        0.19962805 m along, 36 cm to the left, 1.59 m up
+  friction  0.72
+  bounce    0.04
+  colour    glass
+
+ball3 left-side guide
+  is a      box 12 by 2 by 100 cm
+  at        0.13462805 m along, 42.5 cm to the left, 1.59 m up
+  friction  0.72
+  bounce    0.04
+  colour    glass
+
+ball3 right-side guide
+  is a      box 12 by 2 by 100 cm
+  at        0.13462805 m along, 29.5 cm to the left, 1.59 m up
+  friction  0.72
+  bounce    0.04
+  colour    glass
+
+ring2
+  is a      ring 16 cm across, 4 mm thick
+  at        centred over ball3, 32 cm below ball3
+  friction  0.72
+  bounce    0.04
+  colour    orange
+
+domino2 pedestal
+  is a      box 0.12 by 0.08 by 0.51898979 m
+  stands    on floor, 0.16462805 m along, 36 cm to the left
+  friction  0.72
+  bounce    0.04
+  colour    dark grey
+
+domino2
+  is a      box 8 by 4 by 24 cm, 0.25 kg
+  stands    on domino2 pedestal, centred over domino2 pedestal
+  moves     freely
+  friction  0.72
+  bounce    0.04
+  colour    white
+
+-- The initial face-to-face domino-to-flap gap is 0.18 m.
+flap1
+  is a      box 4 by 18 by 38 cm, 0.28 kg
+  at        -0.07537195 m along, 36 cm to the left, 0.70898979 m up
+  turns on  flap1 hinge, about y, at its bottom
+  swings    from -60 deg to 0 deg
+  damping   0.04 N·m·s/rad
+  friction  0.72
+  bounce    0.04
+  colour    wood
+
+cup1
+  is a      catch cup
+  at        -0.45037195 m along, 36 cm to the left, on floor
+  friction  0.72
+  bounce    0.04
+  colour    grey
+
+shelf1 centre
+  is a  point
+  at    -0.16037195 m along, 36 cm to the left, 55 cm up
+
+-- Overall dimensions are 0.30 by 0.25 by 0.04 m.
+-- The notch clears flap1's initial geometry and swept path.
+-- The shelf top is 0.55 m above the cup's inner base.
+shelf1
+  is a      notched shelf
+  centre    shelf1 centre
+  friction  0.72
+  bounce    0.04
+  colour    wood
+
+ball4
+  is a      sphere 10 cm across, 0.20 kg
+  rests     on shelf1.main board, -0.29537195 m along, 36 cm to the left
+  moves     freely
+  rolls
+  friction  0.72
+  bounce    0.04
+  colour    orange
+
+cup1 catch backstop
+  is a      box 2 by 25 by 70 cm
+  at        -0.51037195 m along, 36 cm to the left, 56 cm up
+  friction  0.72
+  bounce    0.04
+  colour    glass
+
+expect
+  ball1 drops through ring1
+  ball1 touches lever1
+  lever1 reaches its lower stop
+  lever1 touches cart1
+  cart1 touches domino1
+  domino1 touches ball2
+  ball2 touches ramp1
+  ball2 touches door1
+  door1 reaches its lower stop
+  door1 touches pendulum1
+  pendulum1 touches block1
+  block1 touches cart2
+  cart2 touches seesaw1
+  seesaw1 reaches its lower stop
+  ball3 drops through ring2
+  ball3 touches domino2
+  domino2 touches flap1
+  flap1 reaches its lower stop
+  flap1 touches ball4
+  ball4 comes to rest in cup1
+```

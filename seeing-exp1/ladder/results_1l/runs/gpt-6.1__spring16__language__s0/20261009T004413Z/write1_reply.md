@@ -1,0 +1,476 @@
+```parts
+part vertical guide
+  needs  height
+
+  axis
+    is a  point
+    at    0 cm up
+
+  near wall
+    is a  box 1 by 13.2 cm by height
+    on    floor, 6.1 cm behind axis
+
+  far wall
+    is a  box 1 by 13.2 cm by height
+    on    floor, 6.1 cm beyond axis
+
+  left wall
+    is a  box 11.2 by 1 cm by height
+    on    floor, 6.1 cm left of axis
+
+  right wall
+    is a  box 11.2 by 1 cm by height
+    on    floor, 6.1 cm right of axis
+```
+
+```world
+world  spring and gravity cascade
+
+-- Untested construction; the expectations below are targets, not verified results.
+-- Gravity is the language's built-in 9.81 m/s².
+-- No starting velocities or spins are assigned.
+-- Clockwise is viewed from the negative-y side.
+-- Auxiliary mechanisms include a compression-only spring pusher,
+-- starting pads, a door counterweight, and passive ball guides.
+
+floor
+  size      12 m
+  friction  0.68, spinning 0, rolling 0
+
+ball1 start
+  is a  point
+  at    0.023941 m along, 0.545004 m up
+
+cart1
+  is a         box 0.22 by 0.18 by 0.10 m, 0.50 kg
+  at           −0.436059 m along, 0.551004 m up
+  slides on    cart1 track, along x
+  travels      from −0.20 m to 0.40 m
+  starts slid  −0.20 m
+  damping      0.20 N·s/m
+  friction     0.68
+  bounce       0.05
+  colour       grey
+
+-- This separate axial pusher supplies the compressed spring.
+-- At its relaxed-position stop it separates from cart1,
+-- allowing cart1 to coast the remainder of the 0.50 m approach.
+cart1 spring pusher
+  is a         cube 0.02 m, 0.02 kg
+  at           −0.556059 m along, 0.551004 m up
+  slides on    cart1 spring track, along x
+  travels      from −0.20 m to 0 m
+  spring       18 N/m toward 0 m
+  starts slid  −0.20 m
+  damping      0.20 N·s/m
+  friction     0.68
+  bounce       0.05
+  colour       black
+
+ramp1 high end
+  is a  point
+  at    0 m along, 0.473226 m up
+
+ramp1 low end
+  is a  point
+  at    0.939693 m along, 0.131206 m up
+
+-- Endpoint separation is 1.00 m at 20 degrees.
+-- The deck's upper surface at the low end is 0.15 m high.
+ramp1
+  is a      plank from ramp1 high end to ramp1 low end, 0.30 m wide, 0.04 m thick
+  friction  0.68
+  bounce    0.05
+  colour    wood
+
+ball1 starting pad
+  is a      box 0.055 by 0.12 by 0.006 m
+  at        0.001441 m along, 0.492004 m up
+  friction  0.68
+  bounce    0.05
+  colour    wood
+
+ball1
+  is a      sphere 0.10 m across, 0.20 kg
+  at        ball1 start
+  moves     freely
+  rolls
+  friction  0.68, spinning 0, rolling 0
+  bounce    0.05
+  colour    orange
+
+-- The first rigid pendulum starts balanced in its inverted position.
+-- Its pivot is below the floor; its arm is noncolliding.
+-- Bob plus arm mass is 0.35 kg.
+pendulum1 pivot
+  is a  point
+  at    1.089693 m along, −0.30 m up
+
+pendulum1
+  is a           sphere 0.10 m across, 0.33 kg
+  at             0 cm beyond pendulum1 pivot, 0 cm left of pendulum1 pivot, 0.50 m above pendulum1 pivot
+  turns on       pendulum1 hinge, about y, at pendulum1 pivot
+  swings         from 0° to 40°
+  starts turned  0°
+  damping        0.04 N·m·s/rad
+  friction       0.68
+  bounce         0.05
+  colour         grey
+
+pendulum1 arm
+  is a         rod 0.012 m thick, from pendulum1 pivot to pendulum1's bottom
+  weighs       0.02 kg
+  attached to  pendulum1
+  touches nothing
+  friction     0.68
+  bounce       0.05
+  colour       grey
+
+door1 pivot
+  is a  point
+  at    1.481087 m along, 0.02 m up
+
+door1 top
+  is a  point
+  at    1.481087 m along, 0.44 m up
+
+door1
+  is a           plank from door1 pivot to door1 top, 0.32 m wide, 0.04 m thick
+  weighs         0.45 kg
+  turns on       door1 hinge, about y, at door1 pivot
+  swings         from 0° to 70°
+  starts turned  0°
+  damping        0.04 N·m·s/rad
+  friction       0.68
+  bounce         0.05
+  colour         wood
+
+-- An explicit gravity counterweight supplements the door's energy.
+door1 counterweight
+  is a         cube 0.12 m, 0.35 kg
+  at           1.481087 m along, 0.74 m up
+  attached to  door1
+  friction     0.68
+  bounce       0.05
+  colour       dark grey
+
+door1 counterweight stem
+  is a         rod 0.012 m thick, from door1 top to door1 counterweight's bottom
+  weighs       1 g
+  attached to  door1
+  friction     0.68
+  bounce       0.05
+  colour       grey
+
+block1
+  is a      cube 0.12 m, 0.35 kg
+  rests     on floor, 1.661087 m along
+  moves     freely
+  friction  0.68
+  bounce    0.05
+  colour    grey
+
+domino1
+  is a      box 0.08 by 0.04 by 0.24 m, 0.25 kg
+  stands    on floor, 2.081087 m along
+  moves     freely
+  friction  0.68
+  bounce    0.05
+  colour    white
+
+-- In the chosen view, the lever's positive-x end is its left end.
+-- The initially inclined beam gives clearance for the falling-ball stage.
+lever1 left end
+  is a  point
+  at    2.261087 m along, 0.16 m up
+
+lever1 right end
+  is a  point
+  at    1.801460 m along, 0.545673 m up
+
+lever1 pivot
+  is a  point
+  at    2.031274 m along, 0.352837 m up
+
+lever1
+  is a           plank from lever1 right end to lever1 left end, 0.10 m wide, 0.04 m thick
+  weighs         0.50 kg
+  turns on       lever1 hinge, about y, at lever1 pivot
+  swings         from 0° to 45°
+  starts turned  0°
+  damping        0.04 N·m·s/rad
+  friction       0.68
+  bounce         0.05
+  colour         wood
+
+ball2 cradle
+  is a         box 0.11 by 0.11 by 0.01 m, 1 g
+  at           0 cm beyond lever1 right end, 0 cm left of lever1 right end, 0.47 m above lever1 right end
+  attached to  lever1
+  friction     0.68
+  bounce       0.05
+  colour       wood
+
+ball2 carrier
+  is a         rod 0.012 m thick, from lever1 right end to ball2 cradle's bottom
+  weighs       1 g
+  attached to  lever1
+  friction     0.68
+  bounce       0.05
+  colour       grey
+
+ball2
+  is a      sphere 0.10 m across, 0.20 kg
+  rests     on ball2 cradle, centred over ball2 cradle
+  moves     freely
+  rolls
+  friction  0.68, spinning 0, rolling 0
+  bounce    0.05
+  colour    orange
+
+ring1
+  is a      ring 0.16 m across, 8 mm thick
+  at        6 mm beyond ball2, 0 cm left of ball2, 0.32 m below ball2
+  friction  0.68
+  bounce    0.05
+  colour    orange
+
+ball2 upper guide
+  is a      vertical guide
+  height    0.255 m
+  centred over ring1, raised 1.065673 m
+  friction  0.68
+  bounce    0.05
+  colour    glass
+
+ball2 lower guide
+  is a      vertical guide
+  height    0.295 m
+  centred over ring1, raised 0.710673 m
+  friction  0.68
+  bounce    0.05
+  colour    glass
+
+cart2
+  is a         box 0.22 by 0.18 by 0.10 m, 0.50 kg
+  at           1.839007 m along, 0.399 m up
+  slides on    cart2 track, along x
+  travels      from 0 m to 0.50 m
+  starts slid  0 m
+  damping      0.20 N·s/m
+  friction     0.68
+  bounce       0.05
+  colour       grey
+
+-- The attached inclined contact plate converts the falling
+-- ball's impulse into positive-x cart motion.
+cart2 roof low end
+  is a  point
+  at    1.729007 m along, 0.378596 m up
+
+cart2 roof high end
+  is a  point
+  at    1.949007 m along, 0.532642 m up
+
+cart2 contact plate
+  is a         plank from cart2 roof low end to cart2 roof high end, 0.18 m wide, 0.01 m thick
+  weighs       1 g
+  attached to  cart2
+  friction     0.68
+  bounce       0.05
+  colour       grey
+
+domino2 stage
+  is a      box 0.40 by 0.18 by 0.04 m
+  at        2.291875 m along, 0.325 m up
+  friction  0.68
+  bounce    0.05
+  colour    wood
+
+domino2
+  is a      box 0.08 by 0.04 by 0.24 m, 0.25 kg
+  stands    on domino2 stage, 0.10 m beyond domino2 stage, 0 cm left of domino2 stage
+  moves     freely
+  friction  0.68
+  bounce    0.05
+  colour    white
+
+ramp2 high end
+  is a  point
+  at    2.547934 m along, 0.04 m to the left, 0.473226 m up
+
+ramp2 low end
+  is a  point
+  at    3.487627 m along, 0.04 m to the left, 0.131206 m up
+
+ramp2
+  is a      plank from ramp2 high end to ramp2 low end, 0.30 m wide, 0.04 m thick
+  friction  0.68
+  bounce    0.05
+  colour    wood
+
+ball3 start
+  is a  point
+  at    2.571875 m along, 0.04 m to the left, 0.545004 m up
+
+ball3 starting pad
+  is a      box 0.055 by 0.12 by 0.006 m
+  at        2.549375 m along, 0.04 m to the left, 0.492004 m up
+  friction  0.68
+  bounce    0.05
+  colour    wood
+
+ball3
+  is a      sphere 0.10 m across, 0.20 kg
+  at        ball3 start
+  moves     freely
+  rolls
+  friction  0.68, spinning 0, rolling 0
+  bounce    0.05
+  colour    orange
+
+flap1 pivot
+  is a  point
+  at    3.607627 m along, 0.04 m to the left, 0.14 m up
+
+flap1 top
+  is a  point
+  at    3.607627 m along, 0.04 m to the left, 0.52 m up
+
+flap1
+  is a           plank from flap1 pivot to flap1 top, 0.18 m wide, 0.04 m thick
+  weighs         0.28 kg
+  turns on       flap1 hinge, about y, at flap1 pivot
+  swings         from 0° to 60°
+  starts turned  0°
+  damping        0.04 N·m·s/rad
+  friction       0.68
+  bounce         0.05
+  colour         wood
+
+-- The second pendulum also starts inverted and balanced.
+-- Its colliding rigid arm is the part struck by flap1.
+pendulum2 pivot
+  is a  point
+  at    3.787627 m along, 0.45 m up
+
+pendulum2
+  is a           sphere 0.10 m across, 0.33 kg
+  at             0 cm beyond pendulum2 pivot, 0 cm left of pendulum2 pivot, 0.50 m above pendulum2 pivot
+  turns on       pendulum2 hinge, about y, at pendulum2 pivot
+  swings         from 0° to 38°
+  starts turned  0°
+  damping        0.04 N·m·s/rad
+  friction       0.68
+  bounce         0.05
+  colour         grey
+
+pendulum2 arm
+  is a         rod 0.012 m thick, from pendulum2 pivot to pendulum2's bottom
+  weighs       0.02 kg
+  attached to  pendulum2
+  friction     0.68
+  bounce       0.05
+  colour       grey
+
+-- Shelf top is 0.85 m above the floor.
+-- Its lateral offset leaves clearance for the pendulum arm.
+shelf1
+  is a      box 0.30 by 0.25 by 0.04 m
+  at        4.001844 m along, 0.185 m to the right, 0.83 m up
+  friction  0.68
+  bounce    0.05
+  colour    wood
+
+ball4
+  is a      sphere 0.10 m across, 0.20 kg
+  at        4.146844 m along, 0.065 m to the right, 0.90 m up
+  moves     freely
+  rolls
+  friction  0.68, spinning 0, rolling 0
+  bounce    0.05
+  colour    orange
+
+ring2
+  is a      ring 0.16 m across, 8 mm thick
+  at        4.206844 m along, 0.11 m to the right, 0.60 m up
+  friction  0.68
+  bounce    0.05
+  colour    orange
+
+-- The asymmetric upper entrance admits ball4 from the shelf.
+ball4 guide near wall
+  is a      box 0.01 by 0.132 by 0.44 m
+  at        4.145844 m along, 0.11 m to the right, 0.62 m up
+  friction  0.68
+  bounce    0.05
+  colour    glass
+
+ball4 guide far wall
+  is a      box 0.01 by 0.132 by 0.58 m
+  at        4.267844 m along, 0.11 m to the right, 0.69 m up
+  friction  0.68
+  bounce    0.05
+  colour    glass
+
+ball4 guide left wall
+  is a      box 0.112 by 0.01 by 0.44 m
+  at        4.206844 m along, 0.049 m to the right, 0.62 m up
+  friction  0.68
+  bounce    0.05
+  colour    glass
+
+ball4 guide right wall
+  is a      box 0.112 by 0.01 by 0.58 m
+  at        4.206844 m along, 0.171 m to the right, 0.69 m up
+  friction  0.68
+  bounce    0.05
+  colour    glass
+
+seesaw1 pivot
+  is a  point
+  at    3.901844 m along, 0.11 m to the right, 0.28 m up
+
+seesaw1
+  is a           box 0.65 by 0.10 by 0.04 m, 0.55 kg
+  at             seesaw1 pivot
+  turns on       seesaw1 hinge, about y, at seesaw1 pivot
+  swings         from 0° to 42°
+  starts turned  0°
+  damping        0.04 N·m·s/rad
+  friction       0.68
+  bounce         0.05
+  colour         wood
+
+ball5
+  is a      sphere 0.10 m across, 0.20 kg
+  at        3.626844 m along, 0.11 m to the right, 0.35 m up
+  moves     freely
+  rolls
+  friction  0.68, spinning 0, rolling 0
+  bounce    0.05
+  colour    orange
+
+expect
+  cart1 touches ball1
+  ball1 touches ramp1
+  ball1 touches pendulum1
+  pendulum1 touches door1
+  door1 reaches its upper stop
+  door1 touches block1
+  block1 touches domino1
+  domino1 touches lever1
+  lever1 reaches its upper stop
+  ball2 drops through ring1
+  ball2 touches cart2
+  cart2 touches domino2
+  domino2 touches ball3
+  ball3 touches ramp2
+  ball3 touches flap1
+  flap1 reaches its upper stop
+  flap1 touches pendulum2
+  pendulum2 touches ball4
+  ball4 drops through ring2
+  ball4 touches seesaw1
+  seesaw1 reaches its upper stop
+```
