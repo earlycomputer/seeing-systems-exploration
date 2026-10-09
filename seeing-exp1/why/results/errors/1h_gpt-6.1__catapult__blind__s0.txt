@@ -1,0 +1,98 @@
+4 of 5 expectations hold in a 6 s run.
+
+- holds: pendulum touches cart (first touch after the start at 0.62 s)
+- holds: cart touches weight (first touch after the start at 0.71 s)
+- holds: weight touches seesaw (first touch after the start at 0.97 s)
+- holds: seesaw reaches its lower stop (at its lower stop (-25°) at 1.09 s)
+
+-- NOT TRUE: BALL COMES TO REST IN CUP ------------------------------ expectation
+
+You expected:
+
+      ball comes to rest in cup
+
+but in the run, ball comes to rest at (-0.17, -0.00, 0.56) m, outside cup.
+
+It was lost at 1.98 s, when ball came down on seesaw_plank 0.24 m short of cup, which spans -4.53 to -0.52 m along (-0.28 m along, 0.58 m up, 1.00 m/s heading -59°). It came to rest 0.20 s later; the run after 1.98 s only carried it there.
+
+How it got there. Only what touched ball can have changed it, so this walks back through touch from 1.98 s (ball up to 1.98 s, seesaw up to 1.98 s, cart up to 1.73 s, weight up to 1.41 s, pendulum up to 1.00 s); anything outside that is left out:
+
+   0.00 s  weight_block first touches weight_shelf_top   (-0.58 m along, 0.76 m up, at rest)
+   0.02 s  seesaw_plank first touches ball_sphere   (at 10°, still)
+   0.24 s  seesaw_cradle_right first touches ball_sphere   (at 10°, still)
+   0.62 s  pendulum_bob first touches cart_striker   (at -5°, turning -135°/s)
+     ...  31 more touches
+   1.41 s  weight_block leaves seesaw_plank   (-0.54 m along, 0.34 m up, 1.56 m/s heading -43°)
+   1.48 s  ball_sphere first touches cup_right_wall   (-0.47 m along, 1.11 m up, 1.68 m/s heading -47°)
+   1.50 s  ball_sphere leaves cup_right_wall   (-0.47 m along, 1.09 m up, 1.38 m/s heading -74°)
+   1.60 s  cart_pusher first touches ball_sphere   (at 0.524 m, moving -0.05 m/s)
+   1.62 s  cart_pusher leaves ball_sphere   (at 0.523 m, moving -0.05 m/s)
+   1.67 s  cart_pusher touches ball_sphere again   (at 0.521 m, moving -0.05 m/s)
+   1.71 s  seesaw reaches its upper stop (10°)   (at 10°, turning +206°/s)
+   1.73 s  cart_pusher leaves ball_sphere   (at 0.518 m, moving -0.05 m/s)
+   1.82 s  seesaw reaches its upper stop (10°)   (at 10°, turning +27°/s)
+   1.98 s  seesaw_plank touches ball_sphere again   (at 10°, turning -35°/s)
+
+These lines set up everything above:
+
+   16|     <body name="pendulum" pos="-1.52 -0.65 1.96">
+   17|       <joint name="pendulum_hinge" type="hinge" axis="0 1 0" range="-75 75" damping="0.01"/>
+   18|       <geom name="pendulum_rod" type="capsule" fromto="0 0 0 0 0 -1.2" size="0.018" mass="0.05" contype="0" conaffinity="0" rgba="0.65 0.68 0.72 1"/>
+   19|       <geom name="pendulum_bob" type="sphere" pos="0 0 -1.2" size="0.14" mass="3" friction="0.3 0.005 0.001" solref="0.006 1" solimp="0.95 0.99 0.001" rgba="0.85 0.3 0.12 1"/>
+   20|     </body>
+    ...
+   28|     <body name="cart" pos="-1.1 0 0.76">
+   29|       <joint name="cart_slide" type="slide" axis="1 0 0" range="0 0.55" damping="0.025" solreflimit="0.004 1"/>
+   30|       <geom name="cart_pusher" type="box" size="0.18 0.12 0.10" mass="0.3" friction="0.12 0.005 0.001" solref="0.006 1" rgba="0.12 0.45 0.75 1"/>
+   31|       <geom name="cart_crossbar" type="box" pos="0 -0.32 0" size="0.10 0.32 0.06" mass="0.1" rgba="0.12 0.45 0.75 1"/>
+   32|       <geom name="cart_striker" type="box" pos="0 -0.65 0" size="0.18 0.13 0.14" mass="0.4" friction="0.2 0.005 0.001" solref="0.006 1" rgba="0.12 0.45 0.75 1"/>
+   33|     </body>
+    ...
+   35|     <body name="weight_shelf">
+   36|       <geom name="weight_shelf_top" type="box" pos="-0.925 0 0.615" size="0.475 0.20 0.025" friction="0.08 0.003 0.001" solref="0.006 1" rgba="0.48 0.43 0.34 1"/>
+   37|       <geom name="weight_shelf_leg" type="box" pos="-1.32 0 0.295" size="0.055 0.16 0.295" rgba="0.48 0.43 0.34 1"/>
+   38|     </body>
+    ...
+   41|     <body name="weight_guide">
+   42|       <geom name="weight_guide_fence" type="box" pos="-0.10 0 0.77" size="0.02 0.13 0.19" friction="0.01 0.001 0.0001" solref="0.006 1" rgba="0.55 0.58 0.62 1"/>
+   43|     </body>
+    ...
+   45|     <body name="weight" pos="-0.58 0 0.76">
+   46|       <freejoint name="weight_free"/>
+   47|       <geom name="weight_block" type="box" size="0.09 0.09 0.12" mass="1.5" friction="0.12 0.005 0.001" solref="0.006 1" solimp="0.95 0.99 0.001" rgba="0.55 0.25 0.65 1"/>
+   48|     </body>
+    ...
+   56|     <body name="seesaw" pos="0 0 0.45">
+   57|       <joint name="seesaw_hinge" type="hinge" axis="0 1 0" range="-25 10" damping="0.002" solreflimit="0.004 1" solimplimit="0.95 0.99 0.001"/>
+   58|       <geom name="seesaw_plank" type="box" pos="0.22 0 0" size="0.65 0.12 0.025" mass="0.10" friction="0.3 0.005 0.001" solref="0.006 1" rgba="0.82 0.63 0.20 1"/>
+   59|       <geom name="seesaw_cradle_left" type="box" pos="0.70 0 0.055" size="0.01 0.105 0.03" mass="0.005" friction="0.2 0.005 0.001" solref="0.006 1" rgba="0.82 0.63 0.20 1"/>
+   60|       <geom name="seesaw_cradle_right" type="box" pos="0.86 0 0.055" size="0.01 0.105 0.03" mass="0.005" friction="0.2 0.005 0.001" solref="0.006 1" rgba="0.82 0.63 0.20 1"/>
+   61|       <geom name="seesaw_cradle_front" type="box" pos="0.78 -0.095 0.055" size="0.07 0.01 0.03" mass="0.005" friction="0.2 0.005 0.001" solref="0.006 1" rgba="0.82 0.63 0.20 1"/>
+   62|       <geom name="seesaw_cradle_back" type="box" pos="0.78 0.095 0.055" size="0.07 0.01 0.03" mass="0.005" friction="0.2 0.005 0.001" solref="0.006 1" rgba="0.82 0.63 0.20 1"/>
+   63|     </body>
+    ...
+   65|     <body name="ball" pos="0.782389 0 0.395309">
+   66|       <freejoint name="ball_free"/>
+   67|       <geom name="ball_sphere" type="sphere" size="0.055" mass="0.04" condim="6" friction="0.8 0.01 0.008" solref="0.006 1" solimp="0.95 0.99 0.001" rgba="0.95 0.22 0.15 1"/>
+   68|     </body>
+    ...
+   71|     <body name="cup">
+   72|       <geom name="cup_bottom" type="box" pos="-2.525 0 0.985" size="1.975 0.28 0.035" condim="6" friction="1 0.01 0.008" solref="0.008 1" solimp="0.95 0.99 0.001" rgba="0.18 0.65 0.48 1"/>
+   73|       <geom name="cup_left_wall" type="box" pos="-4.515 0 1.205" size="0.015 0.31 0.185" condim="6" friction="0.8 0.01 0.008" solref="0.008 1" rgba="0.18 0.65 0.48 1"/>
+   74|       <geom name="cup_right_wall" type="box" pos="-0.535 0 1.205" size="0.015 0.31 0.185" condim="6" friction="0.8 0.01 0.008" solref="0.008 1" rgba="0.18 0.65 0.48 1"/>
+   75|       <geom name="cup_front_wall" type="box" pos="-2.525 -0.295 1.205" size="2.005 0.015 0.185" condim="6" friction="0.8 0.01 0.008" solref="0.008 1" rgba="0.18 0.65 0.48 0.45"/>
+   76|       <geom name="cup_back_wall" type="box" pos="-2.525 0.295 1.205" size="2.005 0.015 0.185" condim="6" friction="0.8 0.01 0.008" solref="0.008 1" rgba="0.18 0.65 0.48 1"/>
+   77|     </body>
+    ...
+   81|     <key name="start" qpos="1.0471975512 0 -0.58 0 0.76 1 0 0 0 0.1745329252 0.782389 0 0.395309 1 0 0 0"/>
+
+Which numbers move it. Now ball comes down 0.24 m short of cup. I ran the world again with each of the 60 numbers on those lines changed alone to 1.1, 0.9, 1.5, 0.5 times itself (240 runs, 30 s; 156 numbers on fixed things left unforked). These moved it most, the ones that make it hold first:
+
+   47| <geom name="weight_block" type="box" size="0.09 0.09 0.12" mass="1.5" friction="0.12 0.005 0.001" solref="0.006 1" solimp="0.95 0.99 0.001" rgba="0.55 0.25 0.65 1"/>
+       1.5 -> 1.65: comes down 0.27 m short of cup; 1.35: comes down 0.02 m short of cup; 2.25: HOLDS; 0.75: comes down 0.54 m short of cup
+   47| <geom name="weight_block" type="box" size="0.09 0.09 0.12" mass="1.5" friction="0.12 0.005 0.001" solref="0.006 1" solimp="0.95 0.99 0.001" rgba="0.55 0.25 0.65 1"/>
+       0.12 -> 0.132: comes down 0.22 m short of cup; 0.108: comes down 0.29 m short of cup; 0.18: HOLDS; 0.06: comes down 0.28 m short of cup
+   56| <body name="seesaw" pos="0 0 0.45">
+       0.45 -> 0.495: comes down 1.65 m short of cup; 0.405: comes down 0.35 m short of cup; 0.675: comes down 1.30 m short of cup; 0.225: comes down 0.29 m short of cup
+
+Each fork changes one number and leaves the rest; two changes together can behave differently.
