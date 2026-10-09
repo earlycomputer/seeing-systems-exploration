@@ -3,7 +3,7 @@
     python -m hundred.run --model opus-5.5 --brief <id> --arm language --seed 0
     python -m hundred.run --model dry-run --brief chain --arm xml --dry-briefs      # plumbing test, no calls
     python -m hundred.run --model gpt-6.1 --brief cascade16 --arm xml --ladder     # 1j, the complexity ladder
-    python -m hundred.run --model gpt-6.1 --brief cascade16 --arm language --ladder-1k   # 1k, the fixed language
+    python -m hundred.run --model gpt-6.1 --brief cascade16 --arm language --ladder-rerun 1l   # 1k, 1l: language reruns
 
 1g's checked loop (langrun/run.py) with three arms (hundred/settings.py). The hidden test (hidden.py) judges the
 built MJCF; the model never sees it. The blind arm hears MuJoCo's load errors, as anyone would, and nothing about the
@@ -123,15 +123,16 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--dry-briefs", action="store_true", help="1f's ledge and chain, for plumbing tests")
     ap.add_argument("--full", action="store_true", help="past the pilot: 1h's own ceiling, not the pilot's")
     ap.add_argument("--ladder", action="store_true", help="1j: ladder/briefs.json, results and ceiling (ladder/)")
-    ap.add_argument("--ladder-1k", action="store_true", help="1k: the ladder's briefs with the fixed language; "
-                    "results and ceiling in ladder/results_1k/")
+    ap.add_argument("--ladder-rerun", choices=["1k", "1l"], help="a rerun of the ladder's briefs after a language fix; "
+                    "results and ceiling in ladder/results_<tag>/")
     args = ap.parse_args(argv)
-    if args.ladder_1k:
+    if args.ladder_rerun:
         from ladder import briefs as ladder_briefs, budget as ladder_budget, settings as ladder_settings
-        args.ladder = True
-        runs_dir, ledger, experiment = ladder_settings.RUNS_1K_DIR, ladder_settings.SPEND_LEDGER_1K, "1k"
-        dry_dir = ladder_settings.DRYRUN_DIR / "runs_1k"
-        check = ladder_budget.check_1k
+        args.ladder, tag = True, args.ladder_rerun
+        d = ladder_settings.rerun_dir(tag)
+        runs_dir, ledger, experiment = d / "runs", d / "spend.jsonl", tag
+        dry_dir = ladder_settings.DRYRUN_DIR / f"runs_{tag}"
+        check = ladder_budget.check_rerun(tag)
     elif args.ladder:
         from ladder import briefs as ladder_briefs, budget as ladder_budget, settings as ladder_settings
         runs_dir, ledger, experiment = ladder_settings.RUNS_DIR, ladder_settings.SPEND_LEDGER, "1j"

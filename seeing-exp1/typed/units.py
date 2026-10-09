@@ -52,6 +52,14 @@ class TorsionDamping(Quantity):
     kind = "torsional damping"
 
 
+class LinearStiffness(Quantity):
+    kind = "linear stiffness"
+
+
+class LinearDamping(Quantity):
+    kind = "linear damping"
+
+
 class Density(Quantity):
     kind = "density"
 

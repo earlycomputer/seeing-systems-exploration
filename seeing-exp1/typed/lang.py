@@ -55,13 +55,15 @@ UNITS = {  # written unit -> (kind, factor to SI)
     "N·m·s/rad": ("torsional damping", 1.0), "Nms/rad": ("torsional damping", 1.0),
     "kg/m³": ("density", 1.0), "kg/m3": ("density", 1.0),
     "kg·m²": ("rotor inertia", 1.0), "kg m2": ("rotor inertia", 1.0),
+    "N/m": ("linear stiffness", 1.0), "N·s/m": ("linear damping", 1.0), "Ns/m": ("linear damping", 1.0),
 }
 QTYPE = {"length": U.Length, "mass": U.Mass, "angle": U.Angle, "speed": U.Speed, "spin": U.Spin,
          "torsional stiffness": U.TorsionStiffness, "torsional damping": U.TorsionDamping, "density": U.Density,
-         "rotor inertia": U.RotorInertia}
+         "rotor inertia": U.RotorInertia, "linear stiffness": U.LinearStiffness, "linear damping": U.LinearDamping}
 EXAMPLE = {"length": "5 cm or 1.2 m", "mass": "200 g or 1 kg", "angle": "63° or 1.1 rad", "speed": "3 m/s",
            "spin": "4 rad/s", "torsional stiffness": "40 N·m/rad", "torsional damping": "25 N·m·s/rad",
-           "density": "1.2 kg/m³", "rotor inertia": "0.01 kg·m²"}
+           "density": "1.2 kg/m³", "rotor inertia": "0.01 kg·m²",
+           "linear stiffness": "18 N/m", "linear damping": "0.2 N·s/m"}
 NUM = r"-?\d+(?:\.\d+)?"
 UNIT = "|".join(sorted(map(re.escape, UNITS), key=len, reverse=True))
 QTY = re.compile(rf"({NUM})\s*({UNIT})?(?![\w/·³²])")
@@ -203,7 +205,7 @@ class Item:
     kind: str = ""  # the primitive or part it is
     mass: float | None = None
     props: dict = field(default_factory=dict)  # friction, rolls, bounce, hollow, drag, ghost, colour
-    motion: dict | None = None  # {"kind": "free", ...} or {"kind": "hinge", ...}
+    motion: dict | None = None  # {"kind": "free", ...}, {"kind": "hinge", ...} or {"kind": "slide", ...}
     attached: "Item | None" = None
     plank: tuple | None = None  # (high end, low end, thickness)
     ring: float | None = None  # inner radius
@@ -577,7 +579,7 @@ def subst(text: str, values: dict) -> tuple[str, list]:
 
 ITEM_KEYS = ["is a", "is an", "is", "weighs", "friction", "rolls", "bounce", "colour", "touches nothing", "moves",
              "launched", "spins", "first one spins", "turns on", "swings", "spring", "damping", "armature",
-             "starts turned", "attached to", "stacked", "repeated", "size"]
+             "starts turned", "slides on", "travels", "starts slid", "attached to", "stacked", "repeated", "size"]
 PLACE_KEYS = ["rests", "sits", "stands", "hangs", "lies", "at"]
 OWN_FACTS = ["friction", "colour", "bounce", "rolls", "touches nothing", "is"]  # a part passes these to every piece
 FLAGS = {"hollow": ("hollow", True), "slowed by air": ("drag", True), "touches nothing": ("ghost", True),
@@ -705,6 +707,7 @@ class Reader:
 
     def fact(self, item: Item, key: str, v: str, ln: Line, scope: dict, copies: int) -> int:
         hinge = item.motion if item.motion and item.motion["kind"] == "hinge" else None
+        slide = item.motion if item.motion and item.motion["kind"] == "slide" else None
         if key == "weighs":
             item.mass = qty(v, "mass", ln).si
         elif key == "friction":
@@ -716,7 +719,9 @@ class Reader:
                 k, val = FLAGS[flag]
                 item.props[k] = val
         elif key == "bounce":
-            item.props["bounce"] = words(v, r"(lively|dead)", ln, "`bounce lively` or `bounce dead`").group(1)
+            b = words(v, r"(lively|dead|0(?:\.\d+)?|1(?:\.0+)?)", ln,
+                      "`bounce lively`, `bounce dead`, or how much speed a bounce keeps, from 0 to 1, like `bounce 0.05`").group(1)
+            item.props["bounce"] = b if b in ("lively", "dead") else float(b)
         elif key == "colour":
             if v not in COLOURS:
                 raise ln.problem("I DON'T KNOW THIS COLOUR", v, f"one of: {', '.join(COLOURS)}", "", "")
@@ -745,6 +750,27 @@ class Reader:
             at = words(cs[2], r"at (.+)", ln, "`at pivot` or `at its right side`").group(1)
             item.motion = {"kind": "hinge", "joint": cs[0].replace(" ", "_"), "axis": ax,
                            "anchor": point(at, scope, ln, item), "line": ln}
+        elif key == "slides on":
+            cs = clauses(v)
+            if len(cs) != 2:
+                raise ln.problem("I CAN'T READ THIS", v, "`slides on <joint name>, along <x, y or z>`", "",
+                                 "like `slides on track, along x`")
+            ax = words(cs[1], r"along (x|y|z)", ln, "`along x`, `along y` or `along z`").group(1)
+            item.motion = {"kind": "slide", "joint": cs[0].replace(" ", "_"), "axis": ax, "line": ln}
+        elif slide is not None and key in ("travels", "spring", "damping", "starts slid"):
+            if key == "travels":
+                m = words(v, r"(?:from )?(.+) to (.+)", ln, "`from −10 cm to 30 cm`")
+                slide["range"] = (qty(m.group(1), "length", ln), qty(m.group(2), "length", ln))
+            elif key == "spring":
+                m = words(v, r"(.+) toward (.+)", ln, "`18 N/m toward 0 cm`")
+                slide["stiffness"], slide["rest"] = qty(m.group(1), "linear stiffness", ln), qty(m.group(2), "length", ln)
+            elif key == "damping":
+                slide["damping"] = qty(v, "linear damping", ln)
+            else:
+                slide["start"] = qty(v, "length", ln)
+        elif key in ("travels", "starts slid"):
+            raise ln.problem("NOTHING TO SLIDE ON", ln.text, "a `slides on` line written above this one",
+                             f"`{key}` describes a slide, and this piece has none.", "add `slides on ...` first")
         elif key in ("swings", "spring", "damping", "armature", "starts turned"):
             if hinge is None:
                 raise ln.problem("NOTHING TO TURN ON", ln.text, "a `turns on` line written above this one",
@@ -857,6 +883,15 @@ def conventions(name: str) -> str:
     return name
 
 
+def damping_ratio(restitution: float) -> float:
+    """MuJoCo has no restitution; a contact is a damped spring, and a damped spring of damping ratio z keeps
+    exp(-z·pi / sqrt(1 - z²)) of the speed it met, so this is that formula solved for z (1 keeps none)."""
+    if restitution <= 0:
+        return 1.0
+    k = -math.log(restitution)
+    return k / math.sqrt(math.pi ** 2 + k * k)
+
+
 def mover(leaf: Item) -> Item | None:
     """What a piece moves with: itself if it moves, else whatever it is attached to, followed to the end."""
     seen, visited = leaf, set()
@@ -897,7 +932,7 @@ def compile_program(prog: Program) -> Compiled:
             if "friction" in p:
                 a["friction"] = fmt(*p["friction"])
             if "bounce" in p:
-                a["solref"] = {"lively": "0.01 0.2", "dead": "0.01 1"}[p["bounce"]]
+                a["solref"] = {"lively": "0.01 0.2", "dead": "0.01 1"}.get(p["bounce"]) or fmt(0.01, damping_ratio(p["bounce"]))
             if p.get("drag"):
                 a.update(fluidshape="ellipsoid", fluidcoef="0.25 0.25 1.5 1.0 1.0")
             if p.get("ghost"):
@@ -917,7 +952,7 @@ def compile_program(prog: Program) -> Compiled:
                 groups.setdefault(id(mv), (mv, []))[1].append(leaf)
     # A joint keeps the name it was written with unless another joint has it too (two pendulums from the library):
     # then each takes its part's name in front, `pendulum1_pivot`, `pendulum2_pivot`.
-    hinges = [mv for mv, _ in groups.values() if mv.motion["kind"] == "hinge"]
+    hinges = [mv for mv, _ in groups.values() if mv.motion["kind"] in ("hinge", "slide")]  # every named joint
     taken = [mv.motion["joint"] for mv in hinges]
     jname = {}
     for mv in hinges:
@@ -962,9 +997,9 @@ def compile_program(prog: Program) -> Compiled:
                 joints.append({"name": f"{bname} (free)", "kind": "free", "part": mv.path,
                                "qpos": [*origin, 1, 0, 0, 0], "qvel": [*mo["launch"], *mo["spin"]]})
             else:
-                origin = mo["anchor"]
+                origin = mo["anchor"] if mo["kind"] == "hinge" else mv.shapes[0].pos.copy()
                 xml.append(f'    <body name="{bname}" pos="{fmt(*origin)}">')
-                a = {"type": "hinge", "pos": "0 0 0", "axis": fmt(*AXES[mo["axis"]])}
+                a = {"type": mo["kind"], "pos": "0 0 0", "axis": fmt(*AXES[mo["axis"]])}
                 if mo.get("range"):
                     a.update(limited="true", range=fmt(mo["range"][0].si, mo["range"][1].si))
                 if mo.get("stiffness"):
@@ -977,7 +1012,7 @@ def compile_program(prog: Program) -> Compiled:
                     a["armature"] = fmt(mo["armature"].si)
                 xml.append(f'      <joint name="{jname[id(mv)]}" ' + " ".join(f'{k}="{v}"' for k, v in a.items()) + "/>")
                 start = mo.get("start")
-                joints.append({"name": jname[id(mv)], "kind": "hinge", "part": mv.path,
+                joints.append({"name": jname[id(mv)], "kind": mo["kind"], "part": mv.path,
                                "qpos": [start.si if start else 0.0], "qvel": [0], "range": mo.get("range"), "start": start})
             for leaf in members:
                 geoms(leaf, top_of[id(leaf)], origin, 3)

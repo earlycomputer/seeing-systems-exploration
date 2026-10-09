@@ -4,7 +4,7 @@
     python -m ladder.matrix --steps 16 --seeds 0 --families cascade   # a cost check on one family's longest chain
     python -m ladder.matrix                               # everything
     python -m ladder.matrix --dry                         # plumbing test, no calls
-    python -m ladder.matrix --1k --arms language --steps 8 16   # 1k: the fixed language, into ladder/results_1k/
+    python -m ladder.matrix --rerun 1l --arms language --steps 8 16   # 1k, 1l: language reruns, ladder/results_<tag>/
 
 Every call checks 1j's ceiling and the program cap (ladder/budget.py). Judging uses hundred/judge.py with the run in
 words with openings (hundred/words.py); verdicts go to ladder/results/judge/.
@@ -24,13 +24,13 @@ from ladder import briefs as briefs_mod, budget
 from ladder import settings
 from ladder.settings import ARMS, DRYRUN_DIR, JUDGE, LEVELS, MODEL, SEEDS
 
-# 1j by default; --1k points these at ladder/results_1k/ and 1k's ceiling
+# 1j by default; --rerun <tag> points these at ladder/results_<tag>/ and that rerun's ceiling
 RUNS_DIR, JUDGE_DIR, SPEND_LEDGER, CHECK, EXP, RUN_FLAG = (settings.RUNS_DIR, settings.JUDGE_DIR, settings.SPEND_LEDGER,
                                                            budget.check, "exp1j", "--ladder")
 
 
 def runs_root(dry: bool) -> Path:
-    return DRYRUN_DIR / ("runs_1k" if EXP == "exp1k" else "runs") if dry else RUNS_DIR
+    return DRYRUN_DIR / ("runs" if EXP == "exp1j" else f"runs_{EXP[3:]}") if dry else RUNS_DIR
 
 
 def done(model: str, w: tuple, dry: bool) -> bool:
@@ -62,13 +62,14 @@ def main() -> int:
     ap.add_argument("--plan", action="store_true")
     ap.add_argument("--dry", action="store_true")
     ap.add_argument("--no-judge", action="store_true")
-    ap.add_argument("--1k", dest="k", action="store_true", help="1k: the fixed language, ladder/results_1k/")
+    ap.add_argument("--rerun", choices=sorted(settings.RERUNS), help="a language rerun, into ladder/results_<tag>/")
     args = ap.parse_args()
     global RUNS_DIR, JUDGE_DIR, SPEND_LEDGER, CHECK, EXP, RUN_FLAG
-    if args.k:
-        RUNS_DIR, JUDGE_DIR, SPEND_LEDGER, CHECK, EXP, RUN_FLAG = (settings.RUNS_1K_DIR, settings.JUDGE_1K_DIR,
-                                                                   settings.SPEND_LEDGER_1K, budget.check_1k, "exp1k",
-                                                                   "--ladder-1k")
+    if args.rerun:
+        d = settings.rerun_dir(args.rerun)
+        RUNS_DIR, JUDGE_DIR, SPEND_LEDGER, CHECK, EXP = (d / "runs", d / "judge", d / "spend.jsonl",
+                                                         budget.check_rerun(args.rerun), f"exp{args.rerun}")
+        RUN_FLAG = "--ladder-rerun"
     model = "dry-run-echo" if args.dry else MODEL
     briefs = [b for b in briefs_mod.load().values()
               if b["steps"] in args.steps and (args.families is None or b["family"] in args.families)]
@@ -83,7 +84,7 @@ def main() -> int:
     failures = []
     with ThreadPoolExecutor(max_workers=args.jobs) as pool:
         futures = {pool.submit(run_world.main, ["--model", model, "--brief", b, "--arm", a, "--seed", str(sd),
-                                                RUN_FLAG]): (b, a, sd) for b, a, sd in todo}
+                                                *([RUN_FLAG, args.rerun] if args.rerun else [RUN_FLAG])]): (b, a, sd) for b, a, sd in todo}
         for f in as_completed(futures):
             try:
                 if f.result() != 0:

@@ -144,6 +144,7 @@ def check_meaning(c: Compiled) -> None:
         if r and s is not None and not (r[0].si - 1e-9 <= s.si <= r[1].si + 1e-9):
             c.problems.append(Problem(
                 "STARTS OUTSIDE ITS OWN RANGE", j["part"], f"starts at {s!r}, range ({r[0]!r}, {r[1]!r})",
+                f"a starting position between {r[0].si:g} and {r[1].si:g} m" if j.get("kind") == "slide" else
                 f"a starting angle between {r[0].deg:g} and {r[1].deg:g} degrees",
                 "MuJoCo would push it back inside its limit in the first few steps: whatever it was meant to do "
                 "from there, it would not.",

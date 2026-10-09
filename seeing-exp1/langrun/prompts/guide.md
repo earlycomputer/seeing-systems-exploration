@@ -31,7 +31,8 @@ floor
 ## Units
 
 Every quantity needs its unit: lengths `mm cm m`, masses `g kg`, angles `° deg rad`, speed `m/s`, spin `rad/s`,
-hinge stiffness `N·m/rad`, hinge damping `N·m·s/rad`, rotor inertia `kg·m²`, density `kg/m³`. Sums like
+hinge stiffness `N·m/rad`, hinge damping `N·m·s/rad`, slide stiffness `N/m`, slide damping `N·s/m`,
+rotor inertia `kg·m²`, density `kg/m³`. Sums like
 `pivot height − 6 cm` work when the kinds agree. Sizes like `16 by 24 by 34 cm` take the last unit for all three.
 
 ## Primitives (`is a ...`)
@@ -58,6 +59,7 @@ A point in a rod, plank or post is a thing's name (its centre) or a face of it: 
 | `friction  0.8, spinning 0.01, rolling 0.004` | sliding friction, optionally spinning and rolling |
 | `rolls` | a ball that rolls properly (rolling contact) |
 | `bounce  lively` or `bounce  dead` | a springy or a dead contact |
+| `bounce  0.05` | how much of its speed a bounce keeps, from 0 (dead) to 1 |
 | `is  hollow, lively, slowed by air` | flags: `hollow` (a shell's inertia), `lively`, `dead`, `slowed by air`, `touches nothing` |
 | `touches nothing` | seen, but nothing collides with it |
 | `colour  orange` | orange, glass, black, grey, dark grey, wood, white |
@@ -73,9 +75,16 @@ A point in a rod, plank or post is a thing's name (its centre) or a face of it: 
 | `damping  25 N·m·s/rad` | damping on the hinge |
 | `armature  0.01 kg·m²` | rotor inertia on the hinge |
 | `starts turned  69°` | the hinge's angle at the start |
-| `attached to  <thing>` | moves with another thing (on its hinge, or loose with it) |
+| `slides on  track, along x` | it slides on a slide joint with this name, along x, y or z, from where it is placed |
+| `travels  from −10 cm to 30 cm` | the slide's range, from where it is placed |
+| `spring  18 N/m toward 0 cm` | a spring on the slide, pulling toward a position |
+| `damping  0.2 N·s/m` | damping on the slide |
+| `starts slid  −20 cm` | the slide's position at the start (a spring compressed by 20 cm toward 0 cm) |
+| `attached to  <thing>` | moves with another thing (on its hinge or slide, or loose with it) |
 
-A thing with no `moves freely`, `turns on` or `attached to` is fixed in place. Things that move together become
+Gravity is 9.81 m/s² downward in every world; there is no line for it.
+
+A thing with no `moves freely`, `turns on`, `slides on` or `attached to` is fixed in place. Things that move together become
 one MuJoCo body.
 
 ## Positions
@@ -96,6 +105,7 @@ written bare.
 | `8 cm outside frame's left side` | just outside that face, with an optional gap |
 | `centred on base's far end`, `centred over table` | centred on a face, or over the other |
 | `level with pivot` | the same height as the other's centre |
+| `at pivot` | centred on the other, in all three directions |
 | `its far end at pivot` | one of its faces at a point |
 | `its rim 4 m beyond ball` | placing a whole part by one of its pieces |
 
@@ -104,7 +114,8 @@ written bare.
 A part is a named whole from the library below, used with `is a <part>` followed by the lines it `needs`
 (a need with `else` has a default). A part also takes a thing's own facts (`friction`, `colour`, `bounce`,
 `rolls`, `touches nothing`, `is`), which apply to every piece. Its pieces are named `<thing>.<piece>` in the run: `catapult.scoop base`.
-Inside a world, positions may refer to a part's pieces the same way: `on bucket.base`.
+Inside a world, positions may refer to a part's pieces the same way: `on bucket.base`. A part's needs may name
+things written above it in the world: `high end  ramp top` with `ramp top` a point.
 
 You may also define new parts: put them in a ```parts block, written exactly as the library's parts are.
 

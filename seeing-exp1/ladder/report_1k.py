@@ -10,10 +10,12 @@ import glob
 import json
 from pathlib import Path
 
-from ladder.settings import JUDGE, JUDGE_1K_DIR, JUDGE_DIR, RESULTS_1K_DIR, RUNS_1K_DIR, RUNS_DIR
+from ladder.settings import JUDGE, JUDGE_DIR, RUNS_DIR, rerun_dir
 from langrun.report import fisher
 
 LEVELS = (8, 16)
+RESULTS_1K_DIR = rerun_dir("1k")
+RUNS_1K_DIR, JUDGE_1K_DIR = RESULTS_1K_DIR / "runs", RESULTS_1K_DIR / "judge"
 REFUSED = {"position or name": ("I CAN'T READ THIS POSITION", "UNKNOWN PART", "UNKNOWN PIECE"),
            "start overlap": ("PARTS START INSIDE EACH OTHER",)}
 

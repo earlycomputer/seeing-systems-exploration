@@ -2,7 +2,7 @@
 
 from config import SPEND_CAP_USD
 from hundred import budget as budget_1h
-from ladder.settings import CEILING_1J_USD, CEILING_1K_USD
+from ladder.settings import CEILING_1J_USD, RERUNS
 from loop.models import BudgetExceeded
 
 
@@ -20,11 +20,13 @@ def check() -> None:
         raise BudgetExceeded(f"1j has spent ${s['exp1j']:.2f}, its ${CEILING_1J_USD:.0f} ceiling; going on needs Jono")
 
 
-def check_1k() -> None:
-    s = spent()
-    total = sum(s.values())
-    if total >= SPEND_CAP_USD:
-        raise BudgetExceeded(f"spent ${total:.2f} across all experiments, the ${SPEND_CAP_USD:.0f} program cap; "
-                             "raising it needs Jono")
-    if s["exp1k"] >= CEILING_1K_USD:
-        raise BudgetExceeded(f"1k has spent ${s['exp1k']:.2f}, its ${CEILING_1K_USD:.0f} ceiling; going on needs Jono")
+def check_rerun(tag: str):
+    def check() -> None:
+        s = spent()
+        total = sum(s.values())
+        if total >= SPEND_CAP_USD:
+            raise BudgetExceeded(f"spent ${total:.2f} across all experiments, the ${SPEND_CAP_USD:.0f} program cap; "
+                                 "raising it needs Jono")
+        if s[f"exp{tag}"] >= RERUNS[tag]:
+            raise BudgetExceeded(f"{tag} has spent ${s[f'exp{tag}']:.2f}, its ${RERUNS[tag]:.0f} ceiling; going on needs Jono")
+    return check

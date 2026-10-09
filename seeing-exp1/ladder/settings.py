@@ -42,8 +42,14 @@ CEILING_1J_USD = 120.0
 # needs may name parts written above it in the world (`high end  ramp top`), and `at pivot` centres a thing on a part.
 # 1j's language worlds spent their three tries on these. Overlaps are still refused, as lint.py refuses them for the
 # xml arm. Prompts, briefs, model and seeds as 1j. Jono chose "Fix language, rerun" (2026-10-08, about $17).
-RESULTS_1K_DIR = LADDER_DIR / "results_1k"
-RUNS_1K_DIR = RESULTS_1K_DIR / "runs"
-JUDGE_1K_DIR = RESULTS_1K_DIR / "judge"
-SPEND_LEDGER_1K = RESULTS_1K_DIR / "spend.jsonl"
-CEILING_1K_USD = 25.0
+#
+# 1l: the language arm again at 8 and 16 steps, after the language gained what GPT-6.1 declined to write without:
+# slide joints (`slides on`, `travels`, a `spring` in N/m, `damping` in N·s/m, `starts slid`) and bounce as a number
+# (`bounce 0.05`), with gravity stated in the guide (langrun/prompts/guide.md, which the authors read). In 1k, 18 of
+# its replies declined because of these. Jono chose "Add slides, rerun" (2026-10-09, about $18). The guide changed,
+# so a rerun of 1f, 1g, 1h or 1j's language arm would now read the longer guide; their logged prompts are as they ran.
+RERUNS = {"1k": 25.0, "1l": 25.0}  # each rerun's own ceiling, in ladder/results_<tag>/
+
+
+def rerun_dir(tag: str):
+    return LADDER_DIR / f"results_{tag}"
